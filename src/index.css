@@ -1,0 +1,9 @@
+* { box-sizing: border-box; }
+html, body, #root { margin: 0; padding: 0; }
+body {
+  background: #0a0a0a;
+  color: #f2f1ec;
+  -webkit-font-smoothing: antialiased;
+}
+::selection { background: #f2f1ec; color: #0a0a0a; }
+a { color: inherit; }

@@ -1,0 +1,75 @@
+{
+  "posts": [
+    {
+      "slug": "what-capstone-actually-taught-me",
+      "title": "What capstone actually taught me",
+      "date": "2025-04-12",
+      "readTime": "6 min",
+      "tag": "essay",
+      "summary": "Six months on a sponsor project, and the lesson wasn't the code. It was learning to ask why three times before writing anything.",
+      "featured": true,
+      "body": [
+        "We spent the first two weeks of capstone trying to design the system. Whiteboards, sequence diagrams, every architecture pattern we'd been taught. Our sponsor — a healthcare startup — kept nodding politely and asking when we'd come visit the clinic.",
+        "We didn't visit the clinic. We were CS students. We had a system to design.",
+        "Three months in, we shipped a beautiful, technically correct, completely wrong tool. Front-desk staff used it for a day and went back to paper. Not because the software was bad — because we'd built for a problem nobody had.",
+        "The next eight weeks I learned more than the previous two years of coursework: how to shadow without interrupting, how to ask 'and then what happens?' until you reach the actual constraint, how to demo something half-finished without being defensive. We rebuilt around the real problem, which turned out to be liability, not time.",
+        "The deliverable shipped. Three clinics use it. The metric the sponsor cared about — average intake time — dropped by 47%. But the thing I'm taking with me is the habit of distrusting my first instinct about what to build."
+      ]
+    },
+    {
+      "slug": "notes-on-building-raft",
+      "title": "Notes on building Raft from the paper",
+      "date": "2024-12-08",
+      "readTime": "12 min",
+      "tag": "technical",
+      "summary": "Implementing Raft for ICS 143A. What I got wrong, what saved me, and the bug that took two days.",
+      "featured": true,
+      "body": [
+        "The Raft paper is famously approachable. The implementation is famously not.",
+        "I started by writing the leader-election state machine as a pure function with a fake clock. This turned out to be the single best decision I made on the project. Every other piece — log replication, snapshotting, membership changes — got built on top of a core I could exhaustively test.",
+        "The bug that took two days: snapshot install racing with append-entries on a slow follower. The follower would receive an installSnapshot RPC, start applying it, then receive an append-entries for an offset that no longer existed. My code would crash. Production-grade Raft implementations have explicit guards for this. I did not.",
+        "The fix was small (track install state, drop appends during install). The lesson was bigger: log everything, including timestamps you don't think you need. I added microsecond timestamps to every state transition and the bug became obvious in 20 minutes."
+      ]
+    },
+    {
+      "slug": "small-tools-big-payoff",
+      "title": "Small tools, big payoff",
+      "date": "2024-09-22",
+      "readTime": "5 min",
+      "tag": "essay",
+      "summary": "I keep building tiny CLI tools nobody asked for. Here's why they're worth more than the side projects with users.",
+      "featured": false,
+      "body": [
+        "My most-used piece of software is a 200-line Rust CLI I wrote in two weekends. It finds typos in code comments. Nobody else uses it. It runs in every commit hook I have.",
+        "The big side projects — the ones with auth and a Postgres and a deployment story — taught me about systems. The small tools taught me about taste. What's worth automating? What's the smallest thing that solves the problem? Where's the line between 'too clever' and 'just clever enough'?",
+        "Recruiters don't care about the small tools. They want to see scale, users, metrics. But every senior engineer I've talked to has a folder of these — little programs that fit their hand. I think it's how you stay sharp."
+      ]
+    },
+    {
+      "slug": "switching-from-cs-to-informatics",
+      "title": "Why I switched from CS to Informatics",
+      "date": "2023-10-15",
+      "readTime": "4 min",
+      "tag": "essay",
+      "summary": "Halfway through junior year I switched majors. Both degrees teach you to ship software. Only one teaches you to question what you're shipping.",
+      "featured": false,
+      "body": [
+        "Informatics at UCI is CS with a humanities split. Half your upper-division load is human-centered: design, ethics, qualitative research methods. I switched because the CS curriculum was teaching me how to build things, and I was starting to suspect that was the easy part.",
+        "Two years later: still glad I did it. The CS courses I missed I picked up on my own (operating systems, distributed systems, compilers). The Informatics courses I took I don't think I would have taught myself — qualitative research methods especially. They changed how I scope problems."
+      ]
+    },
+    {
+      "slug": "debugging-webaudio",
+      "title": "A tiny guide to debugging WebAudio",
+      "date": "2023-06-03",
+      "readTime": "8 min",
+      "tag": "technical",
+      "summary": "WebAudio is two APIs in a trench coat. Here's the mental model that finally made it stop fighting me.",
+      "featured": false,
+      "body": [
+        "WebAudio looks declarative — you build a graph of nodes, connect them, and audio happens — but underneath it's stateful and time-aware in ways that bite you constantly.",
+        "The mental model that fixed it for me: every parameter has a value at a specific audioContext.currentTime, and you set future values with scheduling functions. Treat it less like React state and more like a tape machine. Once that clicked, the whole API stopped feeling weird."
+      ]
+    }
+  ]
+}

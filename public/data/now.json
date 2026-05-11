@@ -1,0 +1,48 @@
+{
+  "currently": {
+    "updated": "2026-04-26",
+    "items": [
+      "Building a Raft KV store in Go",
+      "Interviewing at infra teams",
+      "Reading 'Designing Data-Intensive Applications'"
+    ]
+  },
+  "entries": [
+    {
+      "date": "2026-04-26",
+      "tag": "BUILDING",
+      "title": "Refactoring portfolio data layer",
+      "body": "Moved all project data into a single projects.json + form-based admin editor. Now I can add a project in 90 seconds without touching JSX. Should have done this two months ago."
+    },
+    {
+      "date": "2026-04-22",
+      "tag": "LEARNING",
+      "title": "Got Raft leader-election working",
+      "body": "Wrote it as a pure state machine with a fake clock — first time the test suite passed deterministically across 100 runs. Replication next."
+    },
+    {
+      "date": "2026-04-15",
+      "tag": "INTERVIEWING",
+      "title": "Onsite at a payments company",
+      "body": "First full-loop in three months. System design went well; behavioral I rambled on the 'tell me about a conflict' question. Practicing STAR format this week."
+    },
+    {
+      "date": "2026-04-08",
+      "tag": "READING",
+      "title": "DDIA chapter 5 — replication",
+      "body": "Single-leader vs. multi-leader vs. leaderless finally clicked. Helps that I was already mid-Raft when I read it."
+    },
+    {
+      "date": "2026-04-01",
+      "tag": "SHIPPING",
+      "title": "LATECHEF v1.2",
+      "body": "Added saved-recipes export to plaintext. Tiny feature; ten people emailed asking for it. Lesson: ship the small things."
+    },
+    {
+      "date": "2026-03-25",
+      "tag": "THINKING",
+      "title": "What I want from my first job",
+      "body": "Strong code review culture > fancy tech stack. Mentorship > prestige. Small team > big team if the small team ships. Trying to filter recruiter pings through these."
+    }
+  ]
+}

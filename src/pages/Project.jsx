@@ -427,7 +427,7 @@ export default function Project() {
   const { slug } = useParams();
 
   React.useEffect(() => {
-    fetch('/data/projects.json')
+    fetch(`${import.meta.env.BASE_URL}data/projects.json`)
       .then((r) => r.ok ? r.json() : null)
       .then((data) => {
         if (data && data.projects) {

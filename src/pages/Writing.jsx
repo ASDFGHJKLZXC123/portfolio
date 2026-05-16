@@ -17,7 +17,7 @@ export default function Writing() {
   const [filter, setFilter] = React.useState('all');
 
   React.useEffect(() => {
-    fetch('/data/writing.json').then((r) => r.ok ? r.json() : null).then((d) => { if (d) setData(d); }).catch(() => {});
+    fetch(`${import.meta.env.BASE_URL}data/writing.json`).then((r) => r.ok ? r.json() : null).then((d) => { if (d) setData(d); }).catch(() => {});
   }, []);
 
   const vars = {

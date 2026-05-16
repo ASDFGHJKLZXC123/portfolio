@@ -18,7 +18,7 @@ export default function Now() {
   const [data, setData] = React.useState(FALLBACK);
 
   React.useEffect(() => {
-    fetch('/data/now.json')
+    fetch(`${import.meta.env.BASE_URL}data/now.json`)
       .then((r) => r.ok ? r.json() : null)
       .then((d) => { if (d) setData(d); })
       .catch(() => {});

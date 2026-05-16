@@ -17,7 +17,7 @@ export default function Post() {
   const { slug } = useParams();
 
   React.useEffect(() => {
-    fetch('/data/writing.json').then((r) => r.ok ? r.json() : null).then((d) => { if (d) setData(d); }).catch(() => {});
+    fetch(`${import.meta.env.BASE_URL}data/writing.json`).then((r) => r.ok ? r.json() : null).then((d) => { if (d) setData(d); }).catch(() => {});
   }, []);
 
   React.useEffect(() => {

@@ -273,7 +273,7 @@ function SectionHead({ index, title, subtitle }) {
 function CurrentlyStrip() {
   const [data, setData] = React.useState(null);
   React.useEffect(() => {
-    fetch('/data/now.json').then((r) => r.ok ? r.json() : null).then((d) => { if (d?.currently) setData(d.currently); }).catch(() => {});
+    fetch(`${import.meta.env.BASE_URL}data/now.json`).then((r) => r.ok ? r.json() : null).then((d) => { if (d?.currently) setData(d.currently); }).catch(() => {});
   }, []);
   if (!data?.items?.length) return null;
   const upd = data.updated ? new Date(data.updated + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', year: 'numeric' }).toUpperCase() : '';
@@ -738,7 +738,7 @@ export default function Portfolio() {
   const dark = t.dark;
 
   React.useEffect(() => {
-    fetch('/data/projects.json')
+    fetch(`${import.meta.env.BASE_URL}data/projects.json`)
       .then((r) => r.ok ? r.json() : null)
       .then((data) => { if (data && data.projects) setProjects(data.projects); })
       .catch(() => {});

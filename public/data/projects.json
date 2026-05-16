@@ -59,15 +59,16 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal project",
-      "stack": ["REACT + TS + VITE", "DJANGO + DRF", "CELERY + REDIS", "POSTGRES", "DOCKER COMPOSE", "PYDANTIC"],
-      "summary": "A hiring-workflow app that ingests resumes, extracts structured fields with a Celery worker, and surfaces them in a recruiter-facing dashboard with search, filtering, and lifecycle states.",
+      "status": "in-progress",
+      "stack": ["DJANGO + DRF", "CELERY + REDIS", "POSTGRES", "PYDANTIC", "STATIC FRONTEND PROTOTYPE", "STRUCTURED JSON LOGGING"],
+      "summary": "A hiring-workflow backend that ingests resumes, extracts structured fields with a Celery worker, and exposes recruiter-facing candidate review APIs. The frontend exists as a static prototype while the React/Vite rebuild is still in progress.",
       "featured": true,
       "img": "linear-gradient(135deg,#0a1f1a 0%,#0f3326 45%,#1d5a3f 100%)",
       "accent": "radial-gradient(ellipse at 30% 35%, rgba(120,220,170,.30), transparent 55%)",
       "details": [
         "Async resume processing: PDF/text upload triggers a Celery job that extracts skills, years of experience, education, summary, and a match score against a job description.",
-        "Reviewer UI: search, status/tag/score filters, pagination, candidate detail with evidence snippets, notes, tags, and a workflow state machine (New → Screened → Interview → Rejected/Hired).",
-        "Reliability/ops: Pydantic schema validation on extraction output, Celery retries with backoff, Redis list caching, structured JSON logs, persisted JobFailure model tracking retry counts."
+        "Reviewer workflow: search, status/tag/score filtering, pagination, candidate detail with evidence snippets, notes, tags, and a six-state lifecycle (Applied → Screened → Interview → Offer → Hired, with Rejected as a terminal path).",
+        "Reliability/ops: Pydantic schema validation on extraction output, Celery retries with backoff, Redis-backed queueing, structured JSON logs, persisted JobFailure model tracking retry counts."
       ],
       "links": [
         { "k": "SOURCE", "v": "github" }
@@ -81,15 +82,15 @@
         {
           "kind": "paragraph",
           "label": "02 — HOW IT WORKS",
-          "body": "Django/DRF API + a Celery worker queue backed by Redis; everything orchestrated under one docker-compose. The extractor returns a payload validated by Pydantic before it hits Postgres. List endpoint is cached. Failed jobs are persisted with their retry count so they're recoverable, not silent."
+          "body": "Django/DRF API + a Celery worker queue backed by Redis. The extractor returns a payload validated by Pydantic before it hits Postgres. Failed jobs are persisted with their retry count so they're recoverable, not silent. The backend pipeline is implemented; the modern frontend wiring is still being rebuilt."
         },
         {
           "kind": "metrics",
           "items": [
             { "v": "ViewSet", "k": "API LAYER" },
-            { "v": "5", "k": "WORKFLOW STATES" },
+            { "v": "6", "k": "WORKFLOW STATES" },
             { "v": "Pydantic", "k": "EXTRACT SCHEMA" },
-            { "v": "Redis", "k": "QUEUE + CACHE" }
+            { "v": "Redis", "k": "QUEUE" }
           ]
         },
         {
@@ -100,7 +101,7 @@
         {
           "kind": "paragraph",
           "label": "04 — STATUS",
-          "body": "Solo project, runs end-to-end under docker compose. No production deploy or real users — built as a portfolio piece showing the async-extract pattern."
+          "body": "Solo project. Backend pipeline and resume-processing flow are implemented; frontend/package wiring is in progress. No production deploy or real users — built as a portfolio piece showing the async-extract pattern."
         }
       ]
     },
@@ -111,6 +112,7 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal · MVP",
+      "status": "in-progress",
       "stack": ["NEXT 15 (APP ROUTER)", "REACT 19", "TYPESCRIPT", "AUTH.JS v5", "ANTHROPIC + GEMINI", "GMAIL API", "VITEST + PLAYWRIGHT"],
       "summary": "A pragmatic Superhuman/Grammarly-adjacent inbox assistant — Gmail OAuth sync, LLM-backed thread summaries, draft reply generation with tone controls, and follow-up reminders.",
       "featured": true,
@@ -138,10 +140,10 @@
         {
           "kind": "metrics",
           "items": [
-            { "v": "Gmail", "k": "PROVIDER LIVE" },
+            { "v": "Gmail API", "k": "OAUTH FLOW" },
             { "v": "MS Graph", "k": "ADAPTER ONLY" },
             { "v": "AES-256-GCM", "k": "TOKEN ENCRYPT" },
-            { "v": "Vitest+Playwright", "k": "TESTS" }
+            { "v": "Vitest CI + PW scripts", "k": "TESTS" }
           ]
         },
         {
@@ -316,14 +318,14 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal project",
-      "stack": ["GO 1.22+", "PROTOBUF", "MDNS", "TLS + QUIC", "TOML CONFIG", "STRUCTURED JSON LOGGING", "COBRA CLI"],
-      "summary": "A cross-device clipboard-sync daemon written in Go. Peers discover each other on the local network via mDNS, pair with a one-time secret, and exchange clipboard updates over a TLS-secured custom protobuf protocol.",
+      "stack": ["GO 1.22+", "JSON WIRE + PROTO SCHEMA", "MDNS", "QUIC + TLS", "TOML CONFIG", "STRUCTURED JSON LOGGING", "COBRA CLI"],
+      "summary": "A cross-device clipboard-sync daemon written in Go. Peers discover each other on the local network via mDNS, pair with a one-time secret, and exchange clipboard updates over QUIC/TLS using length-prefixed JSON envelopes shaped for a future proto migration.",
       "img": "linear-gradient(135deg,#0a261a 0%,#103f24 45%,#1d6e3a 100%)",
       "accent": "radial-gradient(ellipse at 30% 35%, rgba(120,255,170,.30), transparent 55%)",
       "details": [
         "Daemon polls the system clipboard at a configurable interval (default 200 ms) and emits structured JSON log lines on every change.",
         "Cross-platform clipboard: macOS, Linux (X11 + Wayland), Windows. Integration tests with fake clipboards run cross-platform; the real-clipboard test requires a graphical macOS session.",
-        "Networking layer is a hand-rolled stack: mDNS discovery, an identity/pairing/roster module, TLS transport, and a Protocol Buffers wire format (Hello / ClipboardUpdate / Ack envelope) — not gRPC."
+        "Networking layer is a hand-rolled stack: mDNS discovery, an identity/pairing/roster module, QUIC/TLS transport, and a length-prefixed JSON envelope (Hello / ClipboardUpdate / Ack) kept schema-compatible with the proto3 definitions — not gRPC."
       ],
       "links": [
         { "k": "SOURCE", "v": "github" }
@@ -337,7 +339,7 @@
         {
           "kind": "paragraph",
           "label": "02 — HOW IT WORKS",
-          "body": "Internal Go packages: clipboard (polling abstraction per OS), mdns (peer discovery on the local network), pairing (one-time secret exchange), identity + crypto (device keys, signatures), roster (known peers), transport + tls (TLS and QUIC), wire (protobuf envelope — Hello/ClipboardUpdate/Ack plus an Encrypted variant for signed/encrypted payloads). Daemon polls clipboard, hashes the content, and broadcasts a ClipboardUpdate envelope to peers when it changes; receivers ack."
+          "body": "Internal Go packages: clipboard (polling abstraction per OS), mdns (peer discovery on the local network), pairing (one-time secret exchange), identity + crypto (device keys, signatures), roster (known peers), transport + tls (QUIC/TLS), wire (length-prefixed JSON envelopes kept compatible with proto3 message shapes). Daemon polls clipboard, hashes the content, and broadcasts a ClipboardUpdate envelope to peers when it changes; receivers ack."
         },
         {
           "kind": "metrics",
@@ -345,18 +347,69 @@
             { "v": "200 ms", "k": "POLL DEFAULT" },
             { "v": "3 OS", "k": "CLIPBOARD" },
             { "v": "mDNS", "k": "DISCOVERY" },
-            { "v": "TLS", "k": "TRANSPORT" }
+            { "v": "QUIC+TLS", "k": "TRANSPORT" }
           ]
         },
         {
           "kind": "paragraph",
           "label": "03 — WHY NOT gRPC",
-          "body": "gRPC would have been faster to set up but heavier than the problem deserved. Protobuf gives me the schema and codegen; a thin TLS transport gives me the framing. Skipping the gRPC runtime keeps the binary small, the dependency surface narrow, and the reconnect logic mine."
+          "body": "gRPC would have been faster to set up but heavier than the problem deserved. The current codec is a compact length-prefixed JSON envelope, but the message shape tracks the proto3 schema so a protobuf migration would not change the domain model. Keeping the transport thin makes reconnect and pairing behavior explicit."
         },
         {
           "kind": "paragraph",
           "label": "04 — STATUS",
           "body": "Solo build. Daemon + CLI work end-to-end on macOS; cross-platform clipboard support is in code, but only the macOS real-clipboard path is exercised by the live integration test."
+        }
+      ]
+    },
+    {
+      "slug": "citypulse",
+      "name": "CITYPULSE",
+      "kind": "personal · geospatial dashboard",
+      "year": "2026",
+      "role": "Solo",
+      "timeline": "personal project",
+      "stack": ["REACT 18", "VITE", "REDUX TOOLKIT", "DECK.GL", "MAPBOX GL", "RECHARTS", "EXPRESS", "WEBSOCKET", "JEST + RTL", "DOCKER COMPOSE"],
+      "summary": "A React + Express geospatial dashboard for exploring urban signals on an interactive Mapbox/Deck.gl map. It combines air-quality, weather, and transit-style layers with sidebar controls, charts, backend proxy routes, and WebSocket updates.",
+      "img": "linear-gradient(135deg,#081d26 0%,#10343f 45%,#1d5c6e 100%)",
+      "accent": "radial-gradient(ellipse at 30% 35%, rgba(120,220,255,.30), transparent 55%)",
+      "details": [
+        "Client: React 18 + Vite with Redux Toolkit state, Mapbox rendering, Deck.gl layers, sidebar controls, location autocomplete, Recharts summaries, and Jest/React Testing Library coverage.",
+        "Server: Express proxy routes for /api/weather, /api/air-quality, and /api/transit, cache middleware, WebSocket live-update channel, and fallback fixtures when the legacy OpenAQ v2 endpoint returns 410 Gone.",
+        "Operational shape: workspace scripts for client/server dev, production build for the client, server tests with node:test, Docker Compose files, and GitHub Actions that run client and server tests."
+      ],
+      "links": [
+        { "k": "SOURCE", "v": "github" }
+      ],
+      "sections": [
+        {
+          "kind": "paragraph",
+          "label": "01 — WHAT IT DOES",
+          "body": "Search for a U.S. city, recenter the map, and inspect air quality, weather stations, and transit-density fixtures as toggleable map layers. The sidebar shows current context and charts so the map is not the only way to read the data."
+        },
+        {
+          "kind": "paragraph",
+          "label": "02 — HOW IT WORKS",
+          "body": "The React client owns map state and layer toggles in Redux, renders Deck.gl layers on top of Mapbox, and calls the Express API through a configurable VITE_API_BASE_URL. The server proxies OpenWeather and OpenAQ-style requests, serves local transit fixture data, caches responses by URL, and starts a WebSocket server for periodic air-quality updates."
+        },
+        {
+          "kind": "metrics",
+          "items": [
+            { "v": "3", "k": "MAP LAYERS" },
+            { "v": "Mapbox + Deck.gl", "k": "MAP STACK" },
+            { "v": "3", "k": "API ROUTES" },
+            { "v": "Client + Server", "k": "CI TESTS" }
+          ]
+        },
+        {
+          "kind": "paragraph",
+          "label": "03 — DATA LIMITS",
+          "body": "Weather requests are proxied through the backend and require an OpenWeather key. Air quality currently falls back to fixture data when the old OpenAQ v2 endpoint returns 410 Gone, and transit is fixture-backed. That makes the UI demo stable while keeping the migration point explicit."
+        },
+        {
+          "kind": "paragraph",
+          "label": "04 — STATUS",
+          "body": "Solo build. Client tests, server tests, and client production build are documented as passing. Local run uses separate client/server dev commands or Docker Compose; no production deployment is recorded."
         }
       ]
     },
@@ -470,7 +523,7 @@
       "role": "Solo",
       "timeline": "personal project",
       "stack": ["JAVA", "SPRING BOOT", "SPRING DATA JPA", "SPRING SECURITY (HTTP BASIC)", "MYSQL", "H2 (TESTS)", "SWAGGER", "JUNIT", "ANGULAR 8", "BOOTSTRAP"],
-      "summary": "A multi-user task tracker with full CRUD, per-account scoping, filtering, sorting, pagination, and a dashboard summary endpoint. Spring Boot REST API + Angular 8 SPA.",
+      "summary": "A multi-user task tracker with full CRUD, per-account list/dashboard scoping, filtering, sorting, pagination, and a dashboard summary endpoint. Spring Boot REST API + Angular 8 SPA.",
       "img": "linear-gradient(135deg,#0a1426 0%,#0f1f3f 45%,#1d3a6e 100%)",
       "accent": "radial-gradient(ellipse at 30% 35%, rgba(120,180,255,.30), transparent 55%)",
       "details": [
@@ -490,12 +543,12 @@
         {
           "kind": "paragraph",
           "label": "02 — HOW IT WORKS",
-          "body": "Standard Spring Boot stack: JPA repositories, Security with HTTP Basic, JUnit for tests against H2 in-memory; MySQL in regular dev. 17 REST endpoints across /api/auth (2), /api/tasks (6), /api/users (5), /api/categories (5), /api/dashboard (1). Swagger UI at /swagger-ui.html. Frontend is Angular 8 with the routes mapped 1:1 to the API surface."
+          "body": "Standard Spring Boot stack: JPA repositories, Security with HTTP Basic, JUnit for tests against H2 in-memory; MySQL in regular dev. 19 REST endpoints across /api/auth, /api/tasks, /api/users, /api/categories, and /api/dashboard. Swagger UI at /swagger-ui.html. Frontend is Angular 8 with the routes mapped 1:1 to the API surface."
         },
         {
           "kind": "metrics",
           "items": [
-            { "v": "17", "k": "REST ENDPOINTS" },
+            { "v": "19", "k": "REST ENDPOINTS" },
             { "v": "6", "k": "INDEXED COLUMNS" },
             { "v": "HTTP Basic", "k": "AUTH" },
             { "v": "Jasmine + Karma", "k": "FRONTEND TESTS" }
@@ -510,6 +563,57 @@
           "kind": "paragraph",
           "label": "04 — STATUS",
           "body": "Solo project. Built as a portfolio piece showing a complete CRUD-+-auth slice end-to-end with reasonable schema design."
+        }
+      ]
+    },
+    {
+      "slug": "customer-issue-tracker",
+      "name": "CUSTOMER ISSUE TRACKER",
+      "kind": "personal · full-stack",
+      "year": "2026",
+      "role": "Solo",
+      "timeline": "personal project",
+      "stack": ["JAVA 17", "SPRING BOOT 3", "SPRING SECURITY", "SPRING DATA JPA", "MYSQL", "SWAGGER", "JUNIT 5", "ANGULAR 8", "BOOTSTRAP"],
+      "summary": "A full-stack customer support app for issue submission, analyst triage, investigation, and resolution. Spring Boot REST API + Angular 8 SPA with role-aware dashboards and a guarded issue lifecycle.",
+      "img": "linear-gradient(135deg,#26140a 0%,#3f2510 45%,#6e3f1d 100%)",
+      "accent": "radial-gradient(ellipse at 30% 35%, rgba(255,180,120,.30), transparent 55%)",
+      "details": [
+        "Backend: Spring Boot REST API with HTTP Basic security, role checks for customer/analyst/admin flows, issue CRUD, comments, reference data, dashboard summary, resolution reporting, Swagger/OpenAPI, seeded demo users, and JUnit tests.",
+        "Issue lifecycle: OPEN → IN_PROGRESS → INVESTIGATING/RESOLVED → CLOSED with explicit validation and blocked invalid transitions. RESOLVED can reopen to IN_PROGRESS; CLOSED is terminal.",
+        "Frontend: Angular 8 + Bootstrap SPA with role-aware routes, auth and role guards, customer submission/detail flow, analyst triage dashboard, admin reporting view, and Jasmine/Karma specs."
+      ],
+      "links": [
+        { "k": "SOURCE", "v": "github" }
+      ],
+      "sections": [
+        {
+          "kind": "paragraph",
+          "label": "01 — WHAT IT DOES",
+          "body": "Customers submit issues with category, priority, description, and optional attachment. Analysts triage the queue, assign ownership, add comments, and move issues through investigation and resolution. Admins can review dashboard totals and resolution reporting."
+        },
+        {
+          "kind": "paragraph",
+          "label": "02 — HOW IT WORKS",
+          "body": "Spring Boot exposes /api/issues, /api/reference, /api/dashboard, and /api/auth endpoints over a MySQL-backed JPA model. Spring Security uses HTTP Basic and role-aware service rules. The Angular client routes customers, analysts, and admins to different dashboards through AuthGuard and RoleGuard."
+        },
+        {
+          "kind": "metrics",
+          "items": [
+            { "v": "5", "k": "ISSUE STATES" },
+            { "v": "3", "k": "USER ROLES" },
+            { "v": "12", "k": "API ROUTES" },
+            { "v": "Swagger + JUnit", "k": "BACKEND QA" }
+          ]
+        },
+        {
+          "kind": "paragraph",
+          "label": "03 — DESIGN CHOICE: STATE MACHINE",
+          "body": "The issue status is not just a dropdown. The backend owns the allowed transition map, so the UI can be helpful without being trusted. That keeps impossible jumps, like OPEN straight to CLOSED, out of the database even if someone calls the API directly."
+        },
+        {
+          "kind": "paragraph",
+          "label": "04 — STATUS",
+          "body": "Completed portfolio build with seeded credentials for customer, analyst, and admin roles. Backend targets MySQL by default; dependencies were not reinstalled during the latest sandbox verification because registry access is restricted."
         }
       ]
     },
@@ -571,13 +675,14 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal · scaffold + M0–M8 runs",
+      "status": "in-progress",
       "stack": ["JAVA 21+", "SPRING BOOT 3.2", "POSTGRESQL 15", "REDIS 7", "CAFFEINE", "HIKARICP", "FLYWAY", "MICROMETER + PROMETHEUS", "GRAFANA", "GATLING 3.10"],
       "summary": "A URL-shortener service wired for systematic JVM-tuning experiments — multi-profile caching (Caffeine L1 + Redis L2), HikariCP, Flyway migrations, Gatling load, Prometheus + Grafana. Ran the M0–M8 milestones end-to-end: redirect p99 went from 2892 ms → 13 ms.",
       "img": "linear-gradient(135deg,#260a1a 0%,#3f1024 45%,#6e1d3a 100%)",
       "accent": "radial-gradient(ellipse at 30% 35%, rgba(255,120,180,.30), transparent 55%)",
       "details": [
         "Eight tuning milestones executed (M0 baseline → M1 index+heap+G1 → M2 Caffeine → M3 Redis → M4 pool → M5 GC tuning → M6 virtual threads → M8 generational ZGC). M7 (WebFlux) skipped, M9 (alloc rewrite) deferred. Documented in tuning-journal.md with raw Gatling results.",
-        "Three-layer caching: optional Caffeine L1 (10k, 5min TTL), optional Redis L2 (10min TTL), Postgres source of truth. Every /{slug} response sets X-Cache-Source ∈ {L1, L2, DB, MISS} for traceable cache analysis. M3 was a documented regression — small dataset fits in L1, so L2 only adds Redis RTT.",
+        "Three-layer caching: optional Caffeine L1 (10k, 5min TTL), optional Redis L2 (10min TTL), Postgres source of truth. Every /{slug} response sets X-Cache-Source ∈ {L1, L2, DB, MISS} for traceable cache analysis. The original M3 Redis run was a broken-L2 serialization run; after fixing it, L2 still offered no meaningful benefit on the cache-hot 10k working set.",
         "Per-milestone Spring profiles + JVM args in scripts/run-app.sh — switching milestones never requires a rebuild. Observability: Prometheus 5s scrape, three pre-provisioned Grafana dashboards, X-Correlation-Id and X-Response-Time-Ms on every response."
       ],
       "links": [
@@ -592,21 +697,21 @@
         {
           "kind": "paragraph",
           "label": "02 — THE EXPERIMENT DESIGN",
-          "body": "M0 is the baseline (no index, no caching, 512MB heap). Each subsequent milestone adds one variable: M1 turns on the (slug, time) index via Flyway V2, M2 adds Caffeine, M3 adds Redis, M4 tunes Hikari + prep-stmt caching, M5 bumps heap + targets a 50ms G1 pause, M6 swaps to virtual threads, M8 swaps to generational ZGC. Profiles are additive deltas so the comparison stays clean."
+          "body": "M0 is the captured baseline profile: no link-hit index, no Redis L2, 512MB heap, with the app's boot-default L1 behavior documented in the journal. Each subsequent milestone adds one variable: M1 turns on the (slug, time) index via Flyway V2, M2 formalizes Caffeine tuning, M3 adds Redis, M4 tunes Hikari + prep-stmt caching, M5 bumps heap + targets a 50ms G1 pause, M6 swaps to virtual threads, M8 swaps to generational ZGC. Profiles are additive deltas so the comparison stays clean."
         },
         {
           "kind": "metrics",
           "items": [
             { "v": "2892 → 13 ms", "k": "p99 M0→M2" },
             { "v": "−95% / −92%", "k": "M1 / M2 WIN" },
-            { "v": "+238%", "k": "M3 REGRESSION" },
+            { "v": "+238%", "k": "M3 BROKEN-L2 RUN" },
             { "v": "~6,700 RPS", "k": "LAPTOP CEILING" }
           ]
         },
         {
           "kind": "paragraph",
           "label": "03 — INTERESTING RESULTS",
-          "body": "M1's big win was mostly heap+GC, not the index — the redirect path doesn't actually touch link_hits. M3 was a documented regression: the 10k-slug working set fits entirely in Caffeine, so adding Redis only paid Redis RTT on L1 misses. M6 (virtual threads) and M8 (generational ZGC) were no-ops on this workload — cache-hot, low-allocation, requests complete in µs so carrier threads never park and ZGC's pause advantage isn't exercised. All of those are valuable negative results to have in writing."
+          "body": "M1's big win was mostly heap+GC, not the index — the redirect path doesn't actually touch link_hits. The first M3 result exposed a broken-L2 serialization path; after that fix, Redis L2 still did not help because the 10k-slug working set fits in Caffeine and L2 misses only add network RTT. M6 (virtual threads) and M8 (generational ZGC) were no-ops on this workload — cache-hot, low-allocation, requests complete in µs so carrier threads never park and ZGC's pause advantage isn't exercised. All of those are valuable negative results to have in writing."
         },
         {
           "kind": "paragraph",
@@ -622,14 +727,15 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal project",
+      "status": "in-progress",
       "stack": ["PYTHON 3.10–3.12", "PANDAS", "PYARROW", "PANDERA", "SQLALCHEMY", "POSTGRESQL", "DOCKER COMPOSE", "PYTEST", "GITHUB ACTIONS", "POWER BI"],
-      "summary": "Medallion-architecture (Bronze/Silver/Gold) ETL integrating three sources — Olist Brazilian e-commerce (99k orders / 113k line items), Open-Meteo historical weather (20 cities, ERA5), Frankfurter FX (USD/BRL) — into a Postgres warehouse with a star schema (3 facts, 5 dims) and a documented 4-page / 27-DAX Power BI dashboard.",
+      "summary": "Medallion-architecture (Bronze/Silver/Gold) ETL integrating three sources — Olist Brazilian e-commerce (99k orders / 113k line items), Open-Meteo historical weather (20 cities, ERA5), Frankfurter FX (USD/BRL) — into Parquet Gold outputs and a Postgres warehouse. The 4-page / 27-DAX Power BI dashboard is documented/spec'd, with the .pbix still pending.",
       "img": "linear-gradient(135deg,#0a261d 0%,#103f2c 45%,#1d6e4d 100%)",
       "accent": "radial-gradient(ellipse at 30% 35%, rgba(120,255,200,.30), transparent 55%)",
       "details": [
-        "Bronze preserves raw snapshots — Parquet for the DB-sourced tables, JSON for the API-sourced ones (weather, FX). Silver enforces pandera schema contracts with quarantine routing for invalid rows. Gold materialises a star schema (fact_sales + fact_weather_daily + fact_fx_rates, dim_date / dim_customer / dim_product / dim_store / dim_currency) in both Parquet and Postgres.",
+        "Bronze preserves raw snapshots — Parquet for the DB-sourced tables, JSON for the API-sourced ones (weather, FX). Silver enforces pandera schema contracts with quarantine routing for invalid rows. Gold materialises 4 Parquet facts and 5 dimensions; 3 facts are warehouse-loaded in Postgres today.",
         "Three independent integration patterns: Kaggle CSV bulk load, Open-Meteo time-series API per city, Frankfurter FX daily series — joined back to fact_sales by order date and shipping city for currency-normalised + weather-aware analysis.",
-        "~95-test pytest suite running in a Python 3.10/3.11/3.12 matrix on GitHub Actions; one-command Docker Compose deploy; 4-page Power BI dashboard with 27 DAX measures (the .pbix is gitignored — design lives in docs)."
+        "98-test pytest suite running in a Python 3.10/3.11/3.12 matrix on GitHub Actions; one-command Docker Compose pipeline run; 4-page Power BI dashboard with 27 DAX measures is specified in docs, but the .pbix export is still pending."
       ],
       "links": [
         { "k": "SOURCE", "v": "github" }
@@ -638,20 +744,20 @@
         {
           "kind": "paragraph",
           "label": "01 — WHAT IT DOES",
-          "body": "Builds a unified analytics warehouse that can answer cross-source questions: which Brazilian states drive the most order revenue, does adverse weather correlate with delivery failures, how does USD/BRL volatility move USD-normalised reporting, which sellers ship on time. The warehouse is a star schema in Postgres + Parquet; the dashboard is Power BI."
+          "body": "Builds a unified analytics warehouse that can answer cross-source questions: which Brazilian states drive the most order revenue, does adverse weather correlate with delivery failures, how does USD/BRL volatility move USD-normalised reporting, which sellers ship on time. The warehouse outputs are Postgres + Parquet; the Power BI dashboard is specified but not exported as a finished .pbix yet."
         },
         {
           "kind": "paragraph",
           "label": "02 — HOW IT WORKS",
-          "body": "Bronze layer lands raw snapshots of every source — Parquet for DB-sourced tables, JSON for API responses (weather, FX). Silver casts types, dedupes, and runs pandera schema contracts; rejects route to data/silver/quarantine/ rather than failing the whole batch. Gold materialises the star schema. Pipeline runs end-to-end via Make targets / docker compose, with ~95 tests covering each transform."
+          "body": "Bronze layer lands raw snapshots of every source — Parquet for DB-sourced tables, JSON for API responses (weather, FX). Silver casts types, dedupes, and runs pandera schema contracts; rejects route to data/silver/quarantine/ rather than failing the whole batch. Gold materialises 4 Parquet facts and 5 dimensions, with 3 facts loaded into the warehouse today. Pipeline runs end-to-end via Make targets / docker compose, with 98 tests covering the transforms."
         },
         {
           "kind": "metrics",
           "items": [
             { "v": "99,441 / 112,650", "k": "ORDERS / LINES" },
-            { "v": "3 / 5", "k": "FACTS / DIMS" },
-            { "v": "~95", "k": "TEST COUNT" },
-            { "v": "4 / 27", "k": "DASHBOARDS / DAX" }
+            { "v": "4 / 5", "k": "GOLD FACTS / DIMS" },
+            { "v": "3", "k": "WAREHOUSE FACTS" },
+            { "v": "98", "k": "TEST COUNT" }
           ]
         },
         {
@@ -662,7 +768,7 @@
         {
           "kind": "paragraph",
           "label": "04 — STATUS",
-          "body": "Solo build. Pipeline + dashboard run end-to-end. Not a deployed service — it's a portfolio piece showing the medallion + multi-source pattern with realistic data volumes."
+          "body": "Solo build. Pipeline runs end-to-end; the Power BI dashboard is designed/spec'd, not built/exported as a .pbix yet. Not a deployed service — it's a portfolio piece showing the medallion + multi-source pattern with realistic data volumes."
         }
       ]
     },
@@ -673,6 +779,7 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal · iOS Simulator only",
+      "status": "in-progress",
       "stack": ["EXPO 55 (BARE)", "RN 0.83", "TYPESCRIPT (STRICT)", "OP-SQLITE", "MMKV", "TANSTACK QUERY v5", "ZUSTAND", "SUPABASE (POSTGRES/RLS/AUTH/EDGE)", "GEMINI 2.5 FLASH (SSE)", "SENTRY + POSTHOG"],
       "summary": "An offline-first iOS notes app with a streaming weekly AI summary. Writes hit local SQLite first and sync to Supabase in the background; the summary streams over SSE from a Deno edge function calling Gemini.",
       "img": "linear-gradient(135deg,#0a261a 0%,#103f24 45%,#1d6e3a 100%)",
@@ -724,14 +831,15 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal · 15 development stages",
-      "stack": ["POWER BI", "DAX (~176 MEASURES)", "POWER QUERY (M)", "PYTHON", "PANDAS", "SQLITE", "PARQUET"],
-      "summary": "Power BI report on 70+ years of North Dakota Bakken crude oil production. Five report pages cover trend analysis, well performance, drill-through detail, operator comparison, and forecast/economics — with row-level security for four roles.",
+      "status": "in-progress",
+      "stack": ["POWER BI", "DAX (~135 MEASURES)", "POWER QUERY (M)", "PYTHON", "PANDAS", "SQLITE", "PARQUET"],
+      "summary": "Power BI model/report specification in progress for 70+ years of North Dakota Bakken crude oil production. The repo contains ETL structure, DAX files, and report design notes; the .pbix, screenshots, service publish, and final video are still pending.",
       "img": "linear-gradient(135deg,#261a0a 0%,#3f2810 45%,#6e4a1d 100%)",
       "accent": "radial-gradient(ellipse at 30% 35%, rgba(220,180,80,.30), transparent 55%)",
       "details": [
-        "Five report pages: Production Overview (statewide trend, peak years, YoY change), Well Performance (fleet decline scatter, operator bars), Well Detail (drill-through with production curve and decline projection), Operator Comparison (formation-broken cumulative BOE), Forecast & Economics (WTI break-even).",
-        "~176 DAX measures across 14 measure files (catalog tracks 18 in active scope) and a Python ETL (pandas) feeding a SQLite + Parquet backing store organized in raw / bronze / silver / cleaned layers — the layer separation makes recompute and audit cheap.",
-        "Row-Level Security for four roles enforced in the model — answers a real BI engineering question: how do you let multiple operators share a dashboard while making sure each one only sees their own wells?"
+        "Five report pages are planned/spec'd: Production Overview (statewide trend, peak years, YoY change), Well Performance (fleet decline scatter, operator bars), Well Detail (drill-through with production curve and decline projection), Operator Comparison (formation-broken cumulative BOE), Forecast & Economics (WTI break-even).",
+        "~135 DAX measures across 14 measure files and a Python ETL (pandas) feeding a SQLite + Parquet backing store organized in raw / bronze / silver / cleaned layers — the layer separation makes recompute and audit cheap.",
+        "Row-Level Security design for four roles is specified, but model enforcement still needs validation once the .pbix exists."
       ],
       "links": [
         { "k": "SOURCE", "v": "github" }
@@ -740,20 +848,20 @@
         {
           "kind": "paragraph",
           "label": "01 — WHAT IT DOES",
-          "body": "Answers six business questions about Bakken production, from 'how has output trended since 1953?' down to per-well decline analysis and break-even WTI pricing for a typical well. Operator comparison + RLS round it out so the same report can be shown to multiple operators with each only seeing their own wells."
+          "body": "Specifies six business questions about Bakken production, from 'how has output trended since 1953?' down to per-well decline analysis and break-even WTI pricing for a typical well. Operator comparison + RLS design round it out so the same report can eventually be shown to multiple operators with each only seeing their own wells."
         },
         {
           "kind": "paragraph",
           "label": "02 — HOW IT WORKS",
-          "body": "Python preps the data: pulls/cleans North Dakota production history into Parquet + a SQLite source.db across raw/bronze/silver/cleaned layers. Power BI imports cleaned data, wraps it in a star-ish model, and Power Query handles the loading transforms. The DAX layer (~176 measures across 14 files) does the analytics work — YTD totals, decline rates, half-life, cumulative shares, etc."
+          "body": "Python preps the data: pulls/cleans North Dakota production history into Parquet + a SQLite source.db across raw/bronze/silver/cleaned layers. The intended Power BI model imports cleaned data, wraps it in a star-ish model, and uses Power Query for loading transforms. The DAX layer (~135 measures across 14 files) is where the analytics work lives — YTD totals, decline rates, half-life, cumulative shares, etc."
         },
         {
           "kind": "metrics",
           "items": [
             { "v": "70+ years", "k": "DATA RANGE" },
-            { "v": "~176", "k": "DAX MEASURES" },
-            { "v": "5", "k": "REPORT PAGES" },
-            { "v": "4 roles", "k": "RLS" }
+            { "v": "~135", "k": "DAX MEASURES" },
+            { "v": "5", "k": "SPEC PAGES" },
+            { "v": "4 roles", "k": "RLS DESIGN" }
           ]
         },
         {
@@ -764,7 +872,7 @@
         {
           "kind": "paragraph",
           "label": "04 — STATUS",
-          "body": "Solo build, 15 development stages. The .pbix isn't committed (gitignored / not vendored); structure + measures + screenshots live in the repo. WCAG 2.1 AA mostly covered, with a documented partial-fail on 1.4.10 Reflow noted in the accessibility audit."
+          "body": "Solo build, 15 development stages, currently in progress. The repo contains ETL structure, measure files, and design/spec notes; .pbix, screenshots, service publish, and final demo video are pending. WCAG 2.1 AA targets are documented, but final accessibility validation depends on the finished report."
         }
       ]
     },

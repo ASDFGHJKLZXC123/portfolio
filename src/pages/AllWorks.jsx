@@ -50,6 +50,25 @@ const PROJECTS_FALLBACK = [
 const FONT = { sans: '"Inter Tight", Helvetica, Arial, sans-serif', mono: '"JetBrains Mono", ui-monospace, monospace', letter: '-0.02em' };
 
 const slugify = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const isInProgress = (project) => project.status === 'in-progress';
+
+function StatusPill({ project, onImage = false }) {
+  if (!isInProgress(project)) return null;
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap',
+      padding: onImage ? '4px 8px' : '5px 9px',
+      borderRadius: 999,
+      border: onImage ? '1px solid rgba(255,255,255,0.32)' : '1px solid var(--border)',
+      background: onImage ? 'rgba(255,255,255,0.14)' : 'var(--hover)',
+      color: onImage ? 'rgba(255,255,255,0.9)' : 'var(--fg)',
+      fontFamily: 'var(--mono)', fontSize: onImage ? 8 : 9,
+      lineHeight: 1, letterSpacing: '0.16em',
+    }}>
+      IN PROGRESS
+    </span>
+  );
+}
 
 function useReveal() {
   const ref = React.useRef(null);
@@ -131,6 +150,9 @@ function WorkCard({ project, index }) {
             transition: 'transform .6s cubic-bezier(.2,.7,.3,1), filter .4s',
           }} />
           {project.accent && <div style={{ position: 'absolute', inset: 0, background: project.accent, mixBlendMode: 'screen', pointerEvents: 'none' }} />}
+          <div style={{ position: 'absolute', top: 12, left: 12, zIndex: 2 }}>
+            <StatusPill project={project} onImage />
+          </div>
           <div style={{
             position: 'absolute', inset: 0,
             background: 'repeating-linear-gradient(0deg, transparent 0 2px, rgba(255,255,255,0.012) 2px 3px)', pointerEvents: 'none',
@@ -143,9 +165,12 @@ function WorkCard({ project, index }) {
           </div>
         </Link>
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.14em', color: 'var(--muted)', marginBottom: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.14em', color: 'var(--muted)', marginBottom: 16 }}>
             <span>{project.role}</span>
-            <span>{project.year}</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+              <StatusPill project={project} />
+              <span>{project.year}</span>
+            </span>
           </div>
           <Link to={`/project/${slugify(project.name)}`} style={{
             fontFamily: 'var(--sans)', fontSize: 'clamp(24px, 2.4vw, 32px)',
@@ -165,7 +190,6 @@ function WorkCard({ project, index }) {
             {Array.isArray(project.stack) ? project.stack.join(' / ') : project.stack}
           </div>
           <div style={{ display: 'flex', gap: 16, fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.18em' }}>
-            <a href="#" style={{ color: 'var(--fg)', textDecoration: 'underline', textUnderlineOffset: 4 }}>LIVE →</a>
             <a href="#" style={{ color: 'var(--fg)', textDecoration: 'underline', textUnderlineOffset: 4 }}>SOURCE →</a>
             <Link to={`/project/${slugify(project.name)}`} style={{ color: 'var(--fg)', textDecoration: 'underline', textUnderlineOffset: 4 }}>CASE STUDY →</Link>
           </div>

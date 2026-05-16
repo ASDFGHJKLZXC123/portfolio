@@ -143,6 +143,25 @@ const WRITING = [
 ];
 
 const slugify = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const isInProgress = (project) => project.status === 'in-progress';
+
+function StatusPill({ project, onImage = false }) {
+  if (!isInProgress(project)) return null;
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap',
+      padding: onImage ? '4px 8px' : '5px 9px',
+      borderRadius: 999,
+      border: onImage ? '1px solid rgba(255,255,255,0.32)' : '1px solid var(--border)',
+      background: onImage ? 'rgba(255,255,255,0.14)' : 'var(--hover)',
+      color: onImage ? 'rgba(255,255,255,0.9)' : 'var(--fg)',
+      fontFamily: 'var(--mono)', fontSize: onImage ? 8 : 9,
+      lineHeight: 1, letterSpacing: '0.16em',
+    }}>
+      IN PROGRESS
+    </span>
+  );
+}
 
 const FONTS = {
   neue:  { sans: '"Inter Tight", Helvetica, Arial, sans-serif', mono: '"JetBrains Mono", ui-monospace, monospace', letter: '-0.02em' },
@@ -301,17 +320,17 @@ function Hero() {
         fontSize: 'clamp(40px, 4.5vw, 64px)', lineHeight: 1.05,
         letterSpacing: 'var(--letter)', color: 'var(--fg)',
       }}>
-        I build things for the web —<br />
-        <span style={{ color: 'var(--muted)' }}>from triage tools to tiny databases.</span>
+        I build full-stack tools for the web —<br />
+        <span style={{ color: 'var(--muted)' }}>from polished interfaces to reliable APIs, databases, and internal systems.</span>
       </h1>
       <p style={{
         margin: '28px 0 0', fontFamily: 'var(--sans)', fontWeight: 300,
         fontSize: 'clamp(16px, 1.4vw, 19px)', lineHeight: 1.5,
         color: 'var(--muted)', maxWidth: 620, letterSpacing: 'var(--letter)',
       }}>
-        Recent Informatics grad from UC Irvine's Bren School of ICS.
-        I ship full-stack products end-to-end and care a lot about the seams
-        — the part where your system meets a person.
+        Recent Informatics grad from UC Irvine’s Bren School of ICS.
+        I build full-stack products end-to-end, from APIs and data models
+        to interfaces that make complex systems feel usable.
       </p>
       <div style={{ display: 'flex', gap: 16, marginTop: 40, fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.14em' }}>
         <a href="#work" style={ctaPrimary()}>→ SEE THE WORK</a>
@@ -396,6 +415,9 @@ function ProjectTile({ project, index, expanded, onToggle }) {
           {project.accent && (
             <div style={{ position: 'absolute', inset: 0, background: project.accent, mixBlendMode: 'screen', pointerEvents: 'none' }} />
           )}
+          <div style={{ position: 'absolute', top: 10, left: 12, zIndex: 2 }}>
+            <StatusPill project={project} onImage />
+          </div>
           <div style={{
             position: 'absolute', inset: 0,
             background: 'repeating-linear-gradient(0deg, transparent 0 2px, rgba(255,255,255,0.012) 2px 3px)', pointerEvents: 'none',
@@ -446,7 +468,10 @@ function ProjectTile({ project, index, expanded, onToggle }) {
             fontFamily: 'var(--sans)',
           }}>
             <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.14em', color: 'var(--muted)' }}>
-              {project.role}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                <span>{project.role}</span>
+                <StatusPill project={project} />
+              </div>
             </div>
             <div style={{ fontSize: 14, lineHeight: 1.55, color: 'var(--fg)', letterSpacing: 'var(--letter)' }}>
               <div style={{ marginBottom: 14 }}>{project.summary}</div>
@@ -456,7 +481,6 @@ function ProjectTile({ project, index, expanded, onToggle }) {
                 </ul>
               )}
               <div style={{ display: 'flex', gap: 14, marginTop: 18, fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.18em' }}>
-                <a href="#" style={{ color: 'var(--fg)', textDecoration: 'underline', textUnderlineOffset: 4 }}>LIVE →</a>
                 <a href="#" style={{ color: 'var(--fg)', textDecoration: 'underline', textUnderlineOffset: 4 }}>SOURCE →</a>
                 <Link to={`/project/${slugify(project.name)}`} style={{ color: 'var(--fg)', textDecoration: 'underline', textUnderlineOffset: 4 }}>CASE STUDY →</Link>
               </div>
@@ -485,7 +509,10 @@ function ArchiveRow({ project, index }) {
       onMouseLeave={(e) => { e.currentTarget.style.color = ''; e.currentTarget.style.paddingLeft = '0'; }}
     >
       <span style={{ color: 'var(--muted)' }}>{n}</span>
-      <span style={{ color: 'var(--fg)', fontWeight: 600 }}>{project.name}</span>
+      <span style={{ color: 'var(--fg)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+        <span>{project.name}</span>
+        <StatusPill project={project} />
+      </span>
       <span style={{ color: 'var(--muted)' }}>{project.summary || project.kind.toUpperCase()}</span>
       <span style={{ color: 'var(--muted)' }}>{Array.isArray(project.stack) ? project.stack.join(' / ') : project.stack}</span>
       <span style={{ color: 'var(--muted)', textAlign: 'right' }}>{project.year}</span>
@@ -514,19 +541,21 @@ function About() {
       </div>
       <div style={{ fontFamily: 'var(--sans)', fontSize: 'clamp(16px, 1.4vw, 19px)', lineHeight: 1.55, letterSpacing: 'var(--letter)', color: 'var(--fg)', fontWeight: 300, maxWidth: 640 }}>
         <p style={{ marginTop: 0 }}>
-          I came to UCI as a CS major, stayed for the systems courses, and
-          switched to Informatics halfway through because the questions I kept
-          asking were really about how software meets people. I don't think
-          the distinction matters much in practice — I still write the code —
+          I came to UCI as a Computer Science major, stayed for the systems
+          courses, and switched to Informatics halfway through because the
+          questions I kept coming back to were less about software in isolation
+          and more about what happens when it meets people. In practice, I
+          don’t think the distinction matters much — I still write the code —
           but the framing stuck.
         </p>
         <p>
-          I haven't done an internship. I took the sponsor-capstone track
-          instead, working with a real team on a real product that real
-          clinicians now use. It was the best thing I did in undergrad.
+          I didn’t take the traditional internship route. Instead, I chose
+          the sponsor-capstone track, where I worked with a real team on a
+          real product that clinicians now use. It was the best thing I did
+          in undergrad.
         </p>
         <p style={{ color: 'var(--muted)' }}>
-          Outside of work I cook too much, read more systems papers than is
+          Outside of work, I cook too much, read more systems papers than is
           probably healthy, and keep trying to learn Rust for real this time.
         </p>
         <div style={{

@@ -4,6 +4,26 @@ import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 const slugify = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const isInProgress = (project) => project.status === 'in-progress';
+const projectStatusLabel = (project) => isInProgress(project) ? 'IN PROGRESS' : 'COMPLETE';
+
+function StatusPill({ project, onImage = false }) {
+  if (!isInProgress(project)) return null;
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap',
+      padding: onImage ? '4px 8px' : '5px 9px',
+      borderRadius: 999,
+      border: onImage ? '1px solid rgba(255,255,255,0.32)' : '1px solid var(--border)',
+      background: onImage ? 'rgba(255,255,255,0.14)' : 'var(--hover)',
+      color: onImage ? 'rgba(255,255,255,0.9)' : 'var(--fg)',
+      fontFamily: 'var(--mono)', fontSize: onImage ? 8 : 9,
+      lineHeight: 1, letterSpacing: '0.16em',
+    }}>
+      IN PROGRESS
+    </span>
+  );
+}
 
 // Per-project rich content. Loaded from projects.json. The fallback below is for offline preview only.
 const PROJECTS_FALLBACK = {
@@ -14,7 +34,7 @@ const PROJECTS_FALLBACK = {
     summary: 'Sponsor-capstone project with a healthcare startup. Intake triage tool used by three pilot clinics.',
     img: 'linear-gradient(135deg,#0b2a3a 0%,#0d3b4f 40%,#1e6580 100%)',
     accent: 'radial-gradient(ellipse at 30% 40%, rgba(80,200,220,.35), transparent 55%)',
-    links: [{ k: 'LIVE', v: 'inform.uci.demo' }, { k: 'CASE STUDY', v: 'pdf ↓' }],
+    links: [{ k: 'CASE STUDY', v: 'pdf ↓' }],
     sections: [
       { kind: 'paragraph', label: '01 — CONTEXT',
         body: 'Three pilot clinics in Orange County were using a paper-and-clipboard intake process that took an average of 18 minutes per patient. Our sponsor wanted to cut that in half without forcing staff to learn new software.' },
@@ -37,7 +57,7 @@ const PROJECTS_FALLBACK = {
     summary: 'Tell it what\'s in your fridge at 2am, it tells you what to cook.',
     img: 'linear-gradient(180deg,#1a0f0a 0%,#2a1810 55%,#0a0605 100%)',
     accent: 'radial-gradient(circle at 70% 30%, rgba(220,140,60,.45), transparent 50%)',
-    links: [{ k: 'LIVE', v: 'latechef.app' }, { k: 'SOURCE', v: 'github' }],
+    links: [{ k: 'SOURCE', v: 'github' }],
     sections: [
       { kind: 'paragraph', label: '01 — THE ITCH',
         body: 'I kept ordering DoorDash at midnight because I couldn\'t be bothered to figure out what to make from a half-empty fridge. So I built the laziest possible solution: photograph fridge → get three recipes ranked by effort.' },
@@ -98,7 +118,7 @@ const PROJECTS_FALLBACK = {
     summary: 'Generative lofi that runs entirely in the browser.',
     img: 'linear-gradient(180deg,#0a1a1a 0%,#0f2525 60%,#050f0f 100%)',
     accent: 'radial-gradient(ellipse at 40% 50%, rgba(80,220,180,.3), transparent 60%)',
-    links: [{ k: 'LIVE', v: 'midnight.cafe' }, { k: 'SOURCE', v: 'github' }],
+    links: [{ k: 'SOURCE', v: 'github' }],
     sections: [
       { kind: 'paragraph', label: '01 — IDEA',
         body: 'Lofi is just a few simple ingredients on loop. I wanted to see how minimal a generator could be and still feel intentional.' },
@@ -116,7 +136,7 @@ const PROJECTS_FALLBACK = {
     summary: 'Course planner with prereq graph viz.',
     img: 'linear-gradient(135deg,#1a1a0a 0%,#252510 50%,#0a0a05 100%)',
     accent: 'radial-gradient(ellipse at 60% 40%, rgba(220,200,80,.35), transparent 55%)',
-    links: [{ k: 'LIVE', v: 'classy.demo' }, { k: 'SOURCE', v: 'github' }],
+    links: [{ k: 'SOURCE', v: 'github' }],
     sections: [
       { kind: 'paragraph', label: '01 — PROBLEM',
         body: 'UCI\'s catalog tells you prereqs as a wall of text. Planning a four-year path means flipping between fifteen tabs. I wanted one screen.' },
@@ -235,6 +255,11 @@ function Hero({ p }) {
       <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.24em', color: 'var(--muted)', marginBottom: 24 }}>
         / {p.kind.toUpperCase()} · {p.year}
       </div>
+      {isInProgress(p) && (
+        <div style={{ marginBottom: 18 }}>
+          <StatusPill project={p} />
+        </div>
+      )}
       <h1 style={{
         margin: 0, fontFamily: 'var(--sans)', fontWeight: 400,
         fontSize: 'clamp(48px, 6vw, 92px)', lineHeight: 1, letterSpacing: 'var(--letter)', color: 'var(--fg)',
@@ -255,7 +280,7 @@ function Hero({ p }) {
           { k: 'ROLE', v: p.role },
           { k: 'TIMELINE', v: p.timeline },
           { k: 'STACK', v: Array.isArray(p.stack) ? p.stack.join(' / ') : p.stack },
-          { k: 'STATUS', v: p.year === '2025' ? 'SHIPPED' : 'ARCHIVED' },
+          { k: 'STATUS', v: projectStatusLabel(p) },
         ].map((m, i, arr) => (
           <div key={m.k} style={{
             padding: '24px 28px',
@@ -293,6 +318,9 @@ function HeroTile({ p }) {
         fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.24em', color: 'rgba(255,255,255,0.55)',
       }}>
         — VISUAL · PLACEHOLDER
+      </div>
+      <div style={{ position: 'absolute', top: 16, right: 18 }}>
+        <StatusPill project={p} onImage />
       </div>
       <div style={{
         position: 'absolute', bottom: 16, right: 18,

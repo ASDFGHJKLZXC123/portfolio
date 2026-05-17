@@ -1,5 +1,5 @@
-// portfolio.jsx — R's expanded portfolio, editorial dark style
-// Sections: hero · selected work (expandable) · about · skills · education · writing · contact
+// portfolio.jsx — R's portfolio, editorial dark style
+// Sections: hero · selected engineering work · about · skills · education · contact
 // Sticky top nav w/ section anchors, scroll-reveal on sections, hover-reveal on tiles.
 
 import React from 'react';
@@ -16,8 +16,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "showAbout": true,
   "showSkills": true,
   "showEducation": true,
-  "showWriting": true,
-  "projectCount": 5
+  "projectCount": 3
 }/*EDITMODE-END*/;
 
 // Project data is loaded from projects.json — see admin.html to add/edit projects
@@ -104,43 +103,20 @@ const PROJECTS_FALLBACK = [
 ];
 
 const SKILLS = [
-  { group: 'LANGUAGES',   items: ['TypeScript', 'Python', 'Go', 'Rust', 'C++', 'SQL'] },
-  { group: 'FRONTEND',    items: ['React', 'Next.js', 'Svelte', 'Tailwind', 'Framer Motion', 'D3'] },
-  { group: 'BACKEND',     items: ['Node', 'FastAPI', 'PostgreSQL', 'Redis', 'gRPC', 'GraphQL'] },
-  { group: 'INFRA',       items: ['Docker', 'GitHub Actions', 'Fly.io', 'AWS (S3, EC2, Lambda)', 'Terraform'] },
-  { group: 'ML / DATA',   items: ['PyTorch', 'Pandas', 'Embeddings / RAG', 'Jupyter'] },
-  { group: 'CRAFT',       items: ['System design', 'API design', 'Product thinking', 'Writing docs that don\'t suck'] },
+  { group: 'Languages', items: ['TypeScript', 'Python', 'Go', 'SQL'] },
+  { group: 'Frontend', items: ['React', 'Next.js', 'Tailwind'] },
+  { group: 'Backend & Data', items: ['FastAPI', 'Node.js', 'PostgreSQL', 'Redis'] },
+  { group: 'Systems & Infra', items: ['Docker', 'AWS', 'GitHub Actions', 'API Design', 'System Design'] },
 ];
 
 const EDUCATION = {
-  school: 'UNIVERSITY OF CALIFORNIA, IRVINE',
-  degree: 'B.S. INFORMATICS',
-  dept: 'DONALD BREN SCHOOL OF ICS',
-  dates: '2021 — 2025',
-  note: 'Switched from Computer Science to Informatics in my junior year to weight the coursework toward human-centered systems without losing the fundamentals.',
-  coursework: [
-    'ICS 139W · Technical Writing',
-    'ICS 143A · Operating Systems',
-    'ICS 161 · Design of Algorithms',
-    'IN4MATX 131 · Human-Computer Interaction',
-    'IN4MATX 113 · Requirements Analysis',
-    'ICS 184 · Full Stack Web Development',
-    'ICS 171 · Intro to Artificial Intelligence',
-    'IN4MATX 121 · Software Design',
-  ],
-  roles: [
-    { when: '2024 — 2025', what: 'Peer Academic Advisor, ICS Student Affairs' },
-    { when: '2023 — 2024', what: 'Tutor, ICS 31/32/33 (Intro Python sequence)' },
-    { when: '2023',        what: 'Hack@UCI · semifinalist, Best Hardware Hack' },
-  ],
+  school: 'University of California, Irvine',
+  degree: 'B.S. Informatics',
+  dept: 'Donald Bren School of Information & Computer Sciences',
+  dates: '2023–2026',
+  note: 'Built on a Computer Science foundation with coursework across systems, algorithms, full-stack development, and human-centered software design.',
+  coursework: ['Operating Systems', 'Algorithms', 'Full-Stack Web Development', 'Human-Computer Interaction'],
 };
-
-const WRITING = [
-  { title: 'What capstone actually taught me', date: 'APR 2025', read: '6 min', tag: 'essay' },
-  { title: 'Notes on building Raft from the paper', date: 'DEC 2024', read: '12 min', tag: 'technical' },
-  { title: 'Why I switched from CS to Informatics', date: 'OCT 2023', read: '4 min', tag: 'essay' },
-  { title: 'A tiny guide to debugging WebAudio', date: 'JUN 2023', read: '8 min', tag: 'technical' },
-];
 
 const slugify = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const isInProgress = (project) => project.status === 'in-progress';
@@ -230,10 +206,7 @@ function TopBar({ dark, setDark, active, sections }) {
           </div>
         </nav>
 
-        <Link to="/now" style={{ justifySelf: 'end', display: 'flex', alignItems: 'center', gap: 8, color: 'var(--fg)', textDecoration: 'none' }}>
-          <span style={{ width: 6, height: 6, borderRadius: 3, background: '#7ec97e', boxShadow: '0 0 8px #7ec97e' }} />
-          <span>/NOW</span>
-        </Link>
+        <div style={{ justifySelf: 'end' }} />
       </div>
     </div>
   );
@@ -270,40 +243,6 @@ function SectionHead({ index, title, subtitle }) {
   );
 }
 
-function CurrentlyStrip() {
-  const [data, setData] = React.useState(null);
-  React.useEffect(() => {
-    fetch(`${import.meta.env.BASE_URL}data/now.json`).then((r) => r.ok ? r.json() : null).then((d) => { if (d?.currently) setData(d.currently); }).catch(() => {});
-  }, []);
-  if (!data?.items?.length) return null;
-  const upd = data.updated ? new Date(data.updated + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', year: 'numeric' }).toUpperCase() : '';
-  return (
-    <Link to="/now" style={{
-      display: 'block', textDecoration: 'none', color: 'inherit',
-      margin: '0 40px', padding: '20px 24px',
-      border: '1px solid var(--border)', borderRadius: 4,
-      background: 'linear-gradient(90deg, rgba(126,201,126,0.04), transparent 60%)',
-      transition: 'border-color .25s, background .25s',
-    }}
-      onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--fg)'; }}
-      onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.24em', color: 'var(--muted)' }}>
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#7ec97e', boxShadow: '0 0 8px #7ec97e' }} />
-          / CURRENTLY {upd && `· ${upd}`}
-        </div>
-        <div style={{ flex: 1, minWidth: 280, fontSize: 15, color: 'var(--fg)', letterSpacing: 'var(--letter)' }}>
-          {data.items.join(' · ')}
-        </div>
-        <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.18em', color: 'var(--muted)' }}>
-          READ JOURNAL →
-        </div>
-      </div>
-    </Link>
-  );
-}
-
 function Hero() {
   return (
     <div style={{ padding: '80px 40px 60px', maxWidth: 1000 }}>
@@ -313,28 +252,27 @@ function Hero() {
         display: 'flex', alignItems: 'center', gap: 10,
       }}>
         <span style={{ width: 6, height: 6, borderRadius: 3, background: '#4ade80', boxShadow: '0 0 8px #4ade80' }} />
-        AVAILABLE FOR FULL-TIME ROLES · SUMMER 2026
+        Software Engineer (Full-Stack) · Available Summer 2026
       </div>
       <h1 style={{
         margin: 0, fontFamily: 'var(--sans)', fontWeight: 400,
         fontSize: 'clamp(40px, 4.5vw, 64px)', lineHeight: 1.05,
         letterSpacing: 'var(--letter)', color: 'var(--fg)',
       }}>
-        I build full-stack tools for the web —<br />
-        <span style={{ color: 'var(--muted)' }}>from polished interfaces to reliable APIs, databases, and internal systems.</span>
+        Full-Stack Engineer Building Reliable Web Systems
       </h1>
       <p style={{
         margin: '28px 0 0', fontFamily: 'var(--sans)', fontWeight: 300,
         fontSize: 'clamp(16px, 1.4vw, 19px)', lineHeight: 1.5,
         color: 'var(--muted)', maxWidth: 620, letterSpacing: 'var(--letter)',
       }}>
-        Recent Informatics grad from UC Irvine’s Bren School of ICS.
-        I build full-stack products end-to-end, from APIs and data models
-        to interfaces that make complex systems feel usable.
+        Recent Informatics graduate from UC Irvine. I design and ship
+        end-to-end web systems, from APIs and data models to interfaces
+        that make complex workflows clear and usable.
       </p>
       <div style={{ display: 'flex', gap: 16, marginTop: 40, fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.14em' }}>
-        <a href="#work" style={ctaPrimary()}>→ SEE THE WORK</a>
-        <a href="#contact" style={ctaGhost()}>↓ GET IN TOUCH</a>
+        <a href="#work" style={ctaPrimary()}>SEE THE WORK</a>
+        <a href="#" style={ctaGhost()}>VIEW RESUME</a>
       </div>
     </div>
   );
@@ -349,18 +287,18 @@ const ctaGhost = () => ({
   textDecoration: 'none', borderRadius: 999, fontWeight: 500,
 });
 
-function ProjectTile({ project, index, expanded, onToggle }) {
-  const n = String(index + 1).padStart(2, '0');
+function ProjectTile({ project }) {
   const [hover, setHover] = React.useState(false);
+  const stack = Array.isArray(project.stack) ? project.stack.slice(0, 3).join(' · ') : project.stack;
+  const sourceHref = project.source || project.github || '#';
   return (
-    <div style={{ gridColumn: expanded ? 'span 2' : 'span 1', transition: 'grid-column .3s' }}>
+    <article>
       <div style={{
-          display: 'flex', flexDirection: 'column', gap: 14, cursor: 'pointer',
+          display: 'flex', flexDirection: 'column', gap: 18,
           position: 'relative',
-          transform: hover && !expanded ? 'translateY(-6px)' : 'translateY(0)',
+          transform: hover ? 'translateY(-4px)' : 'translateY(0)',
           transition: 'transform .5s cubic-bezier(.2,.7,.3,1)',
         }}
-        onClick={onToggle}
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
       >
@@ -373,29 +311,11 @@ function ProjectTile({ project, index, expanded, onToggle }) {
           pointerEvents: 'none',
         }} />
         <div style={{
-          display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
-          fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.14em', gap: 8,
-        }}>
-          <div style={{
-            minWidth: 0,
-            transform: hover ? 'translateX(6px)' : 'translateX(0)',
-            transition: 'transform .4s cubic-bezier(.2,.7,.3,1)',
-          }}>
-            <div style={{ color: 'var(--fg)', fontWeight: 600, marginBottom: 4 }}>{project.name}</div>
-            <div style={{ color: 'var(--muted)', fontWeight: 400 }}>{Array.isArray(project.stack) ? project.stack.join(' / ') : project.stack}</div>
-          </div>
-          <div style={{ textAlign: 'right', flexShrink: 0 }}>
-            <div style={{ color: 'var(--muted)', marginBottom: 4 }}>{n}</div>
-            <div style={{ color: 'var(--muted)' }}>{project.year}</div>
-          </div>
-        </div>
-
-        <div style={{
-          height: expanded ? 320 : 420, position: 'relative', overflow: 'hidden',
+          height: 240, position: 'relative', overflow: 'hidden',
           background: 'var(--tile-bg)',
           border: '1px solid var(--border)',
           borderColor: hover ? 'var(--fg)' : 'var(--border)',
-          boxShadow: hover && !expanded ? '0 24px 60px -20px rgba(0,0,0,0.55)' : '0 0 0 rgba(0,0,0,0)',
+          boxShadow: hover ? '0 22px 52px -28px rgba(0,0,0,0.65)' : '0 0 0 rgba(0,0,0,0)',
           transition: 'height .35s cubic-bezier(.2,.7,.3,1), border-color .3s, box-shadow .4s',
         }}>
           <div data-img style={{
@@ -422,101 +342,39 @@ function ProjectTile({ project, index, expanded, onToggle }) {
             position: 'absolute', inset: 0,
             background: 'repeating-linear-gradient(0deg, transparent 0 2px, rgba(255,255,255,0.012) 2px 3px)', pointerEvents: 'none',
           }} />
-          <div style={{
-            position: 'absolute', bottom: 10, left: 12,
-            fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.2em',
-            color: hover ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.45)',
-            transform: hover ? 'translateY(-2px)' : 'translateY(0)',
-            transition: 'color .3s, transform .4s',
-          }}>
-            — {project.kind.toUpperCase()}
-          </div>
-          <div style={{
-            position: 'absolute', top: 10, right: 12,
-            fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.2em',
-            color: 'rgba(255,255,255,0.85)',
-            padding: '3px 8px',
-            border: '1px solid rgba(255,255,255,0.25)',
-            background: hover && !expanded ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0)',
-            borderRadius: 999,
-            transform: hover && !expanded ? 'translateX(-4px)' : 'translateX(0)',
-            transition: 'background .3s, transform .4s, border-color .3s',
-          }}>
-            {expanded ? '— CLOSE' : (hover ? '→ READ MORE' : '+ READ MORE')}
-          </div>
-          <div style={{
-            position: 'absolute', right: 14, bottom: 14,
-            fontFamily: 'var(--sans)', fontSize: 96, fontWeight: 300,
-            color: 'rgba(255,255,255,0.18)', lineHeight: 1, letterSpacing: '-0.04em',
-            opacity: hover && !expanded ? 1 : 0,
-            transform: hover && !expanded ? 'translateY(0)' : 'translateY(20px)',
-            transition: 'opacity .5s, transform .6s cubic-bezier(.2,.7,.3,1)',
-            pointerEvents: 'none',
-          }}>
-            {n}
-          </div>
         </div>
 
-        <div style={{
-          maxHeight: expanded ? 400 : 0, overflow: 'hidden',
-          transition: 'max-height .4s cubic-bezier(.2,.7,.3,1), opacity .3s',
-          opacity: expanded ? 1 : 0,
-        }}>
-          <div style={{
-            padding: '18px 4px 4px', display: 'grid',
-            gridTemplateColumns: '1fr 2fr', gap: 24,
-            fontFamily: 'var(--sans)',
+        <div style={{ display: 'grid', gap: 14 }}>
+          <div>
+            <h3 style={{ margin: 0, fontFamily: 'var(--sans)', fontSize: 22, lineHeight: 1.15, fontWeight: 400, letterSpacing: 'var(--letter)', color: 'var(--fg)' }}>
+              {project.name}
+            </h3>
+            <div style={{ marginTop: 10, fontFamily: 'var(--mono)', fontSize: 11, lineHeight: 1.5, letterSpacing: '0.08em', color: 'var(--fg)' }}>
+              <span style={{ color: 'var(--muted)' }}>Stack: </span>{stack}
+            </div>
+          </div>
+          <p style={{
+            margin: 0, fontFamily: 'var(--sans)', fontSize: 15, lineHeight: 1.55,
+            color: 'var(--muted)', letterSpacing: 'var(--letter)',
+            display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden',
           }}>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.14em', color: 'var(--muted)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                <span>{project.role}</span>
-                <StatusPill project={project} />
-              </div>
-            </div>
-            <div style={{ fontSize: 14, lineHeight: 1.55, color: 'var(--fg)', letterSpacing: 'var(--letter)' }}>
-              <div style={{ marginBottom: 14 }}>{project.summary}</div>
-              {project.details && (
-                <ul style={{ margin: 0, paddingLeft: 16, color: 'var(--muted)' }}>
-                  {project.details.map((d, i) => <li key={i} style={{ marginBottom: 6 }}>{d}</li>)}
-                </ul>
-              )}
-              <div style={{ display: 'flex', gap: 14, marginTop: 18, fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.18em' }}>
-                <a href="#" style={{ color: 'var(--fg)', textDecoration: 'underline', textUnderlineOffset: 4 }}>SOURCE →</a>
-                <Link to={`/project/${slugify(project.name)}`} style={{ color: 'var(--fg)', textDecoration: 'underline', textUnderlineOffset: 4 }}>CASE STUDY →</Link>
-              </div>
-            </div>
+            <span style={{ color: 'var(--fg)' }}>Summary: </span>{project.summary}
+          </p>
+          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.16em' }}>
+            <Link to={`/project/${slugify(project.name)}`} style={{ color: 'var(--fg)', textDecoration: 'underline', textUnderlineOffset: 4 }}>
+              VIEW CASE STUDY →
+            </Link>
+            <a
+              href={sourceHref}
+              onClick={(e) => { if (sourceHref === '#') e.preventDefault(); }}
+              style={{ color: 'var(--muted)', textDecoration: 'underline', textUnderlineOffset: 4 }}
+            >
+              SOURCE →
+            </a>
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function ArchiveRow({ project, index }) {
-  const n = String(index + 1).padStart(2, '0');
-  return (
-    <Link to={`/project/${slugify(project.name)}`} style={{
-      display: 'grid',
-      gridTemplateColumns: '40px minmax(0, 1.5fr) minmax(0, 2fr) minmax(0, 1.5fr) 60px',
-      alignItems: 'baseline', gap: 16,
-      padding: '18px 0',
-      borderTop: '1px solid var(--border)',
-      fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.1em',
-      cursor: 'pointer', transition: 'color .2s, padding .2s',
-      textDecoration: 'none',
-    }}
-      onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--fg)'; e.currentTarget.style.paddingLeft = '8px'; }}
-      onMouseLeave={(e) => { e.currentTarget.style.color = ''; e.currentTarget.style.paddingLeft = '0'; }}
-    >
-      <span style={{ color: 'var(--muted)' }}>{n}</span>
-      <span style={{ color: 'var(--fg)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-        <span>{project.name}</span>
-        <StatusPill project={project} />
-      </span>
-      <span style={{ color: 'var(--muted)' }}>{project.summary || project.kind.toUpperCase()}</span>
-      <span style={{ color: 'var(--muted)' }}>{Array.isArray(project.stack) ? project.stack.join(' / ') : project.stack}</span>
-      <span style={{ color: 'var(--muted)', textAlign: 'right' }}>{project.year}</span>
-    </Link>
+    </article>
   );
 }
 
@@ -536,40 +394,28 @@ function About() {
           <div style={{
             position: 'absolute', bottom: 10, left: 12,
             fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.45)',
-          }}>— R, CIRCA 2025</div>
+          }}>Richard Zhang · 2025</div>
         </div>
       </div>
       <div style={{ fontFamily: 'var(--sans)', fontSize: 'clamp(16px, 1.4vw, 19px)', lineHeight: 1.55, letterSpacing: 'var(--letter)', color: 'var(--fg)', fontWeight: 300, maxWidth: 640 }}>
         <p style={{ marginTop: 0 }}>
-          I came to UCI as a Computer Science major, stayed for the systems
-          courses, and switched to Informatics halfway through because the
-          questions I kept coming back to were less about software in isolation
-          and more about what happens when it meets people. In practice, I
-          don’t think the distinction matters much — I still write the code —
-          but the framing stuck.
-        </p>
-        <p>
-          I didn’t take the traditional internship route. Instead, I chose
-          the sponsor-capstone track, where I worked with a real team on a
-          real product that clinicians now use. It was the best thing I did
-          in undergrad.
-        </p>
-        <p style={{ color: 'var(--muted)' }}>
-          Outside of work, I cook too much, read more systems papers than is
-          probably healthy, and keep trying to learn Rust for real this time.
+          I’m a recent Informatics graduate from UC Irvine with a Computer
+          Science and systems foundation. My work sits between backend
+          engineering and product-facing software: APIs, data models, and
+          interfaces that make complex workflows usable. I’m looking for
+          entry-level roles where I can build reliable web systems and grow
+          across backend, full-stack, and infrastructure work.
         </p>
         <div style={{
-          marginTop: 32, padding: '20px 24px',
+          marginTop: 32, padding: '22px 24px',
           border: '1px solid var(--border)',
-          display: 'grid', gridTemplateColumns: '100px 1fr', gap: 12,
-          fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.1em',
+          display: 'grid', gridTemplateColumns: '112px 1fr', gap: '14px 18px',
+          alignItems: 'baseline',
         }}>
-          <span style={{ color: 'var(--muted)' }}>NOW</span>
-          <span style={{ color: 'var(--fg)' }}>Finishing capstone · reading the Raft paper (again) · job-hunting</span>
-          <span style={{ color: 'var(--muted)' }}>BASED</span>
-          <span style={{ color: 'var(--fg)' }}>Irvine, CA · open to relocation (SF, NYC, remote)</span>
-          <span style={{ color: 'var(--muted)' }}>SEEKING</span>
-          <span style={{ color: 'var(--fg)' }}>Full-stack or infra roles at small/mid product teams</span>
+          <span style={{ color: 'var(--muted)', fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.16em' }}>BASED</span>
+          <span style={{ color: 'var(--fg)', fontFamily: 'var(--sans)', fontSize: 15, lineHeight: 1.45, letterSpacing: 'var(--letter)' }}>Irvine, CA · Open to relocation and remote work</span>
+          <span style={{ color: 'var(--muted)', fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.16em' }}>SEEKING</span>
+          <span style={{ color: 'var(--fg)', fontFamily: 'var(--sans)', fontSize: 15, lineHeight: 1.45, letterSpacing: 'var(--letter)' }}>Entry-level backend, full-stack, or infrastructure software roles</span>
         </div>
       </div>
     </div>
@@ -586,7 +432,7 @@ function Skills() {
             color: 'var(--muted)', paddingBottom: 12, marginBottom: 16,
             borderBottom: '1px solid var(--border)',
           }}>
-            / {group.group}
+            / {group.group.toUpperCase()}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {group.items.map((item) => (
@@ -604,67 +450,30 @@ function Skills() {
 
 function Education() {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 40, alignItems: 'start' }}>
+    <div className="education-layout">
       <div>
-        <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.2em', color: 'var(--muted)', marginBottom: 8 }}>
-          {EDUCATION.dates}
-        </div>
-        <div style={{ fontFamily: 'var(--sans)', fontSize: 22, letterSpacing: 'var(--letter)', color: 'var(--fg)', fontWeight: 400, lineHeight: 1.15 }}>
-          {EDUCATION.school}
-        </div>
-        <div style={{ fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.14em', color: 'var(--muted)', marginTop: 12, lineHeight: 1.6 }}>
-          {EDUCATION.degree}<br />{EDUCATION.dept}
-        </div>
-        <div style={{ fontFamily: 'var(--sans)', fontSize: 15, color: 'var(--muted)', marginTop: 24, lineHeight: 1.55, letterSpacing: 'var(--letter)', fontWeight: 300 }}>
+        <h3 id="education-degree" style={{ margin: 0, fontFamily: 'var(--sans)', fontSize: 'clamp(22px, 2.2vw, 30px)', letterSpacing: 'var(--letter)', color: 'var(--fg)', fontWeight: 400, lineHeight: 1.15 }}>
+          {EDUCATION.school} <span aria-hidden="true">·</span> {EDUCATION.degree}
+        </h3>
+        <p aria-label={`${EDUCATION.dept}, ${EDUCATION.dates}`} style={{ fontFamily: 'var(--mono)', fontSize: 12, letterSpacing: '0.1em', color: 'var(--muted)', margin: '14px 0 0', lineHeight: 1.7 }}>
+          <span>{EDUCATION.dept}</span>
+          <span aria-hidden="true"> · </span>
+          <span>{EDUCATION.dates}</span>
+        </p>
+        <p style={{ fontFamily: 'var(--sans)', fontSize: 16, color: 'var(--fg)', margin: '28px 0 0', lineHeight: 1.6, letterSpacing: 'var(--letter)', fontWeight: 400, maxWidth: 620 }}>
           {EDUCATION.note}
-        </div>
+        </p>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 32 }}>
-        <div>
-          <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.2em', color: 'var(--muted)', marginBottom: 12 }}>
-            / SELECTED COURSEWORK
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 24px' }}>
-            {EDUCATION.coursework.map((c) => (
-              <div key={c} style={{ fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.08em', color: 'var(--fg)', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
-                {c}
-              </div>
-            ))}
-          </div>
-        </div>
+      <div>
+        <h4 id="education-coursework" style={{ margin: '0 0 14px', fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.18em', color: 'var(--muted)', fontWeight: 500, textTransform: 'uppercase' }}>
+          <span aria-hidden="true">/ </span>Coursework
+        </h4>
+        <ul className="education-course-list" aria-labelledby="education-coursework">
+          {EDUCATION.coursework.map((course) => (
+            <li key={course}>{course}</li>
+          ))}
+        </ul>
       </div>
-    </div>
-  );
-}
-
-function Writing() {
-  return (
-    <div>
-      {WRITING.map((post, i) => (
-        <a key={post.title} href="#" style={{
-          display: 'grid', gridTemplateColumns: '80px 1fr auto 60px', gap: 24,
-          alignItems: 'baseline', padding: '24px 0',
-          borderTop: '1px solid var(--border)',
-          borderBottom: i === WRITING.length - 1 ? '1px solid var(--border)' : 'none',
-          textDecoration: 'none', transition: 'padding-left .3s',
-        }}
-          onMouseEnter={(e) => { e.currentTarget.style.paddingLeft = '12px'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.paddingLeft = '0'; }}
-        >
-          <span style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.14em', color: 'var(--muted)' }}>
-            {post.date}
-          </span>
-          <span style={{ fontFamily: 'var(--sans)', fontSize: 'clamp(18px, 1.7vw, 24px)', letterSpacing: 'var(--letter)', color: 'var(--fg)', fontWeight: 400 }}>
-            {post.title}
-          </span>
-          <span style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.14em', color: 'var(--muted)', padding: '2px 8px', border: '1px solid var(--border)', borderRadius: 999 }}>
-            {post.tag}
-          </span>
-          <span style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.14em', color: 'var(--muted)', textAlign: 'right' }}>
-            {post.read}
-          </span>
-        </a>
-      ))}
     </div>
   );
 }
@@ -676,14 +485,14 @@ function Contact() {
         fontFamily: 'var(--sans)', fontSize: 'clamp(40px, 4.5vw, 64px)',
         letterSpacing: 'var(--letter)', color: 'var(--fg)', fontWeight: 400, lineHeight: 1.05,
       }}>
-        Got something to<br />build together?
+        Let’s connect about software engineering roles
       </div>
       <div style={{
         fontFamily: 'var(--sans)', fontSize: 'clamp(16px, 1.4vw, 19px)',
         color: 'var(--muted)', fontWeight: 300, marginTop: 24, maxWidth: 560, lineHeight: 1.5, letterSpacing: 'var(--letter)',
       }}>
-        The fastest way to reach me is email. I usually reply within a day,
-        sometimes two if I'm shipping. No subject line required.
+        Email is the best way to reach me. I’m open to entry-level backend,
+        full-stack, and infrastructure-oriented software engineering roles.
       </div>
 
       <div style={{
@@ -692,14 +501,19 @@ function Contact() {
         border: '1px solid var(--border)',
       }}>
         {[
-          { k: 'EMAIL',    v: 'r@r.systems',        href: 'mailto:r@r.systems' },
-          { k: 'GITHUB',   v: 'github.com/r',       href: '#' },
-          { k: 'LINKEDIN', v: 'linkedin.com/in/r',  href: '#' },
-          { k: 'RESUME',   v: 'resume.pdf ↓',       href: '#' },
+          { k: 'EMAIL',    v: 'yonghuz1@uci.edu', href: 'mailto:yonghuz1@uci.edu' },
+          { k: 'GITHUB',   v: 'github.com/ASDFGHJKLZXC123', href: 'https://github.com/ASDFGHJKLZXC123' },
+          { k: 'LINKEDIN', v: 'linkedin.com/in/richard-zhang-7ba1802b3', href: 'https://linkedin.com/in/richard-zhang-7ba1802b3' },
         ].map((c, i) => (
-          <a key={c.k} href={c.href} style={{
+          <a
+            key={c.k}
+            href={c.href}
+            target={c.href.startsWith('https://') ? '_blank' : undefined}
+            rel={c.href.startsWith('https://') ? 'noreferrer' : undefined}
+            onClick={(e) => { if (c.href === '#') e.preventDefault(); }}
+            style={{
             padding: '32px 28px', textDecoration: 'none',
-            borderRight: i < 3 ? '1px solid var(--border)' : 'none',
+            borderRight: i < 2 ? '1px solid var(--border)' : 'none',
             display: 'flex', flexDirection: 'column', gap: 10,
             transition: 'background .2s',
           }}
@@ -731,7 +545,6 @@ function Footer() {
 
 export default function Portfolio() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
-  const [expanded, setExpanded] = React.useState(null);
   const [active, setActive] = React.useState('work');
   const [PROJECTS, setProjects] = React.useState(PROJECTS_FALLBACK);
   const fonts = FONTS[t.font] || FONTS.neue;
@@ -752,7 +565,6 @@ export default function Portfolio() {
     { id: 'about',     label: 'ABOUT',     show: t.showAbout },
     { id: 'skills',    label: 'SKILLS',    show: t.showSkills },
     { id: 'education', label: 'EDUCATION', show: t.showEducation },
-    { id: 'writing',   label: 'WRITING',   show: t.showWriting },
     { id: 'contact',   label: 'CONTACT',   show: true },
   ].filter((s) => s.show);
 
@@ -788,34 +600,22 @@ export default function Portfolio() {
 
       <Hero />
 
-      <CurrentlyStrip />
-
       <section id="work" style={{ padding: '40px 40px 0', scrollMarginTop: 80 }}>
-        <Reveal><SectionHead index={nextIdx()} title="Selected work" subtitle="— EIGHT THINGS, FIVE I'D SHOW A RECRUITER" /></Reveal>
+        <Reveal><SectionHead index={nextIdx()} title="Selected Engineering Work" subtitle="Systems-focused projects with emphasis on reliability, data, and APIs" /></Reveal>
         <div style={{
           display: 'grid',
-          gridTemplateColumns: `repeat(${Math.min(featured.length, 5)}, minmax(0, 1fr))`,
-          gap: 24,
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: 32,
           transition: 'grid-template-columns .3s',
         }}>
           {featured.map((p, i) => (
             <Reveal key={p.name} delay={i * 60}>
-              <ProjectTile
-                project={p} index={i}
-                expanded={expanded === p.name}
-                onToggle={() => setExpanded(expanded === p.name ? null : p.name)}
-              />
+              <ProjectTile project={p} />
             </Reveal>
           ))}
         </div>
         {extra.length > 0 && (
-          <div style={{ marginTop: 80 }}>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.2em', color: 'var(--muted)', marginBottom: 8 }}>
-              / ARCHIVE — {extra.length} MORE
-            </div>
-            {extra.map((p, i) => <ArchiveRow key={p.name} project={p} index={featured.length + i} />)}
-            <div style={{ borderTop: '1px solid var(--border)' }} />
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 40 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 56 }}>
               <Link to="/all-works" style={{
                 display: 'inline-flex', alignItems: 'center', gap: 12,
                 padding: '16px 28px', textDecoration: 'none',
@@ -826,44 +626,35 @@ export default function Portfolio() {
                 onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--hover)'; e.currentTarget.style.paddingLeft = '32px'; e.currentTarget.style.paddingRight = '32px'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.paddingLeft = '28px'; e.currentTarget.style.paddingRight = '28px'; }}
               >
-                <span>VIEW ALL WORKS</span>
-                <span style={{ fontFamily: 'var(--mono)' }}>→</span>
+                <span>VIEW ALL PROJECTS →</span>
               </Link>
-            </div>
           </div>
         )}
       </section>
 
       {t.showAbout && (
         <section id="about" style={{ padding: '120px 40px 0', scrollMarginTop: 80 }}>
-          <Reveal><SectionHead index={nextIdx()} title="About" subtitle="— WHO, WHERE, AND WHY" /></Reveal>
+          <Reveal><SectionHead index={nextIdx()} title="About" subtitle="Background and focus" /></Reveal>
           <Reveal delay={100}><About /></Reveal>
         </section>
       )}
 
       {t.showSkills && (
         <section id="skills" style={{ padding: '120px 40px 0', scrollMarginTop: 80 }}>
-          <Reveal><SectionHead index={nextIdx()} title="Stack" subtitle="— WHAT I REACH FOR" /></Reveal>
+          <Reveal><SectionHead index={nextIdx()} title="Technical Stack" subtitle="Tools and practices behind my selected work" /></Reveal>
           <Reveal delay={100}><Skills /></Reveal>
         </section>
       )}
 
       {t.showEducation && (
         <section id="education" style={{ padding: '120px 40px 0', scrollMarginTop: 80 }}>
-          <Reveal><SectionHead index={nextIdx()} title="Education" subtitle="— FOUR YEARS, ONE DEGREE, ZERO REGRETS" /></Reveal>
+          <Reveal><SectionHead index={nextIdx()} title="Education" subtitle="Academic background" /></Reveal>
           <Reveal delay={100}><Education /></Reveal>
         </section>
       )}
 
-      {t.showWriting && (
-        <section id="writing" style={{ padding: '120px 40px 0', scrollMarginTop: 80 }}>
-          <Reveal><SectionHead index={nextIdx()} title="Writing" subtitle="— NOTES FROM BUILDING THINGS" /></Reveal>
-          <Reveal delay={100}><Writing /></Reveal>
-        </section>
-      )}
-
       <section id="contact" style={{ padding: '140px 40px 0', scrollMarginTop: 80 }}>
-        <Reveal><SectionHead index={nextIdx()} title="Contact" subtitle="— SAY HELLO" /></Reveal>
+        <Reveal><SectionHead index={nextIdx()} title="Contact" subtitle="Hiring contact" /></Reveal>
         <Reveal delay={100}><Contact /></Reveal>
       </section>
 
@@ -883,7 +674,6 @@ export default function Portfolio() {
         <TweakToggle label="About"     value={t.showAbout}     onChange={(v) => setTweak('showAbout', v)} />
         <TweakToggle label="Skills"    value={t.showSkills}    onChange={(v) => setTweak('showSkills', v)} />
         <TweakToggle label="Education" value={t.showEducation} onChange={(v) => setTweak('showEducation', v)} />
-        <TweakToggle label="Writing"   value={t.showWriting}   onChange={(v) => setTweak('showWriting', v)} />
 
         <TweakSection label="Work" />
         <TweakSlider label="Featured count" value={t.projectCount} min={3} max={5}

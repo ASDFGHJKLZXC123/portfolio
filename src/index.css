@@ -7,3 +7,39 @@ body {
 }
 ::selection { background: #f2f1ec; color: #0a0a0a; }
 a { color: inherit; }
+
+.education-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(320px, 1.35fr);
+  gap: 48px;
+  align-items: start;
+}
+
+.education-course-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.education-course-list li {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  color: var(--fg);
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.35;
+  letter-spacing: 0.04em;
+}
+
+@media (max-width: 760px) {
+  .education-layout,
+  .education-course-list {
+    grid-template-columns: 1fr;
+  }
+}

@@ -156,7 +156,7 @@ export default function Post() {
 
       <div style={{ padding: '60px 40px 60px', maxWidth: 1100, margin: '0 auto' }}>
         <div style={{ paddingTop: 40, borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.18em', color: 'var(--muted)' }}>
-          <span>R.SYSTEMS / WRITING / {post.slug.toUpperCase()}</span>
+          <span>Richard's Portfolio Page / WRITING / {post.slug.toUpperCase()}</span>
           <Link to="/writing" style={{ color: 'var(--fg)', textDecoration: 'none' }}>← ALL POSTS</Link>
         </div>
       </div>

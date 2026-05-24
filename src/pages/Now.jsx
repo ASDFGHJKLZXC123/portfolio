@@ -48,7 +48,7 @@ export default function Now() {
       }}>
         <Link to="/" style={{ color: 'var(--fg)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ color: 'var(--muted)' }}>←</span>
-          <span>R.SYSTEMS</span>
+          <span>Richard's Portfolio Page</span>
           <span style={{ color: 'var(--muted)' }}>/ NOW</span>
         </Link>
         <button onClick={() => setDark(!dark)} style={{
@@ -139,7 +139,7 @@ export default function Now() {
         </div>
 
         <div style={{ marginTop: 60, paddingTop: 40, borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.18em', color: 'var(--muted)' }}>
-          <span>R.SYSTEMS / NOW</span>
+          <span>Richard's Portfolio Page / NOW</span>
           <Link to="/" style={{ color: 'var(--fg)', textDecoration: 'none' }}>← BACK TO PORTFOLIO</Link>
         </div>
       </div>

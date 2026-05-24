@@ -1,4 +1,4 @@
-// portfolio.jsx — R's portfolio, editorial dark style
+// portfolio.jsx — Richard's portfolio, editorial dark style
 // Sections: hero · selected engineering work · about · skills · education · contact
 // Sticky top nav w/ section anchors, scroll-reveal on sections, hover-reveal on tiles.
 
@@ -537,7 +537,7 @@ function Footer() {
       borderTop: '1px solid var(--border)',
       fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.14em', color: 'var(--muted)',
     }}>
-      <span>© 2026 / R · BUILT IN REACT + TOO MUCH COFFEE</span>
+      <span>© 2026 / Richard · BUILT IN REACT + TOO MUCH COFFEE</span>
       <span>LAST SYNC · 04.26</span>
     </div>
   );

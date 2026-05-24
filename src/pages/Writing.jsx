@@ -54,7 +54,7 @@ export default function Writing() {
       }}>
         <Link to="/" style={{ color: 'var(--fg)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ color: 'var(--muted)' }}>←</span>
-          <span>R.SYSTEMS</span>
+          <span>Richard's Portfolio Page</span>
           <span style={{ color: 'var(--muted)' }}>/ WRITING</span>
         </Link>
         <button onClick={() => setDark(!dark)} style={{
@@ -171,7 +171,7 @@ export default function Writing() {
         )}
 
         <div style={{ marginTop: 40, paddingTop: 40, borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.18em', color: 'var(--muted)' }}>
-          <span>R.SYSTEMS / WRITING</span>
+          <span>Richard's Portfolio Page / WRITING</span>
           <Link to="/" style={{ color: 'var(--fg)', textDecoration: 'none' }}>← BACK TO PORTFOLIO</Link>
         </div>
       </div>

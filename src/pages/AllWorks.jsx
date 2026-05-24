@@ -113,7 +113,7 @@ function TopBar({ dark, setDark }) {
       }}>
         <Link to="/" style={{ justifySelf: 'start', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10, color: 'var(--fg)' }}>
           <span style={{ color: 'var(--muted)' }}>←</span>
-          <span>R.SYSTEMS</span>
+          <span>Richard's Portfolio Page</span>
           <span style={{ color: 'var(--muted)' }}>/FULL-STACK</span>
         </Link>
         <div style={{ display: 'inline-flex', border: '1px solid var(--border)', borderRadius: 999, padding: 2 }}>
@@ -271,7 +271,7 @@ export default function AllWorks() {
         borderTop: '1px solid var(--border)',
         fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.14em', color: 'var(--muted)',
       }}>
-        <span>© 2026 / R</span>
+        <span>© 2026 / Richard</span>
         <span>LAST SYNC · 04.26</span>
       </div>
     </div>

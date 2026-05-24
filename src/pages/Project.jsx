@@ -511,7 +511,7 @@ export default function Project() {
         justifyContent: 'space-between', alignItems: 'center',
         fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.14em', color: 'var(--muted)',
       }}>
-        <span>© 2026 / R</span>
+        <span>© 2026 / Richard</span>
         <span>{p.name} · {p.year}</span>
       </div>
     </div>

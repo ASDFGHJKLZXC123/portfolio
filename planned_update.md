@@ -28,7 +28,7 @@ Planned copy only. Do not update the live React component until implementation.
 
 - Section title: About
 - Section subtitle: Background and focus
-- Image caption: Richard Zhang · 2025
+- Image caption: Richard Zhang · 2026
 - Main About paragraph: I’m a recent Informatics graduate from UC Irvine with a Computer Science and systems foundation. My work sits between backend engineering and product-facing software: APIs, data models, and interfaces that make complex workflows usable. I’m looking for entry-level roles where I can build reliable web systems and grow across backend, full-stack, and infrastructure work.
 - Detail rows:
   - BASED: Irvine, CA · Open to relocation and remote work

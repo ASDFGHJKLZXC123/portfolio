@@ -5,12 +5,12 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 const PROJECTS_FALLBACK = [
-  { name: 'INFORM.UCI',   kind: 'sponsor capstone',     stack: 'REACT / NODE / POSTGRES',    year: '2025',
+  { name: 'INFORM.UCI',   kind: 'sponsor capstone',     stack: 'REACT / NODE / POSTGRES',    year: '2026',
     summary: 'Sponsor-capstone project with a healthcare startup. Intake triage tool used by three pilot clinics.',
     role: 'Full-stack lead · team of 4',
     img: 'linear-gradient(135deg,#0b2a3a 0%,#0d3b4f 40%,#1e6580 100%)',
     accent: 'radial-gradient(ellipse at 30% 40%, rgba(80,200,220,.35), transparent 55%)' },
-  { name: 'LATECHEF',     kind: 'personal · web app',    stack: 'NEXT / POSTGRES / LLM',     year: '2025',
+  { name: 'LATECHEF',     kind: 'personal · web app',    stack: 'NEXT / POSTGRES / LLM',     year: '2026',
     summary: 'Tell it what\'s in your fridge at 2am, it tells you what to cook.',
     role: 'Solo',
     img: 'linear-gradient(180deg,#1a0f0a 0%,#2a1810 55%,#0a0605 100%)',
@@ -120,10 +120,7 @@ function TopBar({ dark, setDark }) {
           <button onClick={() => setDark(true)} style={themeBtn(dark)}>DARK</button>
           <button onClick={() => setDark(false)} style={themeBtn(!dark)}>LIGHT</button>
         </div>
-        <Link to="/#contact" style={{ justifySelf: 'end', display: 'flex', alignItems: 'center', gap: 8, color: 'var(--fg)', textDecoration: 'none' }}>
-          <span style={{ width: 6, height: 6, borderRadius: 3, background: 'var(--fg)', boxShadow: '0 0 8px var(--fg)' }} />
-          <span>INITIATE DIALOGUE</span>
-        </Link>
+        <div />
       </div>
     </div>
   );
@@ -228,7 +225,7 @@ export default function AllWorks() {
 
       <div style={{ padding: '80px 40px 40px', maxWidth: 1100 }}>
         <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.24em', color: 'var(--muted)', marginBottom: 24 }}>
-          / ALL WORKS — {projectsList.length} PROJECTS · 2023 — 2025
+          / ALL WORKS — {projectsList.length} PROJECTS · 2023 — 2026
         </div>
         <h1 style={{
           margin: 0, fontFamily: 'var(--sans)', fontWeight: 400,

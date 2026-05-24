@@ -26,7 +26,7 @@ const PROJECTS_FALLBACK = [
     name: 'INFORM.UCI',
     kind: 'sponsor capstone',
     stack: 'REACT / NODE / POSTGRES',
-    year: '2025',
+    year: '2026',
     summary: 'Sponsor-capstone project with a healthcare startup. Built an intake triage tool used by three clinics during pilot.',
     role: 'Full-stack lead · team of 4',
     details: [
@@ -41,7 +41,7 @@ const PROJECTS_FALLBACK = [
     name: 'LATECHEF',
     kind: 'personal · web app',
     stack: 'NEXT / POSTGRES / LLM',
-    year: '2025',
+    year: '2026',
     summary: 'Tell it what\'s in your fridge at 2am, it tells you what to cook. Built as a one-weekend project, somehow still used.',
     role: 'Solo',
     details: [
@@ -394,7 +394,7 @@ function About() {
           <div style={{
             position: 'absolute', bottom: 10, left: 12,
             fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.45)',
-          }}>Richard Zhang · 2025</div>
+          }}>Richard Zhang · 2026</div>
         </div>
       </div>
       <div style={{ fontFamily: 'var(--sans)', fontSize: 'clamp(16px, 1.4vw, 19px)', lineHeight: 1.55, letterSpacing: 'var(--letter)', color: 'var(--fg)', fontWeight: 300, maxWidth: 640 }}>

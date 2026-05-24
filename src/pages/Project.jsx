@@ -28,8 +28,8 @@ function StatusPill({ project, onImage = false }) {
 // Per-project rich content. Loaded from projects.json. The fallback below is for offline preview only.
 const PROJECTS_FALLBACK = {
   'inform-uci': {
-    name: 'INFORM.UCI', kind: 'sponsor capstone', year: '2025',
-    role: 'Full-stack lead · team of 4', timeline: '6 months · 2024–2025',
+    name: 'INFORM.UCI', kind: 'sponsor capstone', year: '2026',
+    role: 'Full-stack lead · team of 4', timeline: '6 months · 2024–2026',
     stack: ['REACT', 'NODE', 'POSTGRES', 'TAILWIND', 'AWS'],
     summary: 'Sponsor-capstone project with a healthcare startup. Intake triage tool used by three pilot clinics.',
     img: 'linear-gradient(135deg,#0b2a3a 0%,#0d3b4f 40%,#1e6580 100%)',
@@ -51,8 +51,8 @@ const PROJECTS_FALLBACK = {
     ],
   },
   'latechef': {
-    name: 'LATECHEF', kind: 'personal · web app', year: '2025',
-    role: 'Solo', timeline: '3 weeks · spring 2025',
+    name: 'LATECHEF', kind: 'personal · web app', year: '2026',
+    role: 'Solo', timeline: '3 weeks · spring 2026',
     stack: ['NEXT.JS', 'POSTGRES', 'OPENAI', 'VERCEL'],
     summary: 'Tell it what\'s in your fridge at 2am, it tells you what to cook.',
     img: 'linear-gradient(180deg,#1a0f0a 0%,#2a1810 55%,#0a0605 100%)',

@@ -8,6 +8,8 @@ import {
   useTweaks, TweaksPanel, TweakSection, TweakSlider, TweakToggle,
   TweakRadio, TweakColor,
 } from '../components/tweaks-panel';
+import { projectImageBackground } from '../lib/project-image';
+import { externalLinkProps, isUsableHref, projectSlug, projectSourceHref } from '../lib/project-links';
 
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "dark": true,
@@ -103,8 +105,8 @@ const PROJECTS_FALLBACK = [
 ];
 
 const SKILLS = [
-  { group: 'Languages', items: ['TypeScript', 'Python', 'Go', 'SQL'] },
-  { group: 'Frontend', items: ['React', 'Next.js', 'Tailwind'] },
+  { group: 'Languages', items: ['TypeScript', 'Python', 'Go', 'C++', 'Java', 'SQL'] },
+  { group: 'Frontend', items: ['React', 'Next.js', 'Tailwind', 'HTML', 'CSS'] },
   { group: 'Backend & Data', items: ['FastAPI', 'Node.js', 'PostgreSQL', 'Redis'] },
   { group: 'Systems & Infra', items: ['Docker', 'AWS', 'GitHub Actions', 'API Design', 'System Design'] },
 ];
@@ -290,7 +292,9 @@ const ctaGhost = () => ({
 function ProjectTile({ project }) {
   const [hover, setHover] = React.useState(false);
   const stack = Array.isArray(project.stack) ? project.stack.slice(0, 3).join(' · ') : project.stack;
-  const sourceHref = project.source || project.github || '#';
+  const sourceHref = projectSourceHref(project);
+  const hasSource = isUsableHref(sourceHref);
+  const detailSlug = projectSlug(project);
   return (
     <article>
       <div style={{
@@ -320,7 +324,7 @@ function ProjectTile({ project }) {
         }}>
           <div data-img style={{
             position: 'absolute', inset: 0,
-            background: project.img || 'linear-gradient(135deg,#1a1a1a,#0a0a0a)',
+            background: projectImageBackground(project.img),
             transform: hover ? 'scale(1.06)' : 'scale(1)',
             filter: hover ? 'brightness(1.12) saturate(1.1)' : 'brightness(1) saturate(1)',
             transition: 'transform .8s cubic-bezier(.2,.7,.3,1), filter .5s',
@@ -361,12 +365,13 @@ function ProjectTile({ project }) {
             <span style={{ color: 'var(--fg)' }}>Summary: </span>{project.summary}
           </p>
           <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.16em' }}>
-            <Link to={`/project/${slugify(project.name)}`} style={{ color: 'var(--fg)', textDecoration: 'underline', textUnderlineOffset: 4 }}>
+            <Link to={`/project/${detailSlug}`} style={{ color: 'var(--fg)', textDecoration: 'underline', textUnderlineOffset: 4 }}>
               VIEW CASE STUDY →
             </Link>
             <a
-              href={sourceHref}
-              onClick={(e) => { if (sourceHref === '#') e.preventDefault(); }}
+              href={hasSource ? sourceHref : '#'}
+              {...externalLinkProps(sourceHref)}
+              onClick={(e) => { if (!hasSource) e.preventDefault(); }}
               style={{ color: 'var(--muted)', textDecoration: 'underline', textUnderlineOffset: 4 }}
             >
               SOURCE →
@@ -434,10 +439,10 @@ function Skills() {
           }}>
             / {group.group.toUpperCase()}
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {group.items.map((item) => (
               <div key={item} style={{
-                fontFamily: 'var(--sans)', fontSize: 15, letterSpacing: 'var(--letter)',
+                fontFamily: 'var(--sans)', fontSize: 18, lineHeight: 1.35, letterSpacing: 'var(--letter)',
                 color: 'var(--fg)', fontWeight: 400,
               }}>{item}</div>
             ))}

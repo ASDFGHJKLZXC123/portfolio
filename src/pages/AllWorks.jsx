@@ -3,6 +3,8 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { projectImageBackground } from '../lib/project-image';
+import { externalLinkProps, isUsableHref, projectSlug, projectSourceHref } from '../lib/project-links';
 
 const PROJECTS_FALLBACK = [
   { name: 'INFORM.UCI',   kind: 'sponsor capstone',     stack: 'REACT / NODE / POSTGRES',    year: '2026',
@@ -128,13 +130,16 @@ function TopBar({ dark, setDark }) {
 
 function WorkCard({ project, index }) {
   const n = String(index + 1).padStart(2, '0');
+  const detailSlug = projectSlug(project);
+  const sourceHref = projectSourceHref(project);
+  const hasSource = isUsableHref(sourceHref);
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '60px 1fr', gap: 32, padding: '40px 0', borderTop: '1px solid var(--border)' }}>
       <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.2em', color: 'var(--muted)', paddingTop: 4 }}>
         / {n}
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 32, alignItems: 'start' }}>
-        <Link to={`/project/${slugify(project.name)}`} style={{
+        <Link to={`/project/${detailSlug}`} style={{
           height: 280, position: 'relative', overflow: 'hidden',
           background: 'var(--tile-bg)', border: '1px solid var(--border)',
           cursor: 'pointer', textDecoration: 'none', display: 'block',
@@ -143,7 +148,7 @@ function WorkCard({ project, index }) {
           onMouseLeave={(e) => { const im = e.currentTarget.querySelector('[data-img]'); if (im) { im.style.transform = 'scale(1)'; im.style.filter = 'brightness(1)'; } }}
         >
           <div data-img style={{
-            position: 'absolute', inset: 0, background: project.img,
+            position: 'absolute', inset: 0, background: projectImageBackground(project.img),
             transition: 'transform .6s cubic-bezier(.2,.7,.3,1), filter .4s',
           }} />
           {project.accent && <div style={{ position: 'absolute', inset: 0, background: project.accent, mixBlendMode: 'screen', pointerEvents: 'none' }} />}
@@ -169,7 +174,7 @@ function WorkCard({ project, index }) {
               <span>{project.year}</span>
             </span>
           </div>
-          <Link to={`/project/${slugify(project.name)}`} style={{
+          <Link to={`/project/${detailSlug}`} style={{
             fontFamily: 'var(--sans)', fontSize: 'clamp(24px, 2.4vw, 32px)',
             letterSpacing: 'var(--letter)', color: 'var(--fg)', fontWeight: 400,
             lineHeight: 1.1, marginBottom: 16, display: 'block',
@@ -187,8 +192,15 @@ function WorkCard({ project, index }) {
             {Array.isArray(project.stack) ? project.stack.join(' / ') : project.stack}
           </div>
           <div style={{ display: 'flex', gap: 16, fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.18em' }}>
-            <a href="#" style={{ color: 'var(--fg)', textDecoration: 'underline', textUnderlineOffset: 4 }}>SOURCE →</a>
-            <Link to={`/project/${slugify(project.name)}`} style={{ color: 'var(--fg)', textDecoration: 'underline', textUnderlineOffset: 4 }}>CASE STUDY →</Link>
+            <a
+              href={hasSource ? sourceHref : '#'}
+              {...externalLinkProps(sourceHref)}
+              onClick={(e) => { if (!hasSource) e.preventDefault(); }}
+              style={{ color: 'var(--fg)', textDecoration: 'underline', textUnderlineOffset: 4 }}
+            >
+              SOURCE →
+            </a>
+            <Link to={`/project/${detailSlug}`} style={{ color: 'var(--fg)', textDecoration: 'underline', textUnderlineOffset: 4 }}>CASE STUDY →</Link>
           </div>
         </div>
       </div>

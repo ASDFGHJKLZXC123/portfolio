@@ -2,6 +2,8 @@
 
 import React from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { projectImageBackground } from '../lib/project-image';
+import { externalLinkProps, isUsableHref, projectLinkHref } from '../lib/project-links';
 
 const slugify = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const isInProgress = (project) => project.status === 'in-progress';
@@ -307,7 +309,7 @@ function HeroTile({ p }) {
       position: 'relative', overflow: 'hidden',
       background: 'var(--tile-bg)', border: '1px solid var(--border)',
     }}>
-      <div style={{ position: 'absolute', inset: 0, background: p.img }} />
+      <div style={{ position: 'absolute', inset: 0, background: projectImageBackground(p.img) }} />
       {p.accent && <div style={{ position: 'absolute', inset: 0, background: p.accent, mixBlendMode: 'screen' }} />}
       <div style={{
         position: 'absolute', inset: 0,
@@ -317,7 +319,7 @@ function HeroTile({ p }) {
         position: 'absolute', top: 16, left: 18,
         fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.24em', color: 'rgba(255,255,255,0.55)',
       }}>
-        — VISUAL · PLACEHOLDER
+        — PROJECT VISUAL
       </div>
       <div style={{ position: 'absolute', top: 16, right: 18 }}>
         <StatusPill project={p} onImage />
@@ -488,19 +490,24 @@ export default function Project() {
           / LINKS
         </div>
         <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-          {p.links.map(l => (
-            <a key={l.k} href="#" style={{
+          {(p.links || []).map(l => {
+            const href = projectLinkHref(p, l);
+            const hasHref = isUsableHref(href);
+            return (
+            <a key={l.k} href={hasHref ? href : '#'} {...externalLinkProps(href)} style={{
               padding: '12px 20px', textDecoration: 'none',
               border: '1px solid var(--border)', borderRadius: 999,
               fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.18em', color: 'var(--fg)',
               transition: 'background .2s',
             }}
+              onClick={(e) => { if (!hasHref) e.preventDefault(); }}
               onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--hover)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
             >
               {l.k} <span style={{ color: 'var(--muted)', marginLeft: 8 }}>{l.v} →</span>
             </a>
-          ))}
+            );
+          })}
         </div>
       </div>
 

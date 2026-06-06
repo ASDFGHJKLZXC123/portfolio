@@ -7,18 +7,26 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal project · v0.1",
-      "stack": ["CHROME EXT MV3", "NODE.JS", "GEMINI (BACKEND)", "GEMINI / OPENAI / ANTHROPIC (EXT)", "FILE SYSTEM ACCESS API"],
+      "stack": [
+        "CHROME EXT MV3",
+        "NODE.JS",
+        "GEMINI (BACKEND)",
+        "GEMINI / OPENAI / ANTHROPIC (EXT)",
+        "FILE SYSTEM ACCESS API"
+      ],
       "summary": "A Chrome extension + local Node backend that injects an AI assistant into any webpage — summarize, extract, save notes, search them later by vector similarity.",
       "featured": true,
-      "img": "linear-gradient(135deg,#0a1426 0%,#152544 45%,#283d6e 100%)",
-      "accent": "radial-gradient(ellipse at 30% 35%, rgba(120,160,255,.30), transparent 55%)",
+      "img": "assets/project-screenshots/ai-assistant-across-websites.png",
       "details": [
         "Manifest V3 extension with service-worker background, content-script panel, and a separate options page.",
         "Local Node backend persists notes to JSON; saves can mirror to any folder on disk via File System Access API or the backend's NOTES_DIR.",
         "Extension is multi-provider (Gemini/OpenAI/Anthropic with built-in fallback); backend is Gemini-only. Memory search combines keyword match + vector similarity over embeddings, with hashed-embedding fallback when no API key is set."
       ],
       "links": [
-        { "k": "SOURCE", "v": "github" }
+        {
+          "k": "SOURCE",
+          "v": "github"
+        }
       ],
       "sections": [
         {
@@ -34,10 +42,22 @@
         {
           "kind": "metrics",
           "items": [
-            { "v": "MV3", "k": "MANIFEST" },
-            { "v": "8", "k": "BACKEND ROUTES" },
-            { "v": "0", "k": "PROD USERS" },
-            { "v": "v0.1", "k": "RELEASE" }
+            {
+              "v": "MV3",
+              "k": "MANIFEST"
+            },
+            {
+              "v": "8",
+              "k": "BACKEND ROUTES"
+            },
+            {
+              "v": "0",
+              "k": "PROD USERS"
+            },
+            {
+              "v": "v0.1",
+              "k": "RELEASE"
+            }
           ]
         },
         {
@@ -60,18 +80,27 @@
       "role": "Solo",
       "timeline": "personal project",
       "status": "in-progress",
-      "stack": ["DJANGO + DRF", "CELERY + REDIS", "POSTGRES", "PYDANTIC", "STATIC FRONTEND PROTOTYPE", "STRUCTURED JSON LOGGING"],
+      "stack": [
+        "DJANGO + DRF",
+        "CELERY + REDIS",
+        "POSTGRES",
+        "PYDANTIC",
+        "STATIC FRONTEND PROTOTYPE",
+        "STRUCTURED JSON LOGGING"
+      ],
       "summary": "A hiring-workflow backend that ingests resumes, extracts structured fields with a Celery worker, and exposes recruiter-facing candidate review APIs. The frontend exists as a static prototype while the React/Vite rebuild is still in progress.",
       "featured": true,
-      "img": "linear-gradient(135deg,#0a1f1a 0%,#0f3326 45%,#1d5a3f 100%)",
-      "accent": "radial-gradient(ellipse at 30% 35%, rgba(120,220,170,.30), transparent 55%)",
+      "img": "assets/project-screenshots/ai-candidate-dashboard.png",
       "details": [
         "Async resume processing: PDF/text upload triggers a Celery job that extracts skills, years of experience, education, summary, and a match score against a job description.",
         "Reviewer workflow: search, status/tag/score filtering, pagination, candidate detail with evidence snippets, notes, tags, and a six-state lifecycle (Applied → Screened → Interview → Offer → Hired, with Rejected as a terminal path).",
         "Reliability/ops: Pydantic schema validation on extraction output, Celery retries with backoff, Redis-backed queueing, structured JSON logs, persisted JobFailure model tracking retry counts."
       ],
       "links": [
-        { "k": "SOURCE", "v": "github" }
+        {
+          "k": "SOURCE",
+          "v": "github"
+        }
       ],
       "sections": [
         {
@@ -87,10 +116,22 @@
         {
           "kind": "metrics",
           "items": [
-            { "v": "ViewSet", "k": "API LAYER" },
-            { "v": "6", "k": "WORKFLOW STATES" },
-            { "v": "Pydantic", "k": "EXTRACT SCHEMA" },
-            { "v": "Redis", "k": "QUEUE" }
+            {
+              "v": "ViewSet",
+              "k": "API LAYER"
+            },
+            {
+              "v": "6",
+              "k": "WORKFLOW STATES"
+            },
+            {
+              "v": "Pydantic",
+              "k": "EXTRACT SCHEMA"
+            },
+            {
+              "v": "Redis",
+              "k": "QUEUE"
+            }
           ]
         },
         {
@@ -113,18 +154,28 @@
       "role": "Solo",
       "timeline": "personal · MVP",
       "status": "in-progress",
-      "stack": ["NEXT 15 (APP ROUTER)", "REACT 19", "TYPESCRIPT", "AUTH.JS v5", "ANTHROPIC + GEMINI", "GMAIL API", "VITEST + PLAYWRIGHT"],
+      "stack": [
+        "NEXT 15 (APP ROUTER)",
+        "REACT 19",
+        "TYPESCRIPT",
+        "AUTH.JS v5",
+        "ANTHROPIC + GEMINI",
+        "GMAIL API",
+        "VITEST + PLAYWRIGHT"
+      ],
       "summary": "A pragmatic Superhuman/Grammarly-adjacent inbox assistant — Gmail OAuth sync, LLM-backed thread summaries, draft reply generation with tone controls, and follow-up reminders.",
       "featured": true,
-      "img": "linear-gradient(135deg,#1a0a26 0%,#241040 45%,#3d1d6e 100%)",
-      "accent": "radial-gradient(ellipse at 35% 30%, rgba(180,140,255,.30), transparent 55%)",
+      "img": "assets/project-screenshots/ai-inbox-copilot.png",
       "details": [
         "Gmail OAuth sign-in via Auth.js v5; sync merges INBOX + SENT thread IDs so outbound replies land in the local thread model.",
         "Thread summarization, draft generation with tone/clarifying-question modes, and natural-language draft revision — backed by a Claude → Gemini → heuristic-template provider chain, so a missing key in one provider falls through gracefully.",
         "OAuth tokens encrypted at rest in `.data/inbox.json` with AES-256-GCM when ENCRYPTION_KEY is set; backend webhook routes for Gmail watch + Microsoft Graph subscriptions exist but aren't wired into the current UI."
       ],
       "links": [
-        { "k": "SOURCE", "v": "github" }
+        {
+          "k": "SOURCE",
+          "v": "github"
+        }
       ],
       "sections": [
         {
@@ -140,10 +191,22 @@
         {
           "kind": "metrics",
           "items": [
-            { "v": "Gmail API", "k": "OAUTH FLOW" },
-            { "v": "MS Graph", "k": "ADAPTER ONLY" },
-            { "v": "AES-256-GCM", "k": "TOKEN ENCRYPT" },
-            { "v": "Vitest CI + PW scripts", "k": "TESTS" }
+            {
+              "v": "Gmail API",
+              "k": "OAUTH FLOW"
+            },
+            {
+              "v": "MS Graph",
+              "k": "ADAPTER ONLY"
+            },
+            {
+              "v": "AES-256-GCM",
+              "k": "TOKEN ENCRYPT"
+            },
+            {
+              "v": "Vitest CI + PW scripts",
+              "k": "TESTS"
+            }
           ]
         },
         {
@@ -165,17 +228,30 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal project",
-      "stack": ["LARAVEL 13", "PHP 8.3", "JWT (TYMON)", "SPATIE PERMISSIONS", "LIVEWIRE 3", "RN 0.76 + EXPO 52", "TYPESCRIPT", "TANSTACK QUERY v5", "ZUSTAND", "AXIOS"],
+      "stack": [
+        "LARAVEL 13",
+        "PHP 8.3",
+        "JWT (TYMON)",
+        "SPATIE PERMISSIONS",
+        "LIVEWIRE 3",
+        "RN 0.76 + EXPO 52",
+        "TYPESCRIPT",
+        "TANSTACK QUERY v5",
+        "ZUSTAND",
+        "AXIOS"
+      ],
       "summary": "A B2B financial-services platform: Laravel 13 REST API + Livewire admin portal + a React Native mobile client. Auth, accounts, transactions, statement PDFs, scheduled reports, third-party sync with HMAC-verified webhooks.",
-      "img": "linear-gradient(135deg,#1a1208 0%,#2a1f10 45%,#5a4520 100%)",
-      "accent": "radial-gradient(ellipse at 30% 35%, rgba(220,180,100,.30), transparent 55%)",
+      "img": "assets/project-screenshots/aihl-b2b-platform.png",
       "details": [
         "Backend serves two audiences: mobile clients via versioned JSON API (/api/v1/...) authenticated with JWT, and internal staff via a Livewire admin panel using Laravel session auth.",
         "Mobile (RN 0.76 / Expo SDK 52) handles JWT storage in react-native-keychain, silent token refresh via Axios interceptors, paginated transaction lists, and asynchronous PDF statement download.",
         "Backend services include incremental third-party provider sync every 15 min, HMAC-SHA256 webhook receiver with idempotency-key replay protection, queue-backed PDF/CSV generation, and scheduled daily/monthly reports."
       ],
       "links": [
-        { "k": "SOURCE", "v": "github" }
+        {
+          "k": "SOURCE",
+          "v": "github"
+        }
       ],
       "sections": [
         {
@@ -191,10 +267,22 @@
         {
           "kind": "metrics",
           "items": [
-            { "v": "JWT + Sessions", "k": "AUTH PAIR" },
-            { "v": "15 min", "k": "SYNC INTERVAL" },
-            { "v": "HMAC-SHA256", "k": "WEBHOOK VERIFY" },
-            { "v": "PHPUnit 12", "k": "TESTS" }
+            {
+              "v": "JWT + Sessions",
+              "k": "AUTH PAIR"
+            },
+            {
+              "v": "15 min",
+              "k": "SYNC INTERVAL"
+            },
+            {
+              "v": "HMAC-SHA256",
+              "k": "WEBHOOK VERIFY"
+            },
+            {
+              "v": "PHPUnit 12",
+              "k": "TESTS"
+            }
           ]
         },
         {
@@ -216,17 +304,29 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal · 10 build stages",
-      "stack": ["LARAVEL 13", "PHP 8.3", "SANCTUM", "STRIPE-PHP", "SQLITE / MYSQL", "RN 0.81 + EXPO 54", "REACT 19", "TYPESCRIPT", "EXPO-SECURE-STORE"],
+      "stack": [
+        "LARAVEL 13",
+        "PHP 8.3",
+        "SANCTUM",
+        "STRIPE-PHP",
+        "SQLITE / MYSQL",
+        "RN 0.81 + EXPO 54",
+        "REACT 19",
+        "TYPESCRIPT",
+        "EXPO-SECURE-STORE"
+      ],
       "summary": "Cross-platform service-booking app with three roles (customer / provider / admin). Laravel API + RN/Expo client; auth, roles, listings, bookings with slot checks, Stripe-ready payments, reviews, admin dashboard.",
-      "img": "linear-gradient(135deg,#0a1a26 0%,#10283f 45%,#1d4a6e 100%)",
-      "accent": "radial-gradient(ellipse at 30% 35%, rgba(120,200,255,.30), transparent 55%)",
+      "img": "assets/project-screenshots/aihl-secure-booking.png",
       "details": [
         "Built across 10 staged milestones: foundation → auth → listings/search → booking core → provider workflow → Stripe payments → notifications → reviews → admin dashboard → test+CI hardening.",
         "Stack: Laravel 13 / PHP 8.3 with Sanctum and the official stripe-php SDK; RN 0.81 / Expo SDK 54 with expo-secure-store for token storage; SQLite by default, MySQL via env.",
         "Payments live behind a PAYMENT_DRIVER switch — defaults to a 'fake' driver, with PAYMENT_DRIVER=stripe enabling real Stripe calls. Reviews gated to completed bookings server-side; admin reporting + flagged-issue handling implemented."
       ],
       "links": [
-        { "k": "SOURCE", "v": "github" }
+        {
+          "k": "SOURCE",
+          "v": "github"
+        }
       ],
       "sections": [
         {
@@ -242,10 +342,22 @@
         {
           "kind": "metrics",
           "items": [
-            { "v": "10 / 10", "k": "STAGES SHIPPED" },
-            { "v": "Sanctum", "k": "AUTH" },
-            { "v": "Stripe-ready", "k": "PAYMENTS" },
-            { "v": "0", "k": "PROD DEPLOYS" }
+            {
+              "v": "10 / 10",
+              "k": "STAGES SHIPPED"
+            },
+            {
+              "v": "Sanctum",
+              "k": "AUTH"
+            },
+            {
+              "v": "Stripe-ready",
+              "k": "PAYMENTS"
+            },
+            {
+              "v": "0",
+              "k": "PROD DEPLOYS"
+            }
           ]
         },
         {
@@ -267,17 +379,28 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal project",
-      "stack": ["ASP.NET CORE 10", "C#", "EF CORE 9", "ANGULAR 21", "TYPESCRIPT", "SQLITE / AZURE SQL", "JWT + BCRYPT", "AZURE APP SERVICE + STATIC WEB APPS"],
+      "stack": [
+        "ASP.NET CORE 10",
+        "C#",
+        "EF CORE 9",
+        "ANGULAR 21",
+        "TYPESCRIPT",
+        "SQLITE / AZURE SQL",
+        "JWT + BCRYPT",
+        "AZURE APP SERVICE + STATIC WEB APPS"
+      ],
       "summary": "A simplified Sentry/Datadog-style monitoring platform — ingests application error logs, runs alert rules over rolling windows, and serves a dashboard.",
-      "img": "linear-gradient(135deg,#26110a 0%,#3f1f10 45%,#6e3a1d 100%)",
-      "accent": "radial-gradient(ellipse at 30% 35%, rgba(255,140,80,.30), transparent 55%)",
+      "img": "assets/project-screenshots/error-monitoring.png",
       "details": [
         "ASP.NET Core 10 Web API with EF Core 9; clean three-project layout (Core / Infrastructure / API).",
         "Background IHostedService workers run alert checks and log retention; alerts fire when severity-bucketed counts cross a configured threshold within a rolling time window.",
         "JWT bearer auth + BCrypt-hashed passwords; per-application ingestion API keys; xUnit + Moq + FluentAssertions for unit + integration tests."
       ],
       "links": [
-        { "k": "SOURCE", "v": "github" }
+        {
+          "k": "SOURCE",
+          "v": "github"
+        }
       ],
       "sections": [
         {
@@ -293,10 +416,22 @@
         {
           "kind": "metrics",
           "items": [
-            { "v": "ASP.NET 10", "k": "API" },
-            { "v": "Angular 21", "k": "FRONTEND" },
-            { "v": "(Timestamp, Severity)", "k": "COMPOSITE INDEX" },
-            { "v": "xUnit + Moq", "k": "TESTS" }
+            {
+              "v": "ASP.NET 10",
+              "k": "API"
+            },
+            {
+              "v": "Angular 21",
+              "k": "FRONTEND"
+            },
+            {
+              "v": "(Timestamp, Severity)",
+              "k": "COMPOSITE INDEX"
+            },
+            {
+              "v": "xUnit + Moq",
+              "k": "TESTS"
+            }
           ]
         },
         {
@@ -318,17 +453,27 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal project",
-      "stack": ["GO 1.22+", "JSON WIRE + PROTO SCHEMA", "MDNS", "QUIC + TLS", "TOML CONFIG", "STRUCTURED JSON LOGGING", "COBRA CLI"],
+      "stack": [
+        "GO 1.22+",
+        "JSON WIRE + PROTO SCHEMA",
+        "MDNS",
+        "QUIC + TLS",
+        "TOML CONFIG",
+        "STRUCTURED JSON LOGGING",
+        "COBRA CLI"
+      ],
       "summary": "A cross-device clipboard-sync daemon written in Go. Peers discover each other on the local network via mDNS, pair with a one-time secret, and exchange clipboard updates over QUIC/TLS using length-prefixed JSON envelopes shaped for a future proto migration.",
-      "img": "linear-gradient(135deg,#0a261a 0%,#103f24 45%,#1d6e3a 100%)",
-      "accent": "radial-gradient(ellipse at 30% 35%, rgba(120,255,170,.30), transparent 55%)",
+      "img": "assets/project-screenshots/clipsync.png",
       "details": [
         "Daemon polls the system clipboard at a configurable interval (default 200 ms) and emits structured JSON log lines on every change.",
         "Cross-platform clipboard: macOS, Linux (X11 + Wayland), Windows. Integration tests with fake clipboards run cross-platform; the real-clipboard test requires a graphical macOS session.",
         "Networking layer is a hand-rolled stack: mDNS discovery, an identity/pairing/roster module, QUIC/TLS transport, and a length-prefixed JSON envelope (Hello / ClipboardUpdate / Ack) kept schema-compatible with the proto3 definitions — not gRPC."
       ],
       "links": [
-        { "k": "SOURCE", "v": "github" }
+        {
+          "k": "SOURCE",
+          "v": "github"
+        }
       ],
       "sections": [
         {
@@ -344,10 +489,22 @@
         {
           "kind": "metrics",
           "items": [
-            { "v": "200 ms", "k": "POLL DEFAULT" },
-            { "v": "3 OS", "k": "CLIPBOARD" },
-            { "v": "mDNS", "k": "DISCOVERY" },
-            { "v": "QUIC+TLS", "k": "TRANSPORT" }
+            {
+              "v": "200 ms",
+              "k": "POLL DEFAULT"
+            },
+            {
+              "v": "3 OS",
+              "k": "CLIPBOARD"
+            },
+            {
+              "v": "mDNS",
+              "k": "DISCOVERY"
+            },
+            {
+              "v": "QUIC+TLS",
+              "k": "TRANSPORT"
+            }
           ]
         },
         {
@@ -369,17 +526,30 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal project",
-      "stack": ["REACT 18", "VITE", "REDUX TOOLKIT", "DECK.GL", "MAPBOX GL", "RECHARTS", "EXPRESS", "WEBSOCKET", "JEST + RTL", "DOCKER COMPOSE"],
+      "stack": [
+        "REACT 18",
+        "VITE",
+        "REDUX TOOLKIT",
+        "DECK.GL",
+        "MAPBOX GL",
+        "RECHARTS",
+        "EXPRESS",
+        "WEBSOCKET",
+        "JEST + RTL",
+        "DOCKER COMPOSE"
+      ],
       "summary": "A React + Express geospatial dashboard for exploring urban signals on an interactive Mapbox/Deck.gl map. It combines air-quality, weather, and transit-style layers with sidebar controls, charts, backend proxy routes, and WebSocket updates.",
-      "img": "linear-gradient(135deg,#081d26 0%,#10343f 45%,#1d5c6e 100%)",
-      "accent": "radial-gradient(ellipse at 30% 35%, rgba(120,220,255,.30), transparent 55%)",
+      "img": "assets/project-screenshots/citypulse.png",
       "details": [
         "Client: React 18 + Vite with Redux Toolkit state, Mapbox rendering, Deck.gl layers, sidebar controls, location autocomplete, Recharts summaries, and Jest/React Testing Library coverage.",
         "Server: Express proxy routes for /api/weather, /api/air-quality, and /api/transit, cache middleware, WebSocket live-update channel, and fallback fixtures when the legacy OpenAQ v2 endpoint returns 410 Gone.",
         "Operational shape: workspace scripts for client/server dev, production build for the client, server tests with node:test, Docker Compose files, and GitHub Actions that run client and server tests."
       ],
       "links": [
-        { "k": "SOURCE", "v": "github" }
+        {
+          "k": "SOURCE",
+          "v": "github"
+        }
       ],
       "sections": [
         {
@@ -395,10 +565,22 @@
         {
           "kind": "metrics",
           "items": [
-            { "v": "3", "k": "MAP LAYERS" },
-            { "v": "Mapbox + Deck.gl", "k": "MAP STACK" },
-            { "v": "3", "k": "API ROUTES" },
-            { "v": "Client + Server", "k": "CI TESTS" }
+            {
+              "v": "3",
+              "k": "MAP LAYERS"
+            },
+            {
+              "v": "Mapbox + Deck.gl",
+              "k": "MAP STACK"
+            },
+            {
+              "v": "3",
+              "k": "API ROUTES"
+            },
+            {
+              "v": "Client + Server",
+              "k": "CI TESTS"
+            }
           ]
         },
         {
@@ -420,17 +602,26 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal project",
-      "stack": ["PYTHON", "REQUESTS", "FLASK", "SQLITE (STDLIB)", "PYTEST", "COINGECKO API"],
+      "stack": [
+        "PYTHON",
+        "REQUESTS",
+        "FLASK",
+        "SQLITE (STDLIB)",
+        "PYTEST",
+        "COINGECKO API"
+      ],
       "summary": "An ETL pipeline that pulls crypto market snapshots from CoinGecko, lands raw JSON in a partitioned data-lake layout, validates with a rules engine, and loads structured rows into a SQLite warehouse. CLI + tiny web/HTTP API.",
-      "img": "linear-gradient(135deg,#26210a 0%,#3f3510 45%,#6e5a1d 100%)",
-      "accent": "radial-gradient(ellipse at 30% 35%, rgba(255,210,80,.30), transparent 55%)",
+      "img": "assets/project-screenshots/crypto-data-pipeline.png",
       "details": [
         "Two run modes: `--mode once` for a single ingestion + load cycle, `--mode daemon --interval 300` for continuous polling.",
         "Data-lake layout: raw JSON lands at `data_lake/raw/coin_gecko/date=YYYY-MM-DD/hour=HH/markets_*.json` (Hive-style partitioning), then transforms into `dim/fact` tables in SQLite — including a `fact_price_series` table fanned out from CoinGecko's 7-day sparkline.",
         "Rules-engine validation runs before warehouse load: row-level (required fields, numeric ranges, symbol regex, ISO timestamps) + batch-level (duplicate keys). Invalid rows rejected; a validation report lands alongside the raw payload."
       ],
       "links": [
-        { "k": "SOURCE", "v": "github" }
+        {
+          "k": "SOURCE",
+          "v": "github"
+        }
       ],
       "sections": [
         {
@@ -446,10 +637,22 @@
         {
           "kind": "metrics",
           "items": [
-            { "v": "Hive-style", "k": "RAW PARTITIONS" },
-            { "v": "fact_price_series", "k": "TIME-SERIES TABLE" },
-            { "v": "rules engine", "k": "VALIDATION" },
-            { "v": "CLI + HTTP", "k": "INTERFACES" }
+            {
+              "v": "Hive-style",
+              "k": "RAW PARTITIONS"
+            },
+            {
+              "v": "fact_price_series",
+              "k": "TIME-SERIES TABLE"
+            },
+            {
+              "v": "rules engine",
+              "k": "VALIDATION"
+            },
+            {
+              "v": "CLI + HTTP",
+              "k": "INTERFACES"
+            }
           ]
         },
         {
@@ -471,17 +674,24 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal project",
-      "stack": ["PYSPARK 3.5+", "STREAMLIT", "PARQUET", "JDBC"],
+      "stack": [
+        "PYSPARK 3.5+",
+        "STREAMLIT",
+        "PARQUET",
+        "JDBC"
+      ],
       "summary": "A configurable Spark ETL: ingests raw datasets (parquet/csv/json), enforces schema, dedupes, lands a partitioned Parquet warehouse, and writes KPI/aggregation tables to either a Parquet sink or a JDBC database. Bonus: a Streamlit UI for the NYC TLC taxi flow.",
-      "img": "linear-gradient(135deg,#260a26 0%,#3f103f 45%,#6e1d6e 100%)",
-      "accent": "radial-gradient(ellipse at 30% 35%, rgba(220,120,255,.30), transparent 55%)",
+      "img": "assets/project-screenshots/spark-pipeline.png",
       "details": [
         "Generic pipeline (main.py) with a fixed expected schema (event_time, user_id, region, device_type, event_type, metric_value); does schema enforcement, null filtering, normalization, dedup; writes cleaned data partitioned by event_date.",
         "Two result-sink modes: `warehouse` (partitioned Parquet outputs for daily_kpis, device_breakdown, event_type_trends) or `jdbc` (same shape into Postgres or any JDBC-reachable warehouse).",
         "NYC TLC flow (nyc_tlc_trip_workflow.py + Streamlit UI in ui_app.py) downloads and processes NYC taxi parquet files end-to-end."
       ],
       "links": [
-        { "k": "SOURCE", "v": "github" }
+        {
+          "k": "SOURCE",
+          "v": "github"
+        }
       ],
       "sections": [
         {
@@ -497,10 +707,22 @@
         {
           "kind": "metrics",
           "items": [
-            { "v": "Parquet + JDBC", "k": "DUAL SINK" },
-            { "v": "event_date", "k": "PARTITION KEY" },
-            { "v": "3 KPI tables", "k": "AGGREGATIONS" },
-            { "v": "Streamlit", "k": "DEMO UI" }
+            {
+              "v": "Parquet + JDBC",
+              "k": "DUAL SINK"
+            },
+            {
+              "v": "event_date",
+              "k": "PARTITION KEY"
+            },
+            {
+              "v": "3 KPI tables",
+              "k": "AGGREGATIONS"
+            },
+            {
+              "v": "Streamlit",
+              "k": "DEMO UI"
+            }
           ]
         },
         {
@@ -522,17 +744,30 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal project",
-      "stack": ["JAVA", "SPRING BOOT", "SPRING DATA JPA", "SPRING SECURITY (HTTP BASIC)", "MYSQL", "H2 (TESTS)", "SWAGGER", "JUNIT", "ANGULAR 8", "BOOTSTRAP"],
+      "stack": [
+        "JAVA",
+        "SPRING BOOT",
+        "SPRING DATA JPA",
+        "SPRING SECURITY (HTTP BASIC)",
+        "MYSQL",
+        "H2 (TESTS)",
+        "SWAGGER",
+        "JUNIT",
+        "ANGULAR 8",
+        "BOOTSTRAP"
+      ],
       "summary": "A multi-user task tracker with full CRUD, per-account list/dashboard scoping, filtering, sorting, pagination, and a dashboard summary endpoint. Spring Boot REST API + Angular 8 SPA.",
-      "img": "linear-gradient(135deg,#0a1426 0%,#0f1f3f 45%,#1d3a6e 100%)",
-      "accent": "radial-gradient(ellipse at 30% 35%, rgba(120,180,255,.30), transparent 55%)",
+      "img": "assets/project-screenshots/task-tracker-spring.png",
       "details": [
         "Backend: Spring Boot + Spring Data JPA + Spring Security (HTTP Basic) + Swagger + JUnit. Per-user scoping on list/dashboard endpoints; per-task ownership checks on get/update/delete are a known gap (auth-z hole I'd close before any real deployment).",
         "Schema: users / categories / tasks with explicit indexes on status, priority, due_date, assignee_id, creator_id, category_id — the primary filter/join dimensions for the dashboard and list views.",
         "Frontend: Angular 8 + Bootstrap with login, dashboard, task list (filter/sort/paginate/status-change), and task create/edit forms. Tests via Jasmine + Karma."
       ],
       "links": [
-        { "k": "SOURCE", "v": "github" }
+        {
+          "k": "SOURCE",
+          "v": "github"
+        }
       ],
       "sections": [
         {
@@ -548,10 +783,22 @@
         {
           "kind": "metrics",
           "items": [
-            { "v": "19", "k": "REST ENDPOINTS" },
-            { "v": "6", "k": "INDEXED COLUMNS" },
-            { "v": "HTTP Basic", "k": "AUTH" },
-            { "v": "Jasmine + Karma", "k": "FRONTEND TESTS" }
+            {
+              "v": "19",
+              "k": "REST ENDPOINTS"
+            },
+            {
+              "v": "6",
+              "k": "INDEXED COLUMNS"
+            },
+            {
+              "v": "HTTP Basic",
+              "k": "AUTH"
+            },
+            {
+              "v": "Jasmine + Karma",
+              "k": "FRONTEND TESTS"
+            }
           ]
         },
         {
@@ -573,17 +820,29 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal project",
-      "stack": ["JAVA 17", "SPRING BOOT 3", "SPRING SECURITY", "SPRING DATA JPA", "MYSQL", "SWAGGER", "JUNIT 5", "ANGULAR 8", "BOOTSTRAP"],
+      "stack": [
+        "JAVA 17",
+        "SPRING BOOT 3",
+        "SPRING SECURITY",
+        "SPRING DATA JPA",
+        "MYSQL",
+        "SWAGGER",
+        "JUNIT 5",
+        "ANGULAR 8",
+        "BOOTSTRAP"
+      ],
       "summary": "A full-stack customer support app for issue submission, analyst triage, investigation, and resolution. Spring Boot REST API + Angular 8 SPA with role-aware dashboards and a guarded issue lifecycle.",
-      "img": "linear-gradient(135deg,#26140a 0%,#3f2510 45%,#6e3f1d 100%)",
-      "accent": "radial-gradient(ellipse at 30% 35%, rgba(255,180,120,.30), transparent 55%)",
+      "img": "assets/project-screenshots/customer-issue-tracker.png",
       "details": [
         "Backend: Spring Boot REST API with HTTP Basic security, role checks for customer/analyst/admin flows, issue CRUD, comments, reference data, dashboard summary, resolution reporting, Swagger/OpenAPI, seeded demo users, and JUnit tests.",
         "Issue lifecycle: OPEN → IN_PROGRESS → INVESTIGATING/RESOLVED → CLOSED with explicit validation and blocked invalid transitions. RESOLVED can reopen to IN_PROGRESS; CLOSED is terminal.",
         "Frontend: Angular 8 + Bootstrap SPA with role-aware routes, auth and role guards, customer submission/detail flow, analyst triage dashboard, admin reporting view, and Jasmine/Karma specs."
       ],
       "links": [
-        { "k": "SOURCE", "v": "github" }
+        {
+          "k": "SOURCE",
+          "v": "github"
+        }
       ],
       "sections": [
         {
@@ -599,10 +858,22 @@
         {
           "kind": "metrics",
           "items": [
-            { "v": "5", "k": "ISSUE STATES" },
-            { "v": "3", "k": "USER ROLES" },
-            { "v": "12", "k": "API ROUTES" },
-            { "v": "Swagger + JUnit", "k": "BACKEND QA" }
+            {
+              "v": "5",
+              "k": "ISSUE STATES"
+            },
+            {
+              "v": "3",
+              "k": "USER ROLES"
+            },
+            {
+              "v": "12",
+              "k": "API ROUTES"
+            },
+            {
+              "v": "Swagger + JUnit",
+              "k": "BACKEND QA"
+            }
           ]
         },
         {
@@ -624,7 +895,14 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal project",
-      "stack": ["JAVA 21", "MAVEN", "TCP", "SQLITE (JDBC)", "JUNIT 5", "MOCKITO"],
+      "stack": [
+        "JAVA 21",
+        "MAVEN",
+        "TCP",
+        "SQLITE (JDBC)",
+        "JUNIT 5",
+        "MOCKITO"
+      ],
       "summary": "A multi-user banking backend in Core Java. Clients connect over TCP with a line-based protocol; register / login / open accounts / deposit / withdraw / transfer / history; SQLite persistence; strict layered architecture.",
       "img": "linear-gradient(135deg,#1a260a 0%,#243f10 45%,#3a6e1d 100%)",
       "accent": "radial-gradient(ellipse at 30% 35%, rgba(180,255,120,.30), transparent 55%)",
@@ -634,7 +912,10 @@
         "Account-level locking in the service layer for concurrent safety; sealed Command interface for exhaustive dispatch; Observer pattern wires AccountService → TransactionLogger after every balance-changing op."
       ],
       "links": [
-        { "k": "SOURCE", "v": "github" }
+        {
+          "k": "SOURCE",
+          "v": "github"
+        }
       ],
       "sections": [
         {
@@ -650,10 +931,22 @@
         {
           "kind": "metrics",
           "items": [
-            { "v": "Java 21 LTS", "k": "FLOOR" },
-            { "v": "Sealed Cmd", "k": "DISPATCH" },
-            { "v": "Account-level", "k": "LOCK SCOPE" },
-            { "v": "Singleton/DAO/Observer", "k": "PATTERNS" }
+            {
+              "v": "Java 21 LTS",
+              "k": "FLOOR"
+            },
+            {
+              "v": "Sealed Cmd",
+              "k": "DISPATCH"
+            },
+            {
+              "v": "Account-level",
+              "k": "LOCK SCOPE"
+            },
+            {
+              "v": "Singleton/DAO/Observer",
+              "k": "PATTERNS"
+            }
           ]
         },
         {
@@ -676,7 +969,18 @@
       "role": "Solo",
       "timeline": "personal · scaffold + M0–M8 runs",
       "status": "in-progress",
-      "stack": ["JAVA 21+", "SPRING BOOT 3.2", "POSTGRESQL 15", "REDIS 7", "CAFFEINE", "HIKARICP", "FLYWAY", "MICROMETER + PROMETHEUS", "GRAFANA", "GATLING 3.10"],
+      "stack": [
+        "JAVA 21+",
+        "SPRING BOOT 3.2",
+        "POSTGRESQL 15",
+        "REDIS 7",
+        "CAFFEINE",
+        "HIKARICP",
+        "FLYWAY",
+        "MICROMETER + PROMETHEUS",
+        "GRAFANA",
+        "GATLING 3.10"
+      ],
       "summary": "A URL-shortener service wired for systematic JVM-tuning experiments — multi-profile caching (Caffeine L1 + Redis L2), HikariCP, Flyway migrations, Gatling load, Prometheus + Grafana. Ran the M0–M8 milestones end-to-end: redirect p99 went from 2892 ms → 13 ms.",
       "img": "linear-gradient(135deg,#260a1a 0%,#3f1024 45%,#6e1d3a 100%)",
       "accent": "radial-gradient(ellipse at 30% 35%, rgba(255,120,180,.30), transparent 55%)",
@@ -686,7 +990,10 @@
         "Per-milestone Spring profiles + JVM args in scripts/run-app.sh — switching milestones never requires a rebuild. Observability: Prometheus 5s scrape, three pre-provisioned Grafana dashboards, X-Correlation-Id and X-Response-Time-Ms on every response."
       ],
       "links": [
-        { "k": "SOURCE", "v": "github" }
+        {
+          "k": "SOURCE",
+          "v": "github"
+        }
       ],
       "sections": [
         {
@@ -702,10 +1009,22 @@
         {
           "kind": "metrics",
           "items": [
-            { "v": "2892 → 13 ms", "k": "p99 M0→M2" },
-            { "v": "−95% / −92%", "k": "M1 / M2 WIN" },
-            { "v": "+238%", "k": "M3 BROKEN-L2 RUN" },
-            { "v": "~6,700 RPS", "k": "LAPTOP CEILING" }
+            {
+              "v": "2892 → 13 ms",
+              "k": "p99 M0→M2"
+            },
+            {
+              "v": "−95% / −92%",
+              "k": "M1 / M2 WIN"
+            },
+            {
+              "v": "+238%",
+              "k": "M3 BROKEN-L2 RUN"
+            },
+            {
+              "v": "~6,700 RPS",
+              "k": "LAPTOP CEILING"
+            }
           ]
         },
         {
@@ -728,7 +1047,18 @@
       "role": "Solo",
       "timeline": "personal project",
       "status": "in-progress",
-      "stack": ["PYTHON 3.10–3.12", "PANDAS", "PYARROW", "PANDERA", "SQLALCHEMY", "POSTGRESQL", "DOCKER COMPOSE", "PYTEST", "GITHUB ACTIONS", "POWER BI"],
+      "stack": [
+        "PYTHON 3.10–3.12",
+        "PANDAS",
+        "PYARROW",
+        "PANDERA",
+        "SQLALCHEMY",
+        "POSTGRESQL",
+        "DOCKER COMPOSE",
+        "PYTEST",
+        "GITHUB ACTIONS",
+        "POWER BI"
+      ],
       "summary": "Medallion-architecture (Bronze/Silver/Gold) ETL integrating three sources — Olist Brazilian e-commerce (99k orders / 113k line items), Open-Meteo historical weather (20 cities, ERA5), Frankfurter FX (USD/BRL) — into Parquet Gold outputs and a Postgres warehouse. The 4-page / 27-DAX Power BI dashboard is documented/spec'd, with the .pbix still pending.",
       "img": "linear-gradient(135deg,#0a261d 0%,#103f2c 45%,#1d6e4d 100%)",
       "accent": "radial-gradient(ellipse at 30% 35%, rgba(120,255,200,.30), transparent 55%)",
@@ -738,7 +1068,10 @@
         "98-test pytest suite running in a Python 3.10/3.11/3.12 matrix on GitHub Actions; one-command Docker Compose pipeline run; 4-page Power BI dashboard with 27 DAX measures is specified in docs, but the .pbix export is still pending."
       ],
       "links": [
-        { "k": "SOURCE", "v": "github" }
+        {
+          "k": "SOURCE",
+          "v": "github"
+        }
       ],
       "sections": [
         {
@@ -754,10 +1087,22 @@
         {
           "kind": "metrics",
           "items": [
-            { "v": "99,441 / 112,650", "k": "ORDERS / LINES" },
-            { "v": "4 / 5", "k": "GOLD FACTS / DIMS" },
-            { "v": "3", "k": "WAREHOUSE FACTS" },
-            { "v": "98", "k": "TEST COUNT" }
+            {
+              "v": "99,441 / 112,650",
+              "k": "ORDERS / LINES"
+            },
+            {
+              "v": "4 / 5",
+              "k": "GOLD FACTS / DIMS"
+            },
+            {
+              "v": "3",
+              "k": "WAREHOUSE FACTS"
+            },
+            {
+              "v": "98",
+              "k": "TEST COUNT"
+            }
           ]
         },
         {
@@ -780,7 +1125,18 @@
       "role": "Solo",
       "timeline": "personal · iOS Simulator only",
       "status": "in-progress",
-      "stack": ["EXPO 55 (BARE)", "RN 0.83", "TYPESCRIPT (STRICT)", "OP-SQLITE", "MMKV", "TANSTACK QUERY v5", "ZUSTAND", "SUPABASE (POSTGRES/RLS/AUTH/EDGE)", "GEMINI 2.5 FLASH (SSE)", "SENTRY + POSTHOG"],
+      "stack": [
+        "EXPO 55 (BARE)",
+        "RN 0.83",
+        "TYPESCRIPT (STRICT)",
+        "OP-SQLITE",
+        "MMKV",
+        "TANSTACK QUERY v5",
+        "ZUSTAND",
+        "SUPABASE (POSTGRES/RLS/AUTH/EDGE)",
+        "GEMINI 2.5 FLASH (SSE)",
+        "SENTRY + POSTHOG"
+      ],
       "summary": "An offline-first iOS notes app with a streaming weekly AI summary. Writes hit local SQLite first and sync to Supabase in the background; the summary streams over SSE from a Deno edge function calling Gemini.",
       "img": "linear-gradient(135deg,#0a261a 0%,#103f24 45%,#1d6e3a 100%)",
       "accent": "radial-gradient(ellipse at 30% 35%, rgba(120,255,170,.30), transparent 55%)",
@@ -790,7 +1146,10 @@
         "SecureStore with MMKV fallback: on unsigned simulator builds, iOS rejects Keychain writes because the app declares entitlements (Apple Sign In) it can't satisfy. The write is caught and persisted to MMKV so the Supabase session survives reloads in dev — production never hits the fallback."
       ],
       "links": [
-        { "k": "SOURCE", "v": "github" }
+        {
+          "k": "SOURCE",
+          "v": "github"
+        }
       ],
       "sections": [
         {
@@ -806,10 +1165,22 @@
         {
           "kind": "metrics",
           "items": [
-            { "v": "Offline-first", "k": "WRITE PATH" },
-            { "v": "client UUIDs", "k": "ID GENERATION" },
-            { "v": "SSE", "k": "SUMMARY TRANSPORT" },
-            { "v": "iOS sim only", "k": "DEPLOY SURFACE" }
+            {
+              "v": "Offline-first",
+              "k": "WRITE PATH"
+            },
+            {
+              "v": "client UUIDs",
+              "k": "ID GENERATION"
+            },
+            {
+              "v": "SSE",
+              "k": "SUMMARY TRANSPORT"
+            },
+            {
+              "v": "iOS sim only",
+              "k": "DEPLOY SURFACE"
+            }
           ]
         },
         {
@@ -832,7 +1203,15 @@
       "role": "Solo",
       "timeline": "personal · 15 development stages",
       "status": "in-progress",
-      "stack": ["POWER BI", "DAX (~135 MEASURES)", "POWER QUERY (M)", "PYTHON", "PANDAS", "SQLITE", "PARQUET"],
+      "stack": [
+        "POWER BI",
+        "DAX (~135 MEASURES)",
+        "POWER QUERY (M)",
+        "PYTHON",
+        "PANDAS",
+        "SQLITE",
+        "PARQUET"
+      ],
       "summary": "Power BI model/report specification in progress for 70+ years of North Dakota Bakken crude oil production. The repo contains ETL structure, DAX files, and report design notes; the .pbix, screenshots, service publish, and final video are still pending.",
       "img": "linear-gradient(135deg,#261a0a 0%,#3f2810 45%,#6e4a1d 100%)",
       "accent": "radial-gradient(ellipse at 30% 35%, rgba(220,180,80,.30), transparent 55%)",
@@ -842,7 +1221,10 @@
         "Row-Level Security design for four roles is specified, but model enforcement still needs validation once the .pbix exists."
       ],
       "links": [
-        { "k": "SOURCE", "v": "github" }
+        {
+          "k": "SOURCE",
+          "v": "github"
+        }
       ],
       "sections": [
         {
@@ -858,10 +1240,22 @@
         {
           "kind": "metrics",
           "items": [
-            { "v": "70+ years", "k": "DATA RANGE" },
-            { "v": "~135", "k": "DAX MEASURES" },
-            { "v": "5", "k": "SPEC PAGES" },
-            { "v": "4 roles", "k": "RLS DESIGN" }
+            {
+              "v": "70+ years",
+              "k": "DATA RANGE"
+            },
+            {
+              "v": "~135",
+              "k": "DAX MEASURES"
+            },
+            {
+              "v": "5",
+              "k": "SPEC PAGES"
+            },
+            {
+              "v": "4 roles",
+              "k": "RLS DESIGN"
+            }
           ]
         },
         {
@@ -883,17 +1277,28 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal · MVP",
-      "stack": ["REACT + TS + VITE", "AXIOS", "REACT ROUTER", "DJANGO + DRF", "CELERY + REDIS", "WHISPER", "LLM EXTRACTION", "SQLITE / POSTGRES"],
+      "stack": [
+        "REACT + TS + VITE",
+        "AXIOS",
+        "REACT ROUTER",
+        "DJANGO + DRF",
+        "CELERY + REDIS",
+        "WHISPER",
+        "LLM EXTRACTION",
+        "SQLITE / POSTGRES"
+      ],
       "summary": "An audio review tool for hiring: upload candidate interview audio, process asynchronously through Whisper + an LLM extractor, and review transcript + summary + extracted signals in a searchable dashboard.",
-      "img": "linear-gradient(135deg,#1a0f26 0%,#2a153f 45%,#5a306e 100%)",
-      "accent": "radial-gradient(ellipse at 30% 35%, rgba(180,140,255,.30), transparent 55%)",
+      "img": "assets/project-screenshots/pre-interview-audio.png",
       "details": [
         "Async pipeline with explicit state machine — uploaded → transcribing → summarizing → completed/failed — start/end timestamps + error messages stored on every transition. Celery retries up to 3 times.",
         "Reviewer dashboard with search across candidate, transcript, summary, and job title, plus filters on processing status and reviewer status. Detail page surfaces transcript, summary, extracted signals (JSON), reviewer notes, and a retry-failed-processing action.",
         "Whisper for STT + an LLM for extraction — both have a local mock fallback so the pipeline runs end-to-end without an API key during dev."
       ],
       "links": [
-        { "k": "SOURCE", "v": "github" }
+        {
+          "k": "SOURCE",
+          "v": "github"
+        }
       ],
       "sections": [
         {
@@ -909,10 +1314,22 @@
         {
           "kind": "metrics",
           "items": [
-            { "v": "5-state", "k": "PIPELINE FSM" },
-            { "v": "max_retries=3", "k": "CELERY RETRY" },
-            { "v": "mock fallback", "k": "DEV WITHOUT KEY" },
-            { "v": ".mp3/.wav/.m4a (UI)", "k": "INPUT FORMATS" }
+            {
+              "v": "5-state",
+              "k": "PIPELINE FSM"
+            },
+            {
+              "v": "max_retries=3",
+              "k": "CELERY RETRY"
+            },
+            {
+              "v": "mock fallback",
+              "k": "DEV WITHOUT KEY"
+            },
+            {
+              "v": ".mp3/.wav/.m4a (UI)",
+              "k": "INPUT FORMATS"
+            }
           ]
         },
         {
@@ -934,17 +1351,24 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal project",
-      "stack": ["JAVA 17", "SPRING BOOT", "GEMINI API (HTTP)", "VANILLA JS / HTML / CSS"],
+      "stack": [
+        "JAVA 17",
+        "SPRING BOOT",
+        "GEMINI API (HTTP)",
+        "VANILLA JS / HTML / CSS"
+      ],
       "summary": "A small Java web app that generates or modifies websites from a prompt via Gemini. The LLM returns a JSON file manifest; the app writes those files to disk and previews them in-browser.",
-      "img": "linear-gradient(135deg,#26210a 0%,#3f3a10 45%,#6e651d 100%)",
-      "accent": "radial-gradient(ellipse at 30% 35%, rgba(255,230,80,.30), transparent 55%)",
+      "img": "assets/project-screenshots/web-builder-llm.png",
       "details": [
         "Two workflows: 'New Website' from scratch and 'Modify Existing' — load a folder, send a follow-up request, get back an updated file manifest, write it to the same folder.",
         "JSON-shaped LLM contract: response is {title, summary, features[], files[{path, content}]} plus optional imageRequests + binary/base64/mimeType for image assets. Backend supplies sensible defaults when fields are missing — lenient by design, not a strict schema reject.",
         "New-Website flow falls back to a local starter template when GEMINI_API_KEY isn't set or Gemini fails. Modify-Existing flow falls back to the loaded project instead. Includes scripts/check-gemini-key.sh for key validation and scripts/materialize-site.mjs to write a saved JSON response to disk by hand."
       ],
       "links": [
-        { "k": "SOURCE", "v": "github" }
+        {
+          "k": "SOURCE",
+          "v": "github"
+        }
       ],
       "sections": [
         {
@@ -960,10 +1384,22 @@
         {
           "kind": "metrics",
           "items": [
-            { "v": "JSON (lenient)", "k": "LLM CONTRACT" },
-            { "v": "Gemini (HTTP)", "k": "PROVIDER" },
-            { "v": "starter template", "k": "FALLBACK" },
-            { "v": "Chrome", "k": "TESTED BROWSER" }
+            {
+              "v": "JSON (lenient)",
+              "k": "LLM CONTRACT"
+            },
+            {
+              "v": "Gemini (HTTP)",
+              "k": "PROVIDER"
+            },
+            {
+              "v": "starter template",
+              "k": "FALLBACK"
+            },
+            {
+              "v": "Chrome",
+              "k": "TESTED BROWSER"
+            }
           ]
         },
         {
@@ -975,6 +1411,836 @@
           "kind": "paragraph",
           "label": "04 — STATUS",
           "body": "Solo build. Tested in Chrome only. No deploy — runs locally; the generated-sites/ folder collects sample outputs in the repo."
+        }
+      ]
+    },
+    {
+      "slug": "ai-powered-note-taking-app",
+      "name": "AI-POWERED NOTE-TAKING APP",
+      "kind": "personal · full-stack ai app",
+      "year": "2026",
+      "role": "Solo",
+      "timeline": "personal project · phases 0-9",
+      "status": "in-progress",
+      "stack": [
+        "REACT 19",
+        "VITE",
+        "TYPESCRIPT",
+        "TIPTAP",
+        "EXPRESS",
+        "MONGOOSE",
+        "FASTAPI",
+        "QDRANT",
+        "LOCALSTACK",
+        "TERRAFORM",
+        "TURBOREPO"
+      ],
+      "summary": "A full-stack AI notes monorepo with rich-text editing, auth, note/folder/tag organization, semantic search, summarization, OCR upload plumbing, local AWS emulation, and a hardened dev stack.",
+      "img": "assets/project-screenshots/ai-powered-note-taking-app.png",
+      "details": [
+        "Turborepo workspace with web, api, ai, lambda-ocr, shared contracts, and UI packages.",
+        "Auth uses JWT access tokens, httpOnly refresh cookies, CSRF protection, Argon2 password hashes, and refresh-session rotation.",
+        "Notes use Tiptap/ProseMirror JSON with autosave, optimistic updates, version history, conflict handling, semantic search, and AI summary flows."
+      ],
+      "links": [
+        {
+          "k": "SOURCE",
+          "v": "github"
+        }
+      ],
+      "sections": [
+        {
+          "kind": "paragraph",
+          "label": "01 — WHAT IT DOES",
+          "body": "The app is a production-shaped notes system: sign up, create folders/tags/notes, write rich text in a Tiptap editor, autosave drafts, inspect version history, summarize notes, and search semantically. The repo also includes OCR upload infrastructure and a local AWS-style development environment."
+        },
+        {
+          "kind": "paragraph",
+          "label": "02 — HOW IT WORKS",
+          "body": "The stack is split into a pnpm/Turborepo monorepo: React/Vite web client, Express/TypeScript API, Python AI service, Python OCR Lambda, shared Zod/OpenAPI contracts, and a UI package. Local development runs MongoDB, Qdrant, LocalStack, the API, the AI service, and the web app through Docker Compose."
+        },
+        {
+          "kind": "metrics",
+          "items": [
+            {
+              "v": "5",
+              "k": "WORKSPACES"
+            },
+            {
+              "v": "JWT+CSRF",
+              "k": "AUTH MODEL"
+            },
+            {
+              "v": "Tiptap",
+              "k": "EDITOR"
+            },
+            {
+              "v": "LocalStack",
+              "k": "AWS EMULATION"
+            }
+          ]
+        },
+        {
+          "kind": "paragraph",
+          "label": "03 — ENGINEERING FOCUS",
+          "body": "The interesting part is not just the editor. The project emphasizes contracts and failure behavior: OpenAPI-generated client types, Zod validation shared across layers, autosave conflict resolution, request metrics, payload limits, Sentry hooks, and local cloud resources provisioned through Terraform."
+        },
+        {
+          "kind": "paragraph",
+          "label": "04 — STATUS",
+          "body": "Proceeding / in progress. Phases 0-9 are documented locally, with real-AWS deployment deferred. The project is suitable for portfolio listing because the architecture, stack, and shipped phases are documented in the repo."
+        }
+      ]
+    },
+    {
+      "slug": "distributed-job-queue-webhooks",
+      "name": "DISTRIBUTED JOB QUEUE + WEBHOOK DELIVERY",
+      "kind": "personal · backend systems",
+      "year": "2026",
+      "role": "Solo",
+      "timeline": "personal project",
+      "status": "in-progress",
+      "stack": [
+        "PYTHON",
+        "FASTAPI",
+        "ASYNC SQLALCHEMY",
+        "POSTGRESQL",
+        "ALEMBIC",
+        "DOCKER COMPOSE",
+        "PYTEST"
+      ],
+      "summary": "A PostgreSQL-backed job queue backend with worker leases, retry scheduling, dead-letter handling, webhook delivery, worker heartbeats, queue stats, and metrics endpoints.",
+      "img": "linear-gradient(135deg,#171c2a 0%,#22304a 45%,#395b8a 100%)",
+      "accent": "radial-gradient(ellipse at 34% 35%, rgba(120,170,255,.30), transparent 55%)",
+      "details": [
+        "FastAPI API creates, lists, cancels, retries, and requeues jobs.",
+        "Workers claim runnable jobs with database leases and PostgreSQL row-locking behavior.",
+        "Webhook handler treats 2xx as success, selected 4xx as permanent failure, and timeout/429/5xx as retryable."
+      ],
+      "links": [
+        {
+          "k": "SOURCE",
+          "v": "github"
+        }
+      ],
+      "sections": [
+        {
+          "kind": "paragraph",
+          "label": "01 — WHAT IT DOES",
+          "body": "API callers create jobs into named queues. Worker processes claim runnable jobs, execute one of the supported handlers, renew leases for long work, then complete, retry, cancel, or move failed work to a dead-letter queue. Webhook delivery is one of the built-in job types."
+        },
+        {
+          "kind": "paragraph",
+          "label": "02 — HOW IT WORKS",
+          "body": "FastAPI exposes public job endpoints plus internal worker endpoints protected by an internal token. PostgreSQL stores the queue state; workers use row locks and lease tokens so expired running jobs can be reclaimed. Alembic manages schema changes and pytest covers the database-specific behavior."
+        },
+        {
+          "kind": "metrics",
+          "items": [
+            {
+              "v": "FOR UPDATE",
+              "k": "CLAIM LOCK"
+            },
+            {
+              "v": "5",
+              "k": "BACKOFF STEPS"
+            },
+            {
+              "v": "DLQ",
+              "k": "FAILURE SINK"
+            },
+            {
+              "v": "/metrics",
+              "k": "OPS SURFACE"
+            }
+          ]
+        },
+        {
+          "kind": "paragraph",
+          "label": "03 — DESIGN CHOICE: LEASES",
+          "body": "A queue worker can disappear mid-job, so ownership is time-bound. Complete, fail, and renew operations must present the matching unexpired lease token. That keeps stale workers from finishing jobs they no longer own and makes retries deterministic."
+        },
+        {
+          "kind": "paragraph",
+          "label": "04 — STATUS",
+          "body": "Proceeding / in progress. The README documents setup, endpoints, retry rules, and known limits. The v1 is local-first with no tenant isolation, no distributed tracing, and no exactly-once guarantee for external side effects."
+        }
+      ]
+    },
+    {
+      "slug": "enterprise-ticket-management-system",
+      "name": "ENTERPRISE TICKET MANAGEMENT SYSTEM",
+      "kind": "personal · full-stack",
+      "year": "2026",
+      "role": "Solo",
+      "timeline": "personal project",
+      "status": "in-progress",
+      "stack": [
+        "JAVA 21",
+        "SPRING BOOT 3",
+        "SPRING SECURITY",
+        "JWT",
+        "POSTGRESQL",
+        "FLYWAY",
+        "REACT",
+        "TYPESCRIPT",
+        "MATERIAL UI",
+        "DOCKER COMPOSE"
+      ],
+      "summary": "A role-based enterprise service-ticket platform for creating, assigning, tracking, commenting on, and auditing support tickets across requester, agent, manager, and admin workflows.",
+      "img": "assets/project-screenshots/enterprise-ticket-management-system.png",
+      "details": [
+        "Spring Boot backend with JWT auth, role permissions, PostgreSQL persistence, Flyway migrations, Swagger/OpenAPI, and Testcontainers-ready tests.",
+        "React + TypeScript + Vite frontend with Material UI, React Router, and Axios.",
+        "Demo workflow covers requester creation, manager assignment, agent resolution, manager closure, audit timeline, and unauthorized access checks."
+      ],
+      "links": [
+        {
+          "k": "SOURCE",
+          "v": "github"
+        }
+      ],
+      "sections": [
+        {
+          "kind": "paragraph",
+          "label": "01 — WHAT IT DOES",
+          "body": "A requester creates support tickets, managers assign and prioritize them, agents update assigned work and add comments, and admins manage users. The app records an audit timeline so workflow changes are inspectable."
+        },
+        {
+          "kind": "paragraph",
+          "label": "02 — HOW IT WORKS",
+          "body": "The backend is Java 21 with Spring Boot 3, Spring Security, JWT, Spring Data JPA, Flyway, PostgreSQL, and Swagger. The frontend is React/TypeScript/Vite with Material UI. Docker Compose starts the full stack with seeded local users for each role."
+        },
+        {
+          "kind": "metrics",
+          "items": [
+            {
+              "v": "4",
+              "k": "ROLES"
+            },
+            {
+              "v": "JWT",
+              "k": "AUTH"
+            },
+            {
+              "v": "Flyway",
+              "k": "MIGRATIONS"
+            },
+            {
+              "v": "Testcontainers",
+              "k": "DB TESTS"
+            }
+          ]
+        },
+        {
+          "kind": "paragraph",
+          "label": "03 — WHY IT MATTERS",
+          "body": "The portfolio value is the role model and lifecycle discipline: a real internal tool needs different visibility and update permissions for admins, managers, agents, and requesters. The demo workflow exercises those boundaries instead of only showing CRUD screens."
+        },
+        {
+          "kind": "paragraph",
+          "label": "04 — STATUS",
+          "body": "Proceeding / in progress. The README has enough concrete setup, stack, seeded users, permissions, and limitations to support a portfolio entry. Email notifications and file attachments are intentionally out of scope for v1."
+        }
+      ]
+    },
+    {
+      "slug": "mips-systems-diagnostics",
+      "name": "MIPS SYSTEMS DIAGNOSTICS LAB",
+      "kind": "personal · systems testing",
+      "year": "2026",
+      "role": "Solo",
+      "timeline": "personal project",
+      "status": "in-progress",
+      "stack": [
+        "MIPS ASSEMBLY",
+        "MARS 4.5",
+        "PYTHON 3",
+        "BASH",
+        "DETERMINISTIC TEST HARNESS"
+      ],
+      "summary": "A low-level diagnostics project implementing MIPS assembly routines and validating them with a deterministic pass/fail harness in MARS 4.5.",
+      "img": "linear-gradient(135deg,#111111 0%,#1f2630 45%,#405263 100%)",
+      "accent": "radial-gradient(ellipse at 32% 35%, rgba(180,210,230,.25), transparent 55%)",
+      "details": [
+        "Implements bit swapping, triple-range arithmetic, 3x3 determinant, min/max scan, XOR checksum, and null-terminated string length routines.",
+        "A Python/Bash test runner concatenates routines with tests, runs MARS in command-line mode, and validates exact pass/fail output.",
+        "Documentation covers calling convention, register mapping, debug notes, test plan, and sample output."
+      ],
+      "links": [
+        {
+          "k": "SOURCE",
+          "v": "github"
+        }
+      ],
+      "sections": [
+        {
+          "kind": "paragraph",
+          "label": "01 — WHAT IT DOES",
+          "body": "The project implements small MIPS assembly routines and verifies them with a deterministic harness. The intended signal is low-level debugging discipline: registers, memory layout, bitwise operations, function contracts, and predictable tests."
+        },
+        {
+          "kind": "paragraph",
+          "label": "02 — HOW IT WORKS",
+          "body": "Each routine lives in its own assembly file. A build script creates one combined test assembly file, runs it through MARS 4.5, and checks that stdout reports the exact expected summary. The harness includes edge cases for bit positions, duplicate values, empty arrays, and strings."
+        },
+        {
+          "kind": "metrics",
+          "items": [
+            {
+              "v": "6",
+              "k": "ROUTINES"
+            },
+            {
+              "v": "28",
+              "k": "TEST CASES"
+            },
+            {
+              "v": "MARS 4.5",
+              "k": "SIMULATOR"
+            },
+            {
+              "v": "0 failed",
+              "k": "TARGET"
+            }
+          ]
+        },
+        {
+          "kind": "paragraph",
+          "label": "03 — BOUNDARIES",
+          "body": "The README is explicit about scope: MARS 4.5 only, no SPIM/QtSPIM support, no floating point, no dynamic allocation, and no overflow detection. That clarity makes it easier to evaluate the work without overclaiming embedded-platform experience."
+        },
+        {
+          "kind": "paragraph",
+          "label": "04 — STATUS",
+          "body": "Proceeding / in progress from the unfinished folder. The repo has enough implementation notes, runnable test instructions, and expected output to justify listing it."
+        }
+      ]
+    },
+    {
+      "slug": "matrixops-cli",
+      "name": "MATRIXOPS CLI",
+      "kind": "personal · c++ cli",
+      "year": "2026",
+      "role": "Solo",
+      "timeline": "personal project",
+      "status": "in-progress",
+      "stack": [
+        "C++20",
+        "CMAKE",
+        "CTEST",
+        "PYTHON FUNCTIONAL TESTS",
+        "CSV"
+      ],
+      "summary": "A C++20 command-line matrix utility for CSV validation, add/subtract/multiply/transpose operations, 2x2 and 3x3 determinants, output writing, and exact-result comparison.",
+      "img": "linear-gradient(135deg,#201a12 0%,#3a2e1c 45%,#735b34 100%)",
+      "accent": "radial-gradient(ellipse at 30% 35%, rgba(235,190,110,.28), transparent 55%)",
+      "details": [
+        "CLI supports add, subtract, multiply, transpose, determinant, validate, compare, and help commands.",
+        "CMake build with CTest unit tests plus Python functional tests against generated outputs.",
+        "Known limits are documented: simple numeric CSV only, no quoted fields, determinants limited to 2x2/3x3, and exact double comparison."
+      ],
+      "links": [
+        {
+          "k": "SOURCE",
+          "v": "github"
+        }
+      ],
+      "sections": [
+        {
+          "kind": "paragraph",
+          "label": "01 — WHAT IT DOES",
+          "body": "MatrixOps loads numeric CSV matrices and performs basic operations from the command line. It can write results to CSV, validate input files, compute 2x2/3x3 determinants, and compare actual output against expected output."
+        },
+        {
+          "kind": "paragraph",
+          "label": "02 — HOW IT WORKS",
+          "body": "The project uses standard-library C++20 with CMake. Unit tests run through CTest, while a Python functional runner exercises the built binary against end-to-end CLI cases and expected files."
+        },
+        {
+          "kind": "metrics",
+          "items": [
+            {
+              "v": "C++20",
+              "k": "LANGUAGE"
+            },
+            {
+              "v": "7",
+              "k": "COMMANDS"
+            },
+            {
+              "v": "CTest",
+              "k": "UNIT TESTS"
+            },
+            {
+              "v": "Python",
+              "k": "FUNCTIONAL TESTS"
+            }
+          ]
+        },
+        {
+          "kind": "paragraph",
+          "label": "03 — TESTING FOCUS",
+          "body": "The project is intentionally a small systems-testing tool. The README emphasizes command behavior, input validation, generated output, and repeatable local test commands rather than building a large math library."
+        },
+        {
+          "kind": "paragraph",
+          "label": "04 — STATUS",
+          "body": "Proceeding / in progress from the unfinished folder. The README has enough detail for a portfolio entry, including features, tooling baseline, usage examples, tests, and limitations."
+        }
+      ]
+    },
+    {
+      "slug": "pocketlm",
+      "name": "POCKETLM",
+      "kind": "personal · mobile ai systems",
+      "year": "2026",
+      "role": "Solo",
+      "timeline": "personal project · iOS architecture demo",
+      "status": "in-progress",
+      "stack": [
+        "REACT NATIVE 0.83",
+        "EXPO 55",
+        "TYPESCRIPT",
+        "C++",
+        "CMAKE",
+        "LLAMA.CPP",
+        "TURBOMODULES",
+        "MMKV",
+        "SENTRY"
+      ],
+      "summary": "An iOS on-device LLM architecture demo that wraps llama.cpp with a custom React Native TurboModule bridge and streams tokens from a C++ core through native code into JavaScript.",
+      "img": "linear-gradient(135deg,#0d1526 0%,#142845 45%,#245b78 100%)",
+      "accent": "radial-gradient(ellipse at 34% 34%, rgba(95,205,255,.28), transparent 55%)",
+      "details": [
+        "React Native / Expo app with chat, bench, and model-management surfaces planned around a custom native bridge.",
+        "Platform-neutral C++ core exposes a public C API and links to a pinned llama.cpp submodule.",
+        "Build docs describe streaming event flow, deterministic inference checks, memory lifecycle testing, and privacy boundaries."
+      ],
+      "links": [
+        {
+          "k": "SOURCE",
+          "v": "github"
+        }
+      ],
+      "sections": [
+        {
+          "kind": "paragraph",
+          "label": "01 — WHAT IT DOES",
+          "body": "PocketLM demonstrates the architecture for running a local LLM inside a React Native iOS app. The goal is the bridge and lifecycle work: model loading, generation requests, token streaming, cancellation, metrics, and native crash visibility."
+        },
+        {
+          "kind": "paragraph",
+          "label": "02 — HOW IT WORKS",
+          "body": "The app layer is React Native 0.83 with Expo SDK 55. A TurboModule interface calls into Swift/Obj-C++ bridge code, which forwards into a C++ core linked with llama.cpp. Tokens stream back through an event emitter to JavaScript."
+        },
+        {
+          "kind": "metrics",
+          "items": [
+            {
+              "v": "iOS",
+              "k": "TARGET"
+            },
+            {
+              "v": "C++",
+              "k": "CORE"
+            },
+            {
+              "v": "TurboModule",
+              "k": "BRIDGE"
+            },
+            {
+              "v": "offline",
+              "k": "LLM PATH"
+            }
+          ]
+        },
+        {
+          "kind": "paragraph",
+          "label": "03 — DESIGN CHOICE: CUSTOM BRIDGE",
+          "body": "The build document rejects pre-made React Native llama wrappers because the bridge is the point. Writing the TurboModule and C++ boundary directly is what demonstrates native-module design, event ordering, cancellation, and memory lifecycle control."
+        },
+        {
+          "kind": "paragraph",
+          "label": "04 — STATUS",
+          "body": "Proceeding / in progress. There is no top-level README yet, but the local build document contains enough concrete scope, architecture, repository layout, stack, and success criteria to list it responsibly."
+        }
+      ]
+    },
+    {
+      "slug": "saguna-consulting-ai-system",
+      "name": "SAGUNA CONSULTING AI SYSTEM",
+      "kind": "capstone · full-stack ai sales ops",
+      "year": "2026",
+      "role": "Solo / capstone build",
+      "timeline": "IN4MATX 191A capstone",
+      "status": "in-progress",
+      "stack": [
+        "FASTAPI",
+        "SUPABASE",
+        "VITE",
+        "REACT",
+        "PYTHON ETL",
+        "GMAIL API",
+        "VERCEL",
+        "PYTEST"
+      ],
+      "summary": "A capstone system for ranking funded startups, managing outreach, and generating AI-assisted sales messages from YC, TechCrunch, enrichment, and scoring pipelines.",
+      "img": "assets/project-screenshots/saguna-consulting-ai-system.png",
+      "details": [
+        "FastAPI backend handles startups, Gmail, outreach, AI services, Supabase access, and Vercel API entrypoint compatibility.",
+        "Vite frontend provides the multi-page operator UI.",
+        "ETL pipelines ingest YC and TechCrunch data, enrich companies, score ideal customer profile fit, and write runtime outputs under ignored data paths."
+      ],
+      "links": [
+        {
+          "k": "SOURCE",
+          "v": "github"
+        }
+      ],
+      "sections": [
+        {
+          "kind": "paragraph",
+          "label": "01 — WHAT IT DOES",
+          "body": "The system helps a consulting workflow find funded startups, score them against an ideal customer profile, manage outreach, integrate Gmail, and generate AI-assisted sales messages."
+        },
+        {
+          "kind": "paragraph",
+          "label": "02 — HOW IT WORKS",
+          "body": "The canonical FastAPI app lives in backend.index:app, with compatibility shims for Vercel. The frontend is a Vite multi-page React app. ETL modules ingest YC and TechCrunch sources, run enrichment/scoring, and persist schema-backed data through Supabase."
+        },
+        {
+          "kind": "metrics",
+          "items": [
+            {
+              "v": "YC + TC",
+              "k": "DATA SOURCES"
+            },
+            {
+              "v": "FastAPI",
+              "k": "BACKEND"
+            },
+            {
+              "v": "Gmail",
+              "k": "OUTREACH"
+            },
+            {
+              "v": "Vercel",
+              "k": "DEPLOY TARGET"
+            }
+          ]
+        },
+        {
+          "kind": "paragraph",
+          "label": "03 — ICP MODEL",
+          "body": "The README documents scoring criteria: high-fit startups have at least $250k in total funding, are not launched or still in progress, and were founded within the last year. Medium and low tiers relax those thresholds and product-stage signals."
+        },
+        {
+          "kind": "paragraph",
+          "label": "04 — STATUS",
+          "body": "Proceeding / in progress. This is the canonical full-stack Saguna repo; the older Saguna_Consult folder is listed separately as a prototype/predecessor so the portfolio distinguishes the two."
+        }
+      ]
+    },
+    {
+      "slug": "saguna-consult-pipeline-prototype",
+      "name": "SAGUNA CONSULT PIPELINE PROTOTYPE",
+      "kind": "personal · data + outreach prototype",
+      "year": "2026",
+      "role": "Solo",
+      "timeline": "prototype / predecessor build",
+      "status": "in-progress",
+      "stack": [
+        "PYTHON",
+        "POSTGRESQL",
+        "SQLITE",
+        "SUPABASE",
+        "GMAIL API",
+        "MICROSOFT GRAPH",
+        "VITE",
+        "REACT",
+        "HEROUI"
+      ],
+      "summary": "An earlier Saguna prototype made of focused pipeline modules for startup ingestion, normalization, LLM-ready payloads, contact enrichment, Gmail outreach, and frontend-serving database refreshes.",
+      "img": "assets/project-screenshots/saguna-consult-pipeline-prototype.png",
+      "details": [
+        "Pipeline modules ingest YC and TechCrunch data, normalize companies, prepare LLM payloads, enrich contacts, and materialize app-facing tables.",
+        "Outreach modules include Gmail draft/send flows, a Gmail-style inbox prototype, and Microsoft email API experiments.",
+        "A standalone React/HeroUI rebuild explores dashboard UI while keeping backend and pipeline integration separate."
+      ],
+      "links": [
+        {
+          "k": "SOURCE",
+          "v": "github"
+        }
+      ],
+      "sections": [
+        {
+          "kind": "paragraph",
+          "label": "01 — WHAT IT DOES",
+          "body": "This folder is the earlier modular version of the Saguna work. It focuses on startup data ingestion, company normalization, LLM-ready payload construction, contact enrichment, outreach workflows, and frontend-facing database materialization."
+        },
+        {
+          "kind": "paragraph",
+          "label": "02 — HOW IT WORKS",
+          "body": "The prototype is split into small Python modules: YC and TechCrunch ingestion, unified company normalization, LLM payload building, deterministic contact extraction, app table refresh, Gmail outreach, and Microsoft email experiments. The rebuild folder contains a standalone React/HeroUI dashboard rebuild."
+        },
+        {
+          "kind": "metrics",
+          "items": [
+            {
+              "v": "YC + TC",
+              "k": "INGEST"
+            },
+            {
+              "v": "SQLite/Postgres",
+              "k": "STORAGE"
+            },
+            {
+              "v": "Gmail",
+              "k": "OUTREACH"
+            },
+            {
+              "v": "React",
+              "k": "UI REBUILD"
+            }
+          ]
+        },
+        {
+          "kind": "paragraph",
+          "label": "03 — MODULE SHAPE",
+          "body": "The repo documents each stage independently: contact enrichment explains source pages and extracted candidates, unified normalization records source provenance, LLM-ready payloads preserve field-level evidence, and the app refresh step materializes lead/ranking/dashboard tables for the frontend."
+        },
+        {
+          "kind": "paragraph",
+          "label": "04 — STATUS",
+          "body": "Proceeding / in progress. This is listed as a prototype/predecessor because it has enough local documentation and code to describe, while the separate Saguna Consulting AI System entry represents the more canonical full-stack version."
+        }
+      ]
+    },
+    {
+      "slug": "sentiment-analyzer-dashboard",
+      "name": "SENTIMENT ANALYZER DASHBOARD",
+      "kind": "personal · ml dashboard",
+      "year": "2026",
+      "role": "Solo",
+      "timeline": "phase 3 frontend in progress",
+      "status": "in-progress",
+      "stack": [
+        "REACT 19",
+        "TYPESCRIPT",
+        "VITE",
+        "PYTHON 3.13",
+        "AWS LAMBDA",
+        "HUGGING FACE TRANSFORMERS",
+        "YAKE",
+        "GITHUB ACTIONS",
+        "PLAYWRIGHT"
+      ],
+      "summary": "A React dashboard that sends text to a Python AWS Lambda container and returns sentiment, emotion probabilities, and keyword extraction.",
+      "img": "assets/project-screenshots/sentiment-analyzer-dashboard.png",
+      "details": [
+        "Frontend is React 19 + TypeScript + Vite with planned GitHub Pages deployment.",
+        "Backend Lambda container runs Cardiff RoBERTa sentiment, j-hartmann DistilRoBERTa emotion, and YAKE keywords.",
+        "CI/CD uses GitHub Actions with OIDC-based AWS authentication and a Lambda Function URL for the HTTPS API."
+      ],
+      "links": [
+        {
+          "k": "SOURCE",
+          "v": "github"
+        }
+      ],
+      "sections": [
+        {
+          "kind": "paragraph",
+          "label": "01 — WHAT IT DOES",
+          "body": "Users enter text in a dashboard and receive sentiment classification, emotion breakdown, and extracted keywords. The frontend stores history client-side, while inference runs behind an HTTPS Lambda Function URL."
+        },
+        {
+          "kind": "paragraph",
+          "label": "02 — HOW IT WORKS",
+          "body": "The backend is a Python 3.13 Lambda container with transformer models baked into the image and YAKE for statistical keyword extraction. The frontend is a Vite React app that posts to the function URL; production builds inline the deployed Lambda URL for GitHub Pages."
+        },
+        {
+          "kind": "metrics",
+          "items": [
+            {
+              "v": "2",
+              "k": "ML MODELS"
+            },
+            {
+              "v": "YAKE",
+              "k": "KEYWORDS"
+            },
+            {
+              "v": "Lambda URL",
+              "k": "API"
+            },
+            {
+              "v": "us-east-1",
+              "k": "REGION"
+            }
+          ]
+        },
+        {
+          "kind": "paragraph",
+          "label": "03 — DEPLOYMENT CHOICE",
+          "body": "The backend uses a Lambda Function URL instead of API Gateway to keep the deployment small and direct. The README documents the CORS constraint: local preview can smoke asset inlining, but real CORS validation has to happen from the deployed GitHub Pages origin."
+        },
+        {
+          "kind": "paragraph",
+          "label": "04 — STATUS",
+          "body": "Proceeding / in progress. Backend Lambda is deployed and Phase 2 is complete; frontend work is the current next step. The README has enough stack, architecture, model, setup, and roadmap detail for a portfolio entry."
+        }
+      ]
+    },
+    {
+      "slug": "task-management-system-dotnet",
+      "name": "TASK MANAGEMENT SYSTEM (.NET)",
+      "kind": "personal · full-stack",
+      "year": "2026",
+      "role": "Solo",
+      "timeline": "personal project",
+      "status": "in-progress",
+      "stack": [
+        "ASP.NET CORE",
+        "C#",
+        "EF CORE",
+        "SQLITE",
+        "JWT",
+        "FLUENTVALIDATION",
+        "XUNIT",
+        "MOQ",
+        "STATIC SPA"
+      ],
+      "summary": "A full-stack ASP.NET Core task manager with JWT auth, user-scoped tasks/categories, filtering, pagination, soft deletes, activity logs, validation, Swagger, and application-layer tests.",
+      "img": "assets/project-screenshots/task-management-system-dotnet.png",
+      "details": [
+        "Solution is split into Domain, Application, Infrastructure, Api, and Tests projects.",
+        "Backend uses EF Core migrations, repository interfaces, a Result pattern, global exception middleware, JWT token generation, and FluentValidation.",
+        "Static SPA is served from the API host and supports auth, categories, task CRUD, filters, pagination, and soft delete."
+      ],
+      "links": [
+        {
+          "k": "SOURCE",
+          "v": "github"
+        }
+      ],
+      "sections": [
+        {
+          "kind": "paragraph",
+          "label": "01 — WHAT IT DOES",
+          "body": "Users register or log in, manage categories, create and update tasks, filter by status/priority/search, page through task lists, and soft-delete work items. Activity logs track task status changes."
+        },
+        {
+          "kind": "paragraph",
+          "label": "02 — HOW IT WORKS",
+          "body": "The backend is an ASP.NET Core REST API with EF Core and SQLite. The application layer returns Result objects instead of throwing for business failures; FluentValidation handles request DTOs; global middleware maps unexpected errors to clean JSON."
+        },
+        {
+          "kind": "metrics",
+          "items": [
+            {
+              "v": "5",
+              "k": "PROJECTS"
+            },
+            {
+              "v": "JWT",
+              "k": "AUTH"
+            },
+            {
+              "v": "SQLite",
+              "k": "DB"
+            },
+            {
+              "v": "xUnit",
+              "k": "TESTS"
+            }
+          ]
+        },
+        {
+          "kind": "paragraph",
+          "label": "03 — ARCHITECTURE SIGNAL",
+          "body": "The project is useful as a clean architecture exercise: domain entities stay thin, the application layer owns use cases and Result responses, infrastructure owns persistence and security helpers, and the API layer owns controllers, validators, middleware, and Swagger."
+        },
+        {
+          "kind": "paragraph",
+          "label": "04 — STATUS",
+          "body": "Proceeding / in progress. Core functionality is implemented but the README notes that broader validation and end-to-end testing still need refinement."
+        }
+      ]
+    },
+    {
+      "slug": "carematch-ai",
+      "name": "CAREMATCH AI",
+      "kind": "personal · healthcare ai prototype",
+      "year": "2026",
+      "role": "Solo",
+      "timeline": "personal prototype",
+      "status": "in-progress",
+      "stack": [
+        "REACT",
+        "VITE",
+        "EXPRESS",
+        "ZOD",
+        "LUCIDE REACT",
+        "OPENAI SDK",
+        "MULTI-PROVIDER LLM ADAPTERS"
+      ],
+      "summary": "A mobile-first healthcare routing prototype that turns free-text symptoms into editable clinical summaries, safety-aware guidance, provider matches, and a booking flow.",
+      "img": "assets/project-screenshots/carematch-ai.png",
+      "details": [
+        "Frontend collects symptom text, shows a staged AI-summary flow, renders editable clinical cards, and walks through provider matching and booking.",
+        "Express backend exposes health and symptom-summary endpoints with strict schema validation and multi-provider LLM adapters.",
+        "Safety layer avoids diagnosis language, flags urgent terms, pauses matching for urgent guidance, and falls back to deterministic mock data when providers fail."
+      ],
+      "links": [
+        {
+          "k": "SOURCE",
+          "v": "github"
+        }
+      ],
+      "sections": [
+        {
+          "kind": "paragraph",
+          "label": "01 — WHAT IT DOES",
+          "body": "A patient describes symptoms in plain language. The app organizes the intake into review cards, asks a safety-oriented clarifying question, recommends a starting care direction, shows matched providers, and walks the user through selecting an appointment slot."
+        },
+        {
+          "kind": "paragraph",
+          "label": "02 — HOW IT WORKS",
+          "body": "The backend normalizes LLM output into a schema-validated payload. It can call OpenAI, xAI/Grok, Claude, Gemini, DeepSeek, Qwen, or a mock fallback. The frontend keeps the user in the loop by making generated clinical cards editable before matching."
+        },
+        {
+          "kind": "metrics",
+          "items": [
+            {
+              "v": "7",
+              "k": "LLM MODES"
+            },
+            {
+              "v": "Zod",
+              "k": "VALIDATION"
+            },
+            {
+              "v": "mock",
+              "k": "FALLBACK"
+            },
+            {
+              "v": "booking",
+              "k": "FLOW END"
+            }
+          ]
+        },
+        {
+          "kind": "paragraph",
+          "label": "03 — SAFETY BOUNDARY",
+          "body": "The project is careful not to present itself as a diagnosis tool. It uses clinician-review language, keeps summaries editable, flags urgent safety terms, and pauses provider matching when emergency guidance is more appropriate."
+        },
+        {
+          "kind": "paragraph",
+          "label": "04 — STATUS",
+          "body": "Proceeding / in progress. The README is detailed enough for portfolio use and clearly lists current limitations: mock provider data, simulated booking, simulated insurance/location/availability matching, and no production compliance work yet."
         }
       ]
     }

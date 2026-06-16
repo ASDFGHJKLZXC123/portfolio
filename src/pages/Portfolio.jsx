@@ -562,8 +562,12 @@ export default function Portfolio() {
       .catch(() => {});
   }, []);
 
-  const featured = PROJECTS.slice(0, t.projectCount);
-  const extra = PROJECTS.slice(t.projectCount);
+  const featured = PROJECTS
+    .filter((p) => p.featured)
+    .sort((a, b) => (a.featuredRank ?? 999) - (b.featuredRank ?? 999))
+    .slice(0, t.projectCount);
+  const shownSlugs = new Set(featured.map((p) => projectSlug(p)));
+  const extra = PROJECTS.filter((p) => !shownSlugs.has(projectSlug(p)));
 
   const sections = [
     { id: 'work',      label: 'WORK',      show: true },

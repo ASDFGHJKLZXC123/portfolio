@@ -40,8 +40,8 @@ Planned copy only. Do not update the live React component until implementation.
 - Section title: Technical Stack
 - Section subtitle: Tools and practices behind my selected work
 - Stack text:
-  - Languages: TypeScript · Python · Go · SQL
-  - Frontend: React · Next.js · Tailwind
+  - Languages: TypeScript · Python · Go · C++ · Java · SQL
+  - Frontend: React · Next.js · Tailwind · HTML · CSS
   - Backend & Data: FastAPI · Node.js · PostgreSQL · Redis
   - Systems & Infra: Docker · AWS · GitHub Actions · API Design · System Design
 - Why this set works: This combination positions you as a new-grad full-stack/backend-leaning software engineer with systems interest, without making the homepage feel like a resume dump.

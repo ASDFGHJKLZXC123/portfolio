@@ -116,8 +116,8 @@ const EDUCATION = {
   degree: 'B.S. Informatics',
   dept: 'Donald Bren School of Information & Computer Sciences',
   dates: '2023–2026',
-  note: 'Built on a Computer Science foundation with coursework across systems, algorithms, full-stack development, and human-centered software design.',
-  coursework: ['Operating Systems', 'Algorithms', 'Full-Stack Web Development', 'Human-Computer Interaction'],
+  note: 'Built on a software engineering and computer science foundation, with coursework spanning data structures, databases, networks, artificial intelligence, and human-centered software design.',
+  coursework: ['Data Structure Implementation & Analysis', 'Introduction to Data Management', 'Computer Networks', 'Introduction to Artificial Intelligence', 'Engineering of AI Software', 'Probability & Statistics for CS', 'Requirements Analysis & Engineering', 'Software Design', 'Human-Computer Interaction', 'Project Management'],
 };
 
 const slugify = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -471,7 +471,7 @@ function Education() {
       </div>
       <div>
         <h4 id="education-coursework" style={{ margin: '0 0 14px', fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.18em', color: 'var(--muted)', fontWeight: 500, textTransform: 'uppercase' }}>
-          <span aria-hidden="true">/ </span>Coursework
+          <span aria-hidden="true">/ </span>Selected Coursework
         </h4>
         <ul className="education-course-list" aria-labelledby="education-coursework">
           {EDUCATION.coursework.map((course) => (

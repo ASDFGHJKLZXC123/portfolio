@@ -25,7 +25,7 @@
       "img": "assets/project-screenshots/reliableflow.png",
       "details": [
         "PostgreSQL-backed worker loop claims pending jobs with SELECT ... FOR UPDATE SKIP LOCKED, records attempts, retries failures with exponential backoff, and promotes exhausted jobs to dead letter.",
-        "Webhook layer stores signed delivery records, HMAC-verifies outbound test events, exposes delivery/attempt inspection, and documents the current limitation that no background webhook dispatcher poller is wired.",
+        "Webhook layer stores signed delivery records; a dedicated dispatcher claims pending deliveries, sends HMAC-signed HTTP POSTs, records attempts, and is wired as its own Docker Compose service.",
         "Portfolio polish includes Docker Compose services, live migration checks in CI, frontend smoke tests, screenshots, architecture docs, demo docs, and explicit known limitations."
       ],
       "links": [
@@ -61,7 +61,7 @@
               "k": "LOCAL RUN"
             },
             {
-              "v": "4 CI jobs",
+              "v": "5 CI jobs",
               "k": "GITHUB ACTIONS"
             }
           ]
@@ -74,7 +74,7 @@
         {
           "kind": "paragraph",
           "label": "04 — STATUS",
-          "body": "Finished portfolio project. Local demo path, screenshots, tests, CI, architecture docs, and resume bullets are included. Known limits are explicit: no live multi-process SKIP LOCKED proof, no background webhook dispatcher poller, no exactly-once delivery guarantee, and no production deployment."
+          "body": "Finished portfolio project. Local demo path, screenshots, tests, CI, architecture docs, and resume bullets are included. Known limits are explicit: no live multi-process SKIP LOCKED proof, no exactly-once delivery guarantee, and no production deployment."
         }
       ]
     },
@@ -381,16 +381,16 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal project",
-      "status": "in-progress",
       "stack": [
         "DJANGO + DRF",
         "CELERY + REDIS",
         "POSTGRES",
         "PYDANTIC",
-        "STATIC FRONTEND PROTOTYPE",
+        "REACT 19 + TYPESCRIPT + VITE",
+        "VITEST + PLAYWRIGHT",
         "STRUCTURED JSON LOGGING"
       ],
-      "summary": "A hiring-workflow backend that ingests resumes, extracts structured fields with a Celery worker, and exposes recruiter-facing candidate review APIs. The frontend exists as a static prototype while the React/Vite rebuild is still in progress.",
+      "summary": "A full-stack hiring workflow with a shipped React 19 + TypeScript SPA for resume ingestion, async structured extraction, candidate review, role workspaces, shortlisting, comparison, and funnel analytics.",
       "featured": false,
       "img": "assets/project-screenshots/ai-candidate-dashboard.png",
       "details": [
@@ -413,7 +413,7 @@
         {
           "kind": "paragraph",
           "label": "02 — HOW IT WORKS",
-          "body": "Django/DRF API + a Celery worker queue backed by Redis. The extractor returns a payload validated by Pydantic before it hits Postgres. Failed jobs are persisted with their retry count so they're recoverable, not silent. The backend pipeline is implemented; the modern frontend wiring is still being rebuilt."
+          "body": "Django/DRF API + a Celery worker queue backed by Redis. The extractor returns a payload validated by Pydantic before it hits Postgres. The shipped Vite SPA provides authenticated routing across 11 product surfaces, while Vitest unit tests and Playwright end-to-end/accessibility tests exercise the frontend; the old static HTML prototype is reference-only."
         },
         {
           "kind": "metrics",
@@ -444,7 +444,7 @@
         {
           "kind": "paragraph",
           "label": "04 — STATUS",
-          "body": "Solo project. Backend pipeline and resume-processing flow are implemented; frontend/package wiring is in progress. No production deploy or real users — built as a portfolio piece showing the async-extract pattern."
+          "body": "Finished portfolio build. The backend pipeline and React 19 frontend are implemented with authenticated routing, unit tests, and Playwright coverage. No production deploy or real users — built as a portfolio piece showing the async-extract and recruiter-workflow pattern."
         }
       ]
     },
@@ -457,7 +457,7 @@
       "timeline": "personal · MVP",
       "status": "in-progress",
       "stack": [
-        "NEXT 15 (APP ROUTER)",
+        "NEXT 16 (APP ROUTER)",
         "REACT 19",
         "TYPESCRIPT",
         "AUTH.JS v5",
@@ -471,7 +471,7 @@
       "details": [
         "Gmail OAuth sign-in via Auth.js v5; sync merges INBOX + SENT thread IDs so outbound replies land in the local thread model.",
         "Thread summarization, draft generation with tone/clarifying-question modes, and natural-language draft revision — backed by a Claude → Gemini → heuristic-template provider chain, so a missing key in one provider falls through gracefully.",
-        "OAuth tokens encrypted at rest in `.data/inbox.json` with AES-256-GCM when ENCRYPTION_KEY is set; backend webhook routes for Gmail watch + Microsoft Graph subscriptions exist but aren't wired into the current UI."
+        "OAuth tokens are encrypted at rest in `.data/inbox.json` with AES-256-GCM when ENCRYPTION_KEY is set. The Gmail watch/subscription flow is wired end-to-end from the inbox UI; Microsoft Graph subscription routes and adapters exist, but its UI flow is not complete."
       ],
       "links": [
         {
@@ -488,7 +488,7 @@
         {
           "kind": "paragraph",
           "label": "02 — HOW IT WORKS",
-          "body": "Next 15 App Router + Auth.js v5 (beta) for OAuth. Local JSON persistence in .data/inbox.json — no real DB at runtime, even though Drizzle's schema/client/migrations are wired in. LLM calls try Claude first, then fall back to Gemini, then to heuristic templates. OAuth tokens are encrypted at rest with AES-256-GCM if ENCRYPTION_KEY is set, plaintext otherwise. Backend Gmail-watch and Microsoft-Graph webhook routes exist, but only the Gmail UI flow is wired end-to-end."
+          "body": "Next 16 App Router + Auth.js v5 (beta) for OAuth. Local JSON persistence in .data/inbox.json — no real DB at runtime, even though Drizzle's schema/client/migrations are wired in. LLM calls try Claude first, then fall back to Gemini, then to heuristic templates. OAuth tokens are encrypted at rest with AES-256-GCM if ENCRYPTION_KEY is set, plaintext otherwise. Backend Gmail-watch and Microsoft-Graph webhook routes exist, but only the Gmail UI flow is wired end-to-end."
         },
         {
           "kind": "metrics",
@@ -781,7 +781,7 @@
       "details": [
         "Pipeline stages cover database init, MedMNIST ingest, SQL-only validation checks, deterministic PyTorch baseline training, scikit-learn evaluation, and sidecar artifacts for metrics, ROC/PR curves, and confusion matrices.",
         "SQLite lineage ties every model artifact, prediction, and QA check back to a pipeline run so the dashboard can explain where each result came from.",
-        "Streamlit/Plotly dashboard includes split and label distributions, prediction confidence histograms, confusion matrix heatmap, ROC/PR curves, run duration charts, image QC, Grad-CAM, saliency, and graceful empty-state guidance."
+        "The Streamlit/Plotly dashboard includes split and label distributions, prediction confidence histograms, confusion matrix heatmap, ROC/PR curves, run duration charts, image QC, and graceful empty-state guidance. Grad-CAM and saliency are implemented and tested as backend explainability functions but are not surfaced in the dashboard."
       ],
       "links": [
         {
@@ -816,8 +816,8 @@
               "k": "QA CHARTS"
             },
             {
-              "v": "Grad-CAM",
-              "k": "INTERPRETABILITY"
+              "v": "Backend only",
+              "k": "EXPLAINABILITY"
             }
           ]
         },
@@ -991,6 +991,7 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal project",
+      "status": "in-progress",
       "stack": [
         "GO 1.22+",
         "JSON WIRE + PROTO SCHEMA",
@@ -998,14 +999,16 @@
         "QUIC + TLS",
         "TOML CONFIG",
         "STRUCTURED JSON LOGGING",
-        "COBRA CLI"
+        "COBRA CLI",
+        "WEBSOCKET RELAY",
+        "KOTLIN + SWIFT"
       ],
-      "summary": "A cross-device clipboard-sync daemon written in Go. Peers discover each other on the local network via mDNS, pair with a one-time secret, and exchange clipboard updates over QUIC/TLS using length-prefixed JSON envelopes shaped for a future proto migration.",
+      "summary": "A cross-device encrypted clipboard-sync system spanning a Go daemon and CLI, WebSocket relay, browser extension, native Kotlin Android and Swift iOS clients, and Windows packaging.",
       "img": "assets/project-screenshots/clipsync.png",
       "details": [
         "Daemon polls the system clipboard at a configurable interval (default 200 ms) and emits structured JSON log lines on every change.",
-        "Cross-platform clipboard: macOS, Linux (X11 + Wayland), Windows. Integration tests with fake clipboards run cross-platform; the real-clipboard test requires a graphical macOS session.",
-        "Networking layer is a hand-rolled stack: mDNS discovery, an identity/pairing/roster module, QUIC/TLS transport, and a length-prefixed JSON envelope (Hello / ClipboardUpdate / Ack) kept schema-compatible with the proto3 definitions — not gRPC."
+        "The repository implements desktop clipboard support for macOS, Linux, and Windows, plus native Android and iOS apps, a browser extension, and a Windows installer; the latest mobile and protocol changes still require compilation and live verification.",
+        "Networking includes mDNS discovery, identity/pairing/roster modules, QUIC/TLS, a WebSocket relay, and end-to-end XChaCha20-Poly1305 encrypted envelopes."
       ],
       "links": [
         {
@@ -1017,12 +1020,12 @@
         {
           "kind": "paragraph",
           "label": "01 — WHAT IT DOES",
-          "body": "Run the daemon on every device you own, pair them once, and your clipboard follows you across machines. CLI is Cobra-built: `daemon`, `get`/`set`, `ping`, `pair host` / `pair join`, `devices list` / `devices remove`. Configuration lives in TOML at the platform-appropriate config dir."
+          "body": "The implemented system is designed to pair desktop, mobile, and browser clients and synchronize encrypted clipboard updates across local or relayed connections. The Cobra CLI provides daemon, clipboard, ping, pairing, and device-management commands, while native Kotlin and Swift clients cover mobile surfaces."
         },
         {
           "kind": "paragraph",
           "label": "02 — HOW IT WORKS",
-          "body": "Internal Go packages: clipboard (polling abstraction per OS), mdns (peer discovery on the local network), pairing (one-time secret exchange), identity + crypto (device keys, signatures), roster (known peers), transport + tls (QUIC/TLS), wire (length-prefixed JSON envelopes kept compatible with proto3 message shapes). Daemon polls clipboard, hashes the content, and broadcasts a ClipboardUpdate envelope to peers when it changes; receivers ack."
+          "body": "Internal Go packages cover clipboard polling, mDNS discovery, pairing, identity, cryptography, peer rosters, QUIC/TLS transport, relay connectivity, and wire envelopes. The wider repository adds a WebSocket relay server, browser extension, Kotlin Android client, Swift iOS client, and Windows packaging."
         },
         {
           "kind": "metrics",
@@ -1053,7 +1056,7 @@
         {
           "kind": "paragraph",
           "label": "04 — STATUS",
-          "body": "Solo build. Daemon + CLI work end-to-end on macOS; cross-platform clipboard support is in code, but only the macOS real-clipboard path is exercised by the live integration test."
+          "body": "Implementation is present across desktop, relay, extension, Android, and iOS, including encrypted envelopes and mobile pairing. The latest mobile and protocol changes were statically audited but not compiled or tested in the implementation sandbox; Go, Android, Swift, and live-relay verification remain pending."
         }
       ],
       "featured": false
@@ -1081,7 +1084,7 @@
       "img": "assets/project-screenshots/citypulse.png",
       "details": [
         "Client: React 18 + Vite with Redux Toolkit state, Mapbox rendering, Deck.gl layers, sidebar controls, location autocomplete, Recharts summaries, and Jest/React Testing Library coverage.",
-        "Server: Express proxy routes for /api/weather, /api/air-quality, and /api/transit, cache middleware, WebSocket live-update channel, and fallback fixtures when the legacy OpenAQ v2 endpoint returns 410 Gone.",
+        "Server: Express proxy routes for /api/weather, /api/air-quality, and /api/transit, cache middleware, WebSocket live-update channel, OpenAQ v3 coordinate-based station requests, and fallback fixtures on upstream or request failures.",
         "Operational shape: workspace scripts for client/server dev, production build for the client, server tests with node:test, Docker Compose files, and GitHub Actions that run client and server tests."
       ],
       "links": [
@@ -1125,7 +1128,7 @@
         {
           "kind": "paragraph",
           "label": "03 — DATA LIMITS",
-          "body": "Weather requests are proxied through the backend and require an OpenWeather key. Air quality currently falls back to fixture data when the old OpenAQ v2 endpoint returns 410 Gone, and transit is fixture-backed. That makes the UI demo stable while keeping the migration point explicit."
+          "body": "Weather requests are proxied through the backend and require an OpenWeather key. Air quality calls OpenAQ v3 when coordinates are available and otherwise uses fixtures; a generic catch-all fallback also keeps the demo stable when upstream calls fail. Transit is fixture-backed."
         },
         {
           "kind": "paragraph",
@@ -1213,6 +1216,7 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal project",
+      "status": "in-progress",
       "stack": [
         "JAVA",
         "SPRING BOOT",
@@ -1278,7 +1282,7 @@
         {
           "kind": "paragraph",
           "label": "04 — STATUS",
-          "body": "Solo project. Built as a portfolio piece showing a complete CRUD-+-auth slice end-to-end with reasonable schema design."
+          "body": "In progress. The CRUD, authentication, filtering, dashboard, and Angular surfaces are implemented, but single-task ownership enforcement and its broken controller test still require repair before the project should be featured."
         }
       ],
       "featured": false
@@ -1680,7 +1684,7 @@
       "status": "in-progress",
       "stack": [
         "POWER BI",
-        "DAX (~135 MEASURES)",
+        "DAX (~94 MEASURES)",
         "POWER QUERY (M)",
         "PYTHON",
         "PANDAS",
@@ -1692,7 +1696,7 @@
       "accent": "radial-gradient(ellipse at 30% 35%, rgba(220,180,80,.30), transparent 55%)",
       "details": [
         "Five report pages are planned/spec'd: Production Overview (statewide trend, peak years, YoY change), Well Performance (fleet decline scatter, operator bars), Well Detail (drill-through with production curve and decline projection), Operator Comparison (formation-broken cumulative BOE), Forecast & Economics (WTI break-even).",
-        "~135 DAX measures across 14 measure files and a Python ETL (pandas) feeding a SQLite + Parquet backing store organized in raw / bronze / silver / cleaned layers — the layer separation makes recompute and audit cheap.",
+        "~94 DAX measures across 14 measure files and a Python ETL (pandas) feeding a SQLite + Parquet backing store organized in raw / bronze / silver / cleaned layers — the layer separation makes recompute and audit cheap.",
         "Row-Level Security design for four roles is specified, but model enforcement still needs validation once the .pbix exists."
       ],
       "links": [
@@ -1710,7 +1714,7 @@
         {
           "kind": "paragraph",
           "label": "02 — HOW IT WORKS",
-          "body": "Python preps the data: pulls/cleans North Dakota production history into Parquet + a SQLite source.db across raw/bronze/silver/cleaned layers. The intended Power BI model imports cleaned data, wraps it in a star-ish model, and uses Power Query for loading transforms. The DAX layer (~135 measures across 14 files) is where the analytics work lives — YTD totals, decline rates, half-life, cumulative shares, etc."
+          "body": "Python preps the data: pulls/cleans North Dakota production history into Parquet + a SQLite source.db across raw/bronze/silver/cleaned layers. The intended Power BI model imports cleaned data, wraps it in a star-ish model, and uses Power Query for loading transforms. The DAX layer (~94 measures across 14 files) is where the analytics work lives — YTD totals, decline rates, half-life, cumulative shares, etc."
         },
         {
           "kind": "metrics",
@@ -1720,7 +1724,7 @@
               "k": "DATA RANGE"
             },
             {
-              "v": "~135",
+              "v": "~94",
               "k": "DAX MEASURES"
             },
             {
@@ -2056,20 +2060,19 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal project",
-      "status": "in-progress",
       "stack": [
         "MIPS ASSEMBLY",
-        "MARS 4.5",
+        "MARS 4.5 TARGET",
         "PYTHON 3",
         "BASH",
         "DETERMINISTIC TEST HARNESS"
       ],
-      "summary": "A low-level diagnostics project implementing MIPS assembly routines and validating them with a deterministic pass/fail harness in MARS 4.5.",
+      "summary": "A low-level MIPS diagnostics project with six assembly routines and a deterministic 28-case harness; current results are provisional from a custom Python stand-in interpreter, with real MARS 4.5 execution still pending.",
       "img": "linear-gradient(135deg,#111111 0%,#1f2630 45%,#405263 100%)",
       "accent": "radial-gradient(ellipse at 32% 35%, rgba(180,210,230,.25), transparent 55%)",
       "details": [
         "Implements bit swapping, triple-range arithmetic, 3x3 determinant, min/max scan, XOR checksum, and null-terminated string length routines.",
-        "A Python/Bash test runner concatenates routines with tests, runs MARS in command-line mode, and validates exact pass/fail output.",
+        "A Python/Bash harness assembles the routine/test inputs and checks deterministic output. Current results come from a custom stand-in interpreter explicitly labeled provisional, not from MARS.",
         "Documentation covers calling convention, register mapping, debug notes, test plan, and sample output."
       ],
       "links": [
@@ -2087,7 +2090,7 @@
         {
           "kind": "paragraph",
           "label": "02 — HOW IT WORKS",
-          "body": "Each routine lives in its own assembly file. A build script creates one combined test assembly file, runs it through MARS 4.5, and checks that stdout reports the exact expected summary. The harness includes edge cases for bit positions, duplicate values, empty arrays, and strings."
+          "body": "Each routine lives in its own assembly file. A build script creates one combined test assembly file for an intended MARS 4.5 run, while the repository's current executable checks use a custom Python stand-in interpreter. The harness includes edge cases for bit positions, duplicate values, empty arrays, and strings."
         },
         {
           "kind": "metrics",
@@ -2101,24 +2104,24 @@
               "k": "TEST CASES"
             },
             {
-              "v": "MARS 4.5",
-              "k": "SIMULATOR"
+              "v": "Provisional",
+              "k": "VERIFICATION"
             },
             {
-              "v": "0 failed",
-              "k": "TARGET"
+              "v": "MARS pending",
+              "k": "AUTHORITATIVE RUN"
             }
           ]
         },
         {
           "kind": "paragraph",
           "label": "03 — BOUNDARIES",
-          "body": "The README is explicit about scope: MARS 4.5 only, no SPIM/QtSPIM support, no floating point, no dynamic allocation, and no overflow detection. That clarity makes it easier to evaluate the work without overclaiming embedded-platform experience."
+          "body": "The repository is explicit that its current Python stand-in results are provisional and not MARS. A real MARS 4.5 run remains pending because the required jar is not present; floating point, dynamic allocation, overflow detection, and other simulators are outside scope."
         },
         {
           "kind": "paragraph",
           "label": "04 — STATUS",
-          "body": "Proceeding / in progress from the unfinished folder. The repo has enough implementation notes, runnable test instructions, and expected output to justify listing it."
+          "body": "Finished implementation with six routines and a 28-case harness. Runner-independent work is complete, but authoritative MARS 4.5 execution remains gated until the simulator jar is supplied; current stand-in results are provisional."
         }
       ],
       "featured": false
@@ -2130,7 +2133,6 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal project",
-      "status": "in-progress",
       "stack": [
         "C++20",
         "CMAKE",
@@ -2192,7 +2194,7 @@
         {
           "kind": "paragraph",
           "label": "04 — STATUS",
-          "body": "Proceeding / in progress from the unfinished folder. The README has enough detail for a portfolio entry, including features, tooling baseline, usage examples, tests, and limitations."
+          "body": "Finished, feature-complete CLI with CTest unit tests and Python functional tests. Release evidence was produced with GCC 11.4 on Linux; the other documented compilers remain intended but unverified baselines."
         }
       ],
       "featured": false
@@ -2220,7 +2222,7 @@
       "img": "linear-gradient(135deg,#0d1526 0%,#142845 45%,#245b78 100%)",
       "accent": "radial-gradient(ellipse at 34% 34%, rgba(95,205,255,.28), transparent 55%)",
       "details": [
-        "React Native / Expo app with chat, bench, and model-management surfaces planned around a custom native bridge.",
+        "React Native / Expo chat is implemented and streams real on-device inference; bench and model-management screens remain placeholder stubs.",
         "Platform-neutral C++ core exposes a public C API and links to a pinned llama.cpp submodule.",
         "Build docs describe streaming event flow, deterministic inference checks, memory lifecycle testing, and privacy boundaries."
       ],
@@ -2270,160 +2272,7 @@
         {
           "kind": "paragraph",
           "label": "04 — STATUS",
-          "body": "Proceeding / in progress. There is no top-level README yet, but the local build document contains enough concrete scope, architecture, repository layout, stack, and success criteria to list it responsibly."
-        }
-      ],
-      "featured": false
-    },
-    {
-      "slug": "saguna-consulting-ai-system",
-      "name": "SAGUNA CONSULTING AI SYSTEM",
-      "kind": "capstone · full-stack ai sales ops",
-      "year": "2026",
-      "role": "Solo / capstone build",
-      "timeline": "IN4MATX 191A capstone",
-      "status": "in-progress",
-      "stack": [
-        "FASTAPI",
-        "SUPABASE",
-        "VITE",
-        "REACT",
-        "PYTHON ETL",
-        "GMAIL API",
-        "VERCEL",
-        "PYTEST"
-      ],
-      "summary": "A capstone system for ranking funded startups, managing outreach, and generating AI-assisted sales messages from YC, TechCrunch, enrichment, and scoring pipelines.",
-      "img": "assets/project-screenshots/saguna-consulting-ai-system.png",
-      "details": [
-        "FastAPI backend handles startups, Gmail, outreach, AI services, Supabase access, and Vercel API entrypoint compatibility.",
-        "Vite frontend provides the multi-page operator UI.",
-        "ETL pipelines ingest YC and TechCrunch data, enrich companies, score ideal customer profile fit, and write runtime outputs under ignored data paths."
-      ],
-      "links": [
-        {
-          "k": "SOURCE",
-          "v": "github"
-        }
-      ],
-      "sections": [
-        {
-          "kind": "paragraph",
-          "label": "01 — WHAT IT DOES",
-          "body": "The system helps a consulting workflow find funded startups, score them against an ideal customer profile, manage outreach, integrate Gmail, and generate AI-assisted sales messages."
-        },
-        {
-          "kind": "paragraph",
-          "label": "02 — HOW IT WORKS",
-          "body": "The canonical FastAPI app lives in backend.index:app, with compatibility shims for Vercel. The frontend is a Vite multi-page React app. ETL modules ingest YC and TechCrunch sources, run enrichment/scoring, and persist schema-backed data through Supabase."
-        },
-        {
-          "kind": "metrics",
-          "items": [
-            {
-              "v": "YC + TC",
-              "k": "DATA SOURCES"
-            },
-            {
-              "v": "FastAPI",
-              "k": "BACKEND"
-            },
-            {
-              "v": "Gmail",
-              "k": "OUTREACH"
-            },
-            {
-              "v": "Vercel",
-              "k": "DEPLOY TARGET"
-            }
-          ]
-        },
-        {
-          "kind": "paragraph",
-          "label": "03 — ICP MODEL",
-          "body": "The README documents scoring criteria: high-fit startups have at least $250k in total funding, are not launched or still in progress, and were founded within the last year. Medium and low tiers relax those thresholds and product-stage signals."
-        },
-        {
-          "kind": "paragraph",
-          "label": "04 — STATUS",
-          "body": "Proceeding / in progress. This is the canonical full-stack Saguna repo; the older Saguna_Consult folder is listed separately as a prototype/predecessor so the portfolio distinguishes the two."
-        }
-      ],
-      "featured": false
-    },
-    {
-      "slug": "saguna-consult-pipeline-prototype",
-      "name": "SAGUNA CONSULT PIPELINE PROTOTYPE",
-      "kind": "personal · data + outreach prototype",
-      "year": "2026",
-      "role": "Solo",
-      "timeline": "prototype / predecessor build",
-      "status": "in-progress",
-      "stack": [
-        "PYTHON",
-        "POSTGRESQL",
-        "SQLITE",
-        "SUPABASE",
-        "GMAIL API",
-        "MICROSOFT GRAPH",
-        "VITE",
-        "REACT",
-        "HEROUI"
-      ],
-      "summary": "An earlier Saguna prototype made of focused pipeline modules for startup ingestion, normalization, LLM-ready payloads, contact enrichment, Gmail outreach, and frontend-serving database refreshes.",
-      "img": "assets/project-screenshots/saguna-consult-pipeline-prototype.png",
-      "details": [
-        "Pipeline modules ingest YC and TechCrunch data, normalize companies, prepare LLM payloads, enrich contacts, and materialize app-facing tables.",
-        "Outreach modules include Gmail draft/send flows, a Gmail-style inbox prototype, and Microsoft email API experiments.",
-        "A standalone React/HeroUI rebuild explores dashboard UI while keeping backend and pipeline integration separate."
-      ],
-      "links": [
-        {
-          "k": "SOURCE",
-          "v": "github"
-        }
-      ],
-      "sections": [
-        {
-          "kind": "paragraph",
-          "label": "01 — WHAT IT DOES",
-          "body": "This folder is the earlier modular version of the Saguna work. It focuses on startup data ingestion, company normalization, LLM-ready payload construction, contact enrichment, outreach workflows, and frontend-facing database materialization."
-        },
-        {
-          "kind": "paragraph",
-          "label": "02 — HOW IT WORKS",
-          "body": "The prototype is split into small Python modules: YC and TechCrunch ingestion, unified company normalization, LLM payload building, deterministic contact extraction, app table refresh, Gmail outreach, and Microsoft email experiments. The rebuild folder contains a standalone React/HeroUI dashboard rebuild."
-        },
-        {
-          "kind": "metrics",
-          "items": [
-            {
-              "v": "YC + TC",
-              "k": "INGEST"
-            },
-            {
-              "v": "SQLite/Postgres",
-              "k": "STORAGE"
-            },
-            {
-              "v": "Gmail",
-              "k": "OUTREACH"
-            },
-            {
-              "v": "React",
-              "k": "UI REBUILD"
-            }
-          ]
-        },
-        {
-          "kind": "paragraph",
-          "label": "03 — MODULE SHAPE",
-          "body": "The repo documents each stage independently: contact enrichment explains source pages and extracted candidates, unified normalization records source provenance, LLM-ready payloads preserve field-level evidence, and the app refresh step materializes lead/ranking/dashboard tables for the frontend."
-        },
-        {
-          "kind": "paragraph",
-          "label": "04 — STATUS",
-          "body": "Proceeding / in progress. This is listed as a prototype/predecessor because it has enough local documentation and code to describe, while the separate Saguna Consulting AI System entry represents the more canonical full-stack version."
+          "body": "In progress. The native inference core, custom bridge, and chat surface are implemented; bench and model-management screens remain placeholder stubs, and the latest bridge changes still require full device-level verification."
         }
       ],
       "featured": false
@@ -2434,7 +2283,7 @@
       "kind": "personal · ml dashboard",
       "year": "2026",
       "role": "Solo",
-      "timeline": "phase 3 frontend in progress",
+      "timeline": "phases 1–5 complete · phase 6 polish",
       "status": "in-progress",
       "stack": [
         "REACT 19",
@@ -2450,9 +2299,9 @@
       "summary": "A React dashboard that sends text to a Python AWS Lambda container and returns sentiment, emotion probabilities, and keyword extraction.",
       "img": "assets/project-screenshots/sentiment-analyzer-dashboard.png",
       "details": [
-        "Frontend is React 19 + TypeScript + Vite with planned GitHub Pages deployment.",
+        "Frontend is a deployed React 19 + TypeScript + Vite dashboard with 8+ components, client-side history, and GitHub Pages hosting.",
         "Backend Lambda container runs Cardiff RoBERTa sentiment, j-hartmann DistilRoBERTa emotion, and YAKE keywords.",
-        "CI/CD uses GitHub Actions with OIDC-based AWS authentication and a Lambda Function URL for the HTTPS API."
+        "CI/CD uses GitHub Actions with OIDC-based AWS authentication and a Lambda Function URL for the HTTPS API; Vitest and Playwright cover the frontend."
       ],
       "links": [
         {
@@ -2500,7 +2349,7 @@
         {
           "kind": "paragraph",
           "label": "04 — STATUS",
-          "body": "Proceeding / in progress. Backend Lambda is deployed and Phase 2 is complete; frontend work is the current next step. The README has enough stack, architecture, model, setup, and roadmap detail for a portfolio entry."
+          "body": "Live and deployed: Phases 1–5 are complete, including the Lambda backend, React 19 dashboard, GitHub Pages deployment, live backend integration, and CI/CD. Phase 6 polish and closeout remain in progress."
         }
       ],
       "featured": false
@@ -2512,7 +2361,6 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal project",
-      "status": "in-progress",
       "stack": [
         "ASP.NET CORE",
         "C#",
@@ -2577,7 +2425,7 @@
         {
           "kind": "paragraph",
           "label": "04 — STATUS",
-          "body": "Proceeding / in progress. Core functionality is implemented but the README notes that broader validation and end-to-end testing still need refinement."
+          "body": "Finished, feature-complete portfolio build. The repository documents reproducible restore, build, test, and run workflows, user-scoped data, unit tests, and SQLite integration tests; broader product features remain outside scope."
         }
       ],
       "featured": false

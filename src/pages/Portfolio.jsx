@@ -9,7 +9,7 @@ import {
   TweakRadio, TweakColor,
 } from '../components/tweaks-panel';
 import { projectImageBackground } from '../lib/project-image';
-import { externalLinkProps, isUsableHref, projectSlug, projectSourceHref } from '../lib/project-links';
+import { externalLinkProps, isUsableHref, projectSlug, projectSourceHref, projectDemoHref } from '../lib/project-links';
 
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "dark": true,
@@ -294,6 +294,8 @@ function ProjectTile({ project }) {
   const stack = Array.isArray(project.stack) ? project.stack.slice(0, 3).join(' · ') : project.stack;
   const sourceHref = projectSourceHref(project);
   const hasSource = isUsableHref(sourceHref);
+  const demoHref = projectDemoHref(project);
+  const hasDemo = isUsableHref(demoHref);
   const detailSlug = projectSlug(project);
   return (
     <article>
@@ -376,6 +378,15 @@ function ProjectTile({ project }) {
             >
               SOURCE →
             </a>
+            {hasDemo && (
+              <a
+                href={demoHref}
+                {...externalLinkProps(demoHref)}
+                style={{ color: 'var(--fg)', textDecoration: 'underline', textUnderlineOffset: 4 }}
+              >
+                LIVE DEMO →
+              </a>
+            )}
           </div>
         </div>
       </div>

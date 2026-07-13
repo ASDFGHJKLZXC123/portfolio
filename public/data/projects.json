@@ -391,7 +391,8 @@
         "STRUCTURED JSON LOGGING"
       ],
       "summary": "A full-stack hiring workflow with a shipped React 19 + TypeScript SPA for resume ingestion, async structured extraction, candidate review, role workspaces, shortlisting, comparison, and funnel analytics.",
-      "featured": false,
+      "featured": true,
+      "featuredRank": 3,
       "img": "assets/project-screenshots/ai-candidate-dashboard.png",
       "details": [
         "Async resume processing: PDF/text upload triggers a Celery job that extracts skills, years of experience, education, summary, and a match score against a job description.",
@@ -621,8 +622,7 @@
         "GITHUB ACTIONS"
       ],
       "summary": "A multi-tenant client operations portal: org-scoped auth, role-based tickets, comments, SLA tracking, dashboards, weekly reports, simulated notifications, attachment metadata, Docker Compose, and CI.",
-      "featured": true,
-      "featuredRank": 3,
+      "featured": false,
       "img": "assets/project-screenshots/clientflow.png",
       "details": [
         "Role model covers PLATFORM_ADMIN, COMPANY_MANAGER, STAFF, and CLIENT_USER with organization isolation across tickets, rosters, dashboards, comments, notifications, reports, and attachments.",
@@ -1210,160 +1210,6 @@
       "featured": false
     },
     {
-      "slug": "task-tracker-spring",
-      "name": "TASK TRACKER (SPRING + ANGULAR)",
-      "kind": "personal · full-stack",
-      "year": "2026",
-      "role": "Solo",
-      "timeline": "personal project",
-      "status": "in-progress",
-      "stack": [
-        "JAVA",
-        "SPRING BOOT",
-        "SPRING DATA JPA",
-        "SPRING SECURITY (HTTP BASIC)",
-        "MYSQL",
-        "H2 (TESTS)",
-        "SWAGGER",
-        "JUNIT",
-        "ANGULAR 8",
-        "BOOTSTRAP"
-      ],
-      "summary": "A multi-user task tracker with full CRUD, per-account list/dashboard scoping, filtering, sorting, pagination, and a dashboard summary endpoint. Spring Boot REST API + Angular 8 SPA.",
-      "img": "assets/project-screenshots/task-tracker-spring.png",
-      "details": [
-        "Backend: Spring Boot + Spring Data JPA + Spring Security (HTTP Basic) + Swagger + JUnit. Per-user scoping on list/dashboard endpoints; per-task ownership checks on get/update/delete are a known gap (auth-z hole I'd close before any real deployment).",
-        "Schema: users / categories / tasks with explicit indexes on status, priority, due_date, assignee_id, creator_id, category_id — the primary filter/join dimensions for the dashboard and list views.",
-        "Frontend: Angular 8 + Bootstrap with login, dashboard, task list (filter/sort/paginate/status-change), and task create/edit forms. Tests via Jasmine + Karma."
-      ],
-      "links": [
-        {
-          "k": "SOURCE",
-          "v": "github"
-        }
-      ],
-      "sections": [
-        {
-          "kind": "paragraph",
-          "label": "01 — WHAT IT DOES",
-          "body": "Register an account, log in via HTTP Basic, manage your tasks with title/description/status/priority/due-date/creator/assignee/category. Filter by all of those, sort, paginate. The dashboard and list endpoints scope by the logged-in user; per-task endpoints (get/update/delete) currently rely on knowing the right ID — that's the next thing to fix if this were to leave a portfolio context."
-        },
-        {
-          "kind": "paragraph",
-          "label": "02 — HOW IT WORKS",
-          "body": "Standard Spring Boot stack: JPA repositories, Security with HTTP Basic, JUnit for tests against H2 in-memory; MySQL in regular dev. 19 REST endpoints across /api/auth, /api/tasks, /api/users, /api/categories, and /api/dashboard. Swagger UI at /swagger-ui.html. Frontend is Angular 8 with the routes mapped 1:1 to the API surface."
-        },
-        {
-          "kind": "metrics",
-          "items": [
-            {
-              "v": "19",
-              "k": "REST ENDPOINTS"
-            },
-            {
-              "v": "6",
-              "k": "INDEXED COLUMNS"
-            },
-            {
-              "v": "HTTP Basic",
-              "k": "AUTH"
-            },
-            {
-              "v": "Jasmine + Karma",
-              "k": "FRONTEND TESTS"
-            }
-          ]
-        },
-        {
-          "kind": "paragraph",
-          "label": "03 — WHY HTTP BASIC",
-          "body": "Basic auth is enough for a single-tenant CRUD demo and keeps the focus on the actual data model + querying patterns rather than session/token management. Indexes are explicit on the columns the dashboard queries hit because that's where the API earns its keep — counting tasks by category and priority for an active user has to be a single index seek, not a table scan."
-        },
-        {
-          "kind": "paragraph",
-          "label": "04 — STATUS",
-          "body": "In progress. The CRUD, authentication, filtering, dashboard, and Angular surfaces are implemented, but single-task ownership enforcement and its broken controller test still require repair before the project should be featured."
-        }
-      ],
-      "featured": false
-    },
-    {
-      "slug": "customer-issue-tracker",
-      "name": "CUSTOMER ISSUE TRACKER",
-      "kind": "personal · full-stack",
-      "year": "2026",
-      "role": "Solo",
-      "timeline": "personal project",
-      "stack": [
-        "JAVA 17",
-        "SPRING BOOT 3",
-        "SPRING SECURITY",
-        "SPRING DATA JPA",
-        "MYSQL",
-        "SWAGGER",
-        "JUNIT 5",
-        "ANGULAR 8",
-        "BOOTSTRAP"
-      ],
-      "summary": "A full-stack customer support app for issue submission, analyst triage, investigation, and resolution. Spring Boot REST API + Angular 8 SPA with role-aware dashboards and a guarded issue lifecycle.",
-      "img": "assets/project-screenshots/customer-issue-tracker.png",
-      "details": [
-        "Backend: Spring Boot REST API with HTTP Basic security, role checks for customer/analyst/admin flows, issue CRUD, comments, reference data, dashboard summary, resolution reporting, Swagger/OpenAPI, seeded demo users, and JUnit tests.",
-        "Issue lifecycle: OPEN → IN_PROGRESS → INVESTIGATING/RESOLVED → CLOSED with explicit validation and blocked invalid transitions. RESOLVED can reopen to IN_PROGRESS; CLOSED is terminal.",
-        "Frontend: Angular 8 + Bootstrap SPA with role-aware routes, auth and role guards, customer submission/detail flow, analyst triage dashboard, admin reporting view, and Jasmine/Karma specs."
-      ],
-      "links": [
-        {
-          "k": "SOURCE",
-          "v": "github"
-        }
-      ],
-      "sections": [
-        {
-          "kind": "paragraph",
-          "label": "01 — WHAT IT DOES",
-          "body": "Customers submit issues with category, priority, description, and optional attachment. Analysts triage the queue, assign ownership, add comments, and move issues through investigation and resolution. Admins can review dashboard totals and resolution reporting."
-        },
-        {
-          "kind": "paragraph",
-          "label": "02 — HOW IT WORKS",
-          "body": "Spring Boot exposes /api/issues, /api/reference, /api/dashboard, and /api/auth endpoints over a MySQL-backed JPA model. Spring Security uses HTTP Basic and role-aware service rules. The Angular client routes customers, analysts, and admins to different dashboards through AuthGuard and RoleGuard."
-        },
-        {
-          "kind": "metrics",
-          "items": [
-            {
-              "v": "5",
-              "k": "ISSUE STATES"
-            },
-            {
-              "v": "3",
-              "k": "USER ROLES"
-            },
-            {
-              "v": "12",
-              "k": "API ROUTES"
-            },
-            {
-              "v": "Swagger + JUnit",
-              "k": "BACKEND QA"
-            }
-          ]
-        },
-        {
-          "kind": "paragraph",
-          "label": "03 — DESIGN CHOICE: STATE MACHINE",
-          "body": "The issue status is not just a dropdown. The backend owns the allowed transition map, so the UI can be helpful without being trusted. That keeps impossible jumps, like OPEN straight to CLOSED, out of the database even if someone calls the API directly."
-        },
-        {
-          "kind": "paragraph",
-          "label": "04 — STATUS",
-          "body": "Completed portfolio build with seeded credentials for customer, analyst, and admin roles. Backend targets MySQL by default; dependencies were not reinstalled during the latest sandbox verification because registry access is restricted."
-        }
-      ],
-      "featured": false
-    },
-    {
       "slug": "java-banking-system",
       "name": "JAVA BANKING SYSTEM",
       "kind": "personal · core java backend",
@@ -1512,164 +1358,6 @@
           "kind": "paragraph",
           "label": "04 — STATUS",
           "body": "Solo. Runs done on Apple M2 / 16 GB / OpenJDK 23 / Postgres 15.6 / Redis 7.2 / Gatling 3.10.5. M7 (WebFlux) skipped as out-of-scope; M9 (allocation-hot-path rewrite) deferred pending JFR analysis. Design doc, journal, and ceiling-sweep results all in repo."
-        }
-      ],
-      "featured": false
-    },
-    {
-      "slug": "multi-source-etl",
-      "name": "MULTI-SOURCE ETL — BRAZILIAN E-COMMERCE",
-      "kind": "personal · data engineering",
-      "year": "2026",
-      "role": "Solo",
-      "timeline": "personal project",
-      "status": "in-progress",
-      "stack": [
-        "PYTHON 3.10–3.12",
-        "PANDAS",
-        "PYARROW",
-        "PANDERA",
-        "SQLALCHEMY",
-        "POSTGRESQL",
-        "DOCKER COMPOSE",
-        "PYTEST",
-        "GITHUB ACTIONS",
-        "POWER BI"
-      ],
-      "summary": "Medallion-architecture (Bronze/Silver/Gold) ETL integrating three sources — Olist Brazilian e-commerce (99k orders / 113k line items), Open-Meteo historical weather (20 cities, ERA5), Frankfurter FX (USD/BRL) — into Parquet Gold outputs and a Postgres warehouse. The 4-page / 27-DAX Power BI dashboard is documented/spec'd, with the .pbix still pending.",
-      "img": "linear-gradient(135deg,#0a261d 0%,#103f2c 45%,#1d6e4d 100%)",
-      "accent": "radial-gradient(ellipse at 30% 35%, rgba(120,255,200,.30), transparent 55%)",
-      "details": [
-        "Bronze preserves raw snapshots — Parquet for the DB-sourced tables, JSON for the API-sourced ones (weather, FX). Silver enforces pandera schema contracts with quarantine routing for invalid rows. Gold materialises 4 Parquet facts and 5 dimensions; 3 facts are warehouse-loaded in Postgres today.",
-        "Three independent integration patterns: Kaggle CSV bulk load, Open-Meteo time-series API per city, Frankfurter FX daily series — joined back to fact_sales by order date and shipping city for currency-normalised + weather-aware analysis.",
-        "98-test pytest suite running in a Python 3.10/3.11/3.12 matrix on GitHub Actions; one-command Docker Compose pipeline run; 4-page Power BI dashboard with 27 DAX measures is specified in docs, but the .pbix export is still pending."
-      ],
-      "links": [
-        {
-          "k": "SOURCE",
-          "v": "github"
-        }
-      ],
-      "sections": [
-        {
-          "kind": "paragraph",
-          "label": "01 — WHAT IT DOES",
-          "body": "Builds a unified analytics warehouse that can answer cross-source questions: which Brazilian states drive the most order revenue, does adverse weather correlate with delivery failures, how does USD/BRL volatility move USD-normalised reporting, which sellers ship on time. The warehouse outputs are Postgres + Parquet; the Power BI dashboard is specified but not exported as a finished .pbix yet."
-        },
-        {
-          "kind": "paragraph",
-          "label": "02 — HOW IT WORKS",
-          "body": "Bronze layer lands raw snapshots of every source — Parquet for DB-sourced tables, JSON for API responses (weather, FX). Silver casts types, dedupes, and runs pandera schema contracts; rejects route to data/silver/quarantine/ rather than failing the whole batch. Gold materialises 4 Parquet facts and 5 dimensions, with 3 facts loaded into the warehouse today. Pipeline runs end-to-end via Make targets / docker compose, with 98 tests covering the transforms."
-        },
-        {
-          "kind": "metrics",
-          "items": [
-            {
-              "v": "99,441 / 112,650",
-              "k": "ORDERS / LINES"
-            },
-            {
-              "v": "4 / 5",
-              "k": "GOLD FACTS / DIMS"
-            },
-            {
-              "v": "3",
-              "k": "WAREHOUSE FACTS"
-            },
-            {
-              "v": "98",
-              "k": "TEST COUNT"
-            }
-          ]
-        },
-        {
-          "kind": "paragraph",
-          "label": "03 — WHY MEDALLION",
-          "body": "The schema-contract layer (Silver) is what makes this not-a-toy: invalid rows get isolated to a quarantine path with full provenance, so the pipeline never silently fails or corrupts the analytics layer. Bronze gives me the raw landing zone for replay. Gold's star schema is shaped specifically for the dashboard's question set, not as a generic dump — that's the part most portfolio ETLs skip."
-        },
-        {
-          "kind": "paragraph",
-          "label": "04 — STATUS",
-          "body": "Solo build. Pipeline runs end-to-end; the Power BI dashboard is designed/spec'd, not built/exported as a .pbix yet. Not a deployed service — it's a portfolio piece showing the medallion + multi-source pattern with realistic data volumes."
-        }
-      ],
-      "featured": false
-    },
-    {
-      "slug": "notemind",
-      "name": "NOTEMIND",
-      "kind": "personal · ios app",
-      "year": "2026",
-      "role": "Solo",
-      "timeline": "personal · iOS Simulator only",
-      "status": "in-progress",
-      "stack": [
-        "EXPO 55 (BARE)",
-        "RN 0.83",
-        "TYPESCRIPT (STRICT)",
-        "OP-SQLITE",
-        "MMKV",
-        "TANSTACK QUERY v5",
-        "ZUSTAND",
-        "SUPABASE (POSTGRES/RLS/AUTH/EDGE)",
-        "GEMINI 2.5 FLASH (SSE)",
-        "SENTRY + POSTHOG"
-      ],
-      "summary": "An offline-first iOS notes app with a streaming weekly AI summary. Writes hit local SQLite first and sync to Supabase in the background; the summary streams over SSE from a Deno edge function calling Gemini.",
-      "img": "linear-gradient(135deg,#0a261a 0%,#103f24 45%,#1d6e3a 100%)",
-      "accent": "radial-gradient(ellipse at 30% 35%, rgba(120,255,170,.30), transparent 55%)",
-      "details": [
-        "Offline-first mutations: every write is an optimistic update against op-sqlite; the network call runs in the background; failures retry up to 3 times then persist for replay when connectivity returns. Client-generated UUIDs so the optimistic row and the server row share a single id — no local→remote remapping, no duplicate-create races.",
-        "Streaming summary: a Deno edge function calls Gemini with generateContentStream + responseSchema, relays tokens to the client over SSE; the final 'done' frame carries the structured JSON (themes/mood/highlights). Per-user daily token quota enforced in Postgres.",
-        "SecureStore with MMKV fallback: on unsigned simulator builds, iOS rejects Keychain writes because the app declares entitlements (Apple Sign In) it can't satisfy. The write is caught and persisted to MMKV so the Supabase session survives reloads in dev — production never hits the fallback."
-      ],
-      "links": [
-        {
-          "k": "SOURCE",
-          "v": "github"
-        }
-      ],
-      "sections": [
-        {
-          "kind": "paragraph",
-          "label": "01 — WHAT IT DOES",
-          "body": "Take notes offline; tap Summary at the end of the week and get a streaming AI recap of what you wrote — themes, mood, highlights — that links back to source notes. Email-OTP sign-in via Supabase, sessions persist across launches. First word of the streamed summary lands in ~1–3s."
-        },
-        {
-          "kind": "paragraph",
-          "label": "02 — HOW IT WORKS",
-          "body": "Mobile is Expo SDK 55 in bare workflow on RN 0.83. State is TanStack Query v5 with an MMKV persister + Zustand for auth. Local store is op-sqlite for notes, MMKV for KV. Backend is Supabase: Postgres with RLS policies, Auth, plus a Deno Edge Function that owns the Gemini streaming flow. Observability: Sentry for errors, PostHog for events."
-        },
-        {
-          "kind": "metrics",
-          "items": [
-            {
-              "v": "Offline-first",
-              "k": "WRITE PATH"
-            },
-            {
-              "v": "client UUIDs",
-              "k": "ID GENERATION"
-            },
-            {
-              "v": "SSE",
-              "k": "SUMMARY TRANSPORT"
-            },
-            {
-              "v": "iOS sim only",
-              "k": "DEPLOY SURFACE"
-            }
-          ]
-        },
-        {
-          "kind": "paragraph",
-          "label": "03 — INTERESTING PROBLEMS",
-          "body": "The two non-obvious decisions are the client-side UUID and the SecureStore fallback. The UUID one removes a whole class of optimistic-update bugs (duplicate-create races) at zero runtime cost. The fallback is the kind of dev-loop fix that rarely makes it into clean architecture diagrams but matters every day you're not on a signed build — write the failure path explicitly, isolate it to dev, document why."
-        },
-        {
-          "kind": "paragraph",
-          "label": "04 — STATUS",
-          "body": "End-to-end working on the iOS simulator: sign-in, offline note CRUD with background sync, streaming weekly summary. Not yet deployed to a physical device or TestFlight — entitlement work + a real Apple Developer account would be the next step."
         }
       ],
       "featured": false
@@ -1892,85 +1580,6 @@
           "kind": "paragraph",
           "label": "04 — STATUS",
           "body": "Solo build. Tested in Chrome only. No deploy — runs locally; the generated-sites/ folder collects sample outputs in the repo."
-        }
-      ],
-      "featured": false
-    },
-    {
-      "slug": "ai-powered-note-taking-app",
-      "name": "AI-POWERED NOTE-TAKING APP",
-      "kind": "personal · full-stack ai app",
-      "year": "2026",
-      "role": "Solo",
-      "timeline": "personal project · phases 0-9",
-      "status": "in-progress",
-      "stack": [
-        "REACT 19",
-        "VITE",
-        "TYPESCRIPT",
-        "TIPTAP",
-        "EXPRESS",
-        "MONGOOSE",
-        "FASTAPI",
-        "QDRANT",
-        "LOCALSTACK",
-        "TERRAFORM",
-        "TURBOREPO"
-      ],
-      "summary": "A full-stack AI notes monorepo with rich-text editing, auth, note/folder/tag organization, semantic search, summarization, OCR upload plumbing, local AWS emulation, and a hardened dev stack.",
-      "img": "assets/project-screenshots/ai-powered-note-taking-app.png",
-      "details": [
-        "Turborepo workspace with web, api, ai, lambda-ocr, shared contracts, and UI packages.",
-        "Auth uses JWT access tokens, httpOnly refresh cookies, CSRF protection, Argon2 password hashes, and refresh-session rotation.",
-        "Notes use Tiptap/ProseMirror JSON with autosave, optimistic updates, version history, conflict handling, semantic search, and AI summary flows."
-      ],
-      "links": [
-        {
-          "k": "SOURCE",
-          "v": "github"
-        }
-      ],
-      "sections": [
-        {
-          "kind": "paragraph",
-          "label": "01 — WHAT IT DOES",
-          "body": "The app is a production-shaped notes system: sign up, create folders/tags/notes, write rich text in a Tiptap editor, autosave drafts, inspect version history, summarize notes, and search semantically. The repo also includes OCR upload infrastructure and a local AWS-style development environment."
-        },
-        {
-          "kind": "paragraph",
-          "label": "02 — HOW IT WORKS",
-          "body": "The stack is split into a pnpm/Turborepo monorepo: React/Vite web client, Express/TypeScript API, Python AI service, Python OCR Lambda, shared Zod/OpenAPI contracts, and a UI package. Local development runs MongoDB, Qdrant, LocalStack, the API, the AI service, and the web app through Docker Compose."
-        },
-        {
-          "kind": "metrics",
-          "items": [
-            {
-              "v": "5",
-              "k": "WORKSPACES"
-            },
-            {
-              "v": "JWT+CSRF",
-              "k": "AUTH MODEL"
-            },
-            {
-              "v": "Tiptap",
-              "k": "EDITOR"
-            },
-            {
-              "v": "LocalStack",
-              "k": "AWS EMULATION"
-            }
-          ]
-        },
-        {
-          "kind": "paragraph",
-          "label": "03 — ENGINEERING FOCUS",
-          "body": "The interesting part is not just the editor. The project emphasizes contracts and failure behavior: OpenAPI-generated client types, Zod validation shared across layers, autosave conflict resolution, request metrics, payload limits, Sentry hooks, and local cloud resources provisioned through Terraform."
-        },
-        {
-          "kind": "paragraph",
-          "label": "04 — STATUS",
-          "body": "Proceeding / in progress. Phases 0-9 are documented locally, with real-AWS deployment deferred. The project is suitable for portfolio listing because the architecture, stack, and shipped phases are documented in the repo."
         }
       ],
       "featured": false
@@ -2306,7 +1915,13 @@
       "links": [
         {
           "k": "SOURCE",
-          "v": "github"
+          "v": "github",
+          "href": "https://github.com/ASDFGHJKLZXC123/Sentiment-Analyzer"
+        },
+        {
+          "k": "DEMO",
+          "v": "live",
+          "href": "https://asdfghjklzxc123.github.io/Sentiment-Analyzer/"
         }
       ],
       "sections": [
@@ -2426,81 +2041,6 @@
           "kind": "paragraph",
           "label": "04 — STATUS",
           "body": "Finished, feature-complete portfolio build. The repository documents reproducible restore, build, test, and run workflows, user-scoped data, unit tests, and SQLite integration tests; broader product features remain outside scope."
-        }
-      ],
-      "featured": false
-    },
-    {
-      "slug": "carematch-ai",
-      "name": "CAREMATCH AI",
-      "kind": "personal · healthcare ai prototype",
-      "year": "2026",
-      "role": "Solo",
-      "timeline": "personal prototype",
-      "status": "in-progress",
-      "stack": [
-        "REACT",
-        "VITE",
-        "EXPRESS",
-        "ZOD",
-        "LUCIDE REACT",
-        "OPENAI SDK",
-        "MULTI-PROVIDER LLM ADAPTERS"
-      ],
-      "summary": "A mobile-first healthcare routing prototype that turns free-text symptoms into editable clinical summaries, safety-aware guidance, provider matches, and a booking flow.",
-      "img": "assets/project-screenshots/carematch-ai.png",
-      "details": [
-        "Frontend collects symptom text, shows a staged AI-summary flow, renders editable clinical cards, and walks through provider matching and booking.",
-        "Express backend exposes health and symptom-summary endpoints with strict schema validation and multi-provider LLM adapters.",
-        "Safety layer avoids diagnosis language, flags urgent terms, pauses matching for urgent guidance, and falls back to deterministic mock data when providers fail."
-      ],
-      "links": [
-        {
-          "k": "SOURCE",
-          "v": "github"
-        }
-      ],
-      "sections": [
-        {
-          "kind": "paragraph",
-          "label": "01 — WHAT IT DOES",
-          "body": "A patient describes symptoms in plain language. The app organizes the intake into review cards, asks a safety-oriented clarifying question, recommends a starting care direction, shows matched providers, and walks the user through selecting an appointment slot."
-        },
-        {
-          "kind": "paragraph",
-          "label": "02 — HOW IT WORKS",
-          "body": "The backend normalizes LLM output into a schema-validated payload. It can call OpenAI, xAI/Grok, Claude, Gemini, DeepSeek, Qwen, or a mock fallback. The frontend keeps the user in the loop by making generated clinical cards editable before matching."
-        },
-        {
-          "kind": "metrics",
-          "items": [
-            {
-              "v": "7",
-              "k": "LLM MODES"
-            },
-            {
-              "v": "Zod",
-              "k": "VALIDATION"
-            },
-            {
-              "v": "mock",
-              "k": "FALLBACK"
-            },
-            {
-              "v": "booking",
-              "k": "FLOW END"
-            }
-          ]
-        },
-        {
-          "kind": "paragraph",
-          "label": "03 — SAFETY BOUNDARY",
-          "body": "The project is careful not to present itself as a diagnosis tool. It uses clinician-review language, keeps summaries editable, flags urgent safety terms, and pauses provider matching when emergency guidance is more appropriate."
-        },
-        {
-          "kind": "paragraph",
-          "label": "04 — STATUS",
-          "body": "Proceeding / in progress. The README is detailed enough for portfolio use and clearly lists current limitations: mock provider data, simulated booking, simulated insurance/location/availability matching, and no production compliance work yet."
         }
       ],
       "featured": false

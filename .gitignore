@@ -5,3 +5,7 @@ dist
 *.log
 dist_verify
 vite.config.js.timestamp-*.mjs
+
+# vite writes these while resolving an .mjs config
+vite.*.timestamp-*.mjs
+node_modules/.ssr-check/

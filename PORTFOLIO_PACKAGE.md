@@ -12,9 +12,11 @@ This is the hiring-facing packaging for the five finished projects. Use these fi
 
 If GitHub only gives six pinned slots, leave the sixth empty or use one small systems/tooling project only if it is clean and finished. Do not pin in-progress projects.
 
-## Homepage Selection
+## Public Selection
 
-The portfolio homepage now shows these five projects first:
+The portfolio uses these five projects as the public hiring set. The homepage
+leads with the first three; the selected-work page presents all five before the
+optional full archive.
 
 | Rank | Project | Portfolio Role |
 | --- | --- | --- |
@@ -47,9 +49,9 @@ Use Crypto Market Data Pipeline when the interviewer wants data engineering. Emp
 ## One-Line Project Pitches
 
 - ReliableFlow: "A production-shaped job queue and webhook platform built around Postgres transactions, retries, dead letters, and operational visibility."
-- AI Assistant Across Websites: "A local-first browser assistant that turns any webpage into summarizable, extractable, searchable notes."
+- AI Assistant Across Websites: "A local-first browser assistant that turns supported webpages into summarizable, extractable, searchable notes."
 - AIHL Secure Service Booking: "A three-role service marketplace with booking invariants, provider workflow, admin reporting, and payment integration kept behind a driver seam."
-- Error Monitoring System: "A Sentry-style monitoring app with authenticated ingestion, alert rules, retention workers, and a dashboard optimized around the hot query path."
+- Error Monitoring System: "A Sentry-style monitoring app with authenticated ingestion, alert rules, retention workers, and a query-aware composite index for common dashboard filters."
 - Crypto Market Data Pipeline: "A replayable ETL pipeline that keeps raw API payloads, validates records, and loads analytics-ready crypto market facts."
 
 ## Gaps To Avoid Overclaiming

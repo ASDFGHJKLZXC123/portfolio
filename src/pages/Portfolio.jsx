@@ -10,6 +10,8 @@ import {
 } from '../components/tweaks-panel';
 import { projectImageBackground } from '../lib/project-image';
 import { externalLinkProps, isUsableHref, projectSlug, projectSourceHref, projectDemoHref } from '../lib/project-links';
+import { curatedProjects } from '../lib/portfolio-curation';
+import { applyTheme, initialThemeIsDark } from '../lib/use-theme';
 
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "dark": true,
@@ -20,89 +22,6 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "showEducation": true,
   "projectCount": 3
 }/*EDITMODE-END*/;
-
-// Project data is loaded from projects.json — see admin.html to add/edit projects
-// without touching code. The list below is a fallback for offline preview only.
-const PROJECTS_FALLBACK = [
-  {
-    name: 'INFORM.UCI',
-    kind: 'sponsor capstone',
-    stack: 'REACT / NODE / POSTGRES',
-    year: '2026',
-    summary: 'Sponsor-capstone project with a healthcare startup. Built an intake triage tool used by three clinics during pilot.',
-    role: 'Full-stack lead · team of 4',
-    details: [
-      'Designed the intake flow from a 40-question paper form into a 5-minute adaptive questionnaire.',
-      'Built the patient dashboard, clinician review queue, and FHIR-compatible export.',
-      'Shipped to three pilot clinics; avg. intake time down from 22 → 6 min.',
-    ],
-    img: 'linear-gradient(135deg,#0b2a3a 0%,#0d3b4f 40%,#1e6580 100%)',
-    accent: 'radial-gradient(ellipse at 30% 40%, rgba(80,200,220,.35), transparent 55%)',
-  },
-  {
-    name: 'LATECHEF',
-    kind: 'personal · web app',
-    stack: 'NEXT / POSTGRES / LLM',
-    year: '2026',
-    summary: 'Tell it what\'s in your fridge at 2am, it tells you what to cook. Built as a one-weekend project, somehow still used.',
-    role: 'Solo',
-    details: [
-      'Recipe generation via LLM with structured output + pantry state tracker.',
-      'Auth, saved recipes, shopping list export. ~800 WAU with zero marketing.',
-      'Learned hard lessons about token costs and rate-limit UX.',
-    ],
-    img: 'linear-gradient(180deg,#1a0f0a 0%,#2a1810 55%,#0a0605 100%)',
-    accent: 'radial-gradient(circle at 70% 30%, rgba(220,140,60,.45), transparent 50%)',
-  },
-  {
-    name: 'RAMEN-DB',
-    kind: 'coursework · systems',
-    stack: 'GO / RAFT / GRPC',
-    year: '2024',
-    summary: 'A tiny in-memory KV store with Raft consensus, written for ICS 143A. Not production, but the tests pass.',
-    role: 'Solo · course project',
-    details: [
-      'Leader election, log replication, snapshotting.',
-      'Linearizable reads, client retry with request IDs.',
-      'Passed all 34 Jepsen-ish tests in the course harness.',
-    ],
-    img: 'linear-gradient(160deg,#0a0a0a 0%,#141414 50%,#0a0a0a 100%)',
-    accent: 'repeating-linear-gradient(90deg, transparent 0 2px, rgba(120,255,170,.06) 2px 3px)',
-  },
-  {
-    name: 'PAPERBOAT',
-    kind: 'personal · ml',
-    stack: 'PYTORCH / FASTAPI',
-    year: '2024',
-    summary: 'Arxiv paper recommender trained on my reading history. Learned that my taste is more narrow than I thought.',
-    role: 'Solo',
-    details: [
-      'Embedding-based recs using SPECTER; fine-tuned on ~1200 labeled papers.',
-      'Daily digest email; one-click feedback loop to update the model.',
-      'Offline eval vs. simple tf-idf baseline: recall@10 improved ~18%.',
-    ],
-    img: 'linear-gradient(135deg,#1a0a2e 0%,#0e0820 40%,#2a1a4a 100%)',
-    accent: 'radial-gradient(ellipse at 50% 60%, rgba(180,120,220,.4), transparent 55%)',
-  },
-  {
-    name: 'MIDNIGHT-LOFI',
-    kind: 'personal · audio',
-    stack: 'WEBAUDIO / TONE.JS',
-    year: '2023',
-    summary: 'Generative lofi that runs entirely in the browser. No audio files, just math and melancholy.',
-    role: 'Solo',
-    details: [
-      'Markov-chain melody over a rotating chord palette, drums from WebAudio synths.',
-      'Rain and tape-hiss generated procedurally.',
-      'Shared on HN; front page for ~6 hours.',
-    ],
-    img: 'linear-gradient(180deg,#0a1a1a 0%,#0f2525 60%,#050f0f 100%)',
-    accent: 'radial-gradient(ellipse at 40% 50%, rgba(80,220,180,.3), transparent 60%)',
-  },
-  { name: 'CLASSY',       kind: 'coursework',      stack: 'SVELTE / SUPABASE',    year: '2024', summary: 'Course planner with prereq graph viz.' },
-  { name: 'DORM-SENSOR',  kind: 'hardware',        stack: 'ESP32 / MQTT',         year: '2024', summary: 'ESP32 that yells if you leave the door open.' },
-  { name: 'TYPO-HUNTER',  kind: 'tool',            stack: 'RUST / TREE-SITTER',   year: '2023', summary: 'Finds typos in code comments via tree-sitter.' },
-];
 
 const SKILLS = [
   { group: 'Languages', items: ['TypeScript', 'Python', 'Go', 'C++', 'Java', 'SQL'] },
@@ -120,7 +39,6 @@ const EDUCATION = {
   coursework: ['Data Structure Implementation & Analysis', 'Introduction to Data Management', 'Computer Networks', 'Introduction to Artificial Intelligence', 'Engineering of AI Software', 'Probability & Statistics for CS', 'Requirements Analysis & Engineering', 'Software Design', 'Human-Computer Interaction', 'Project Management'],
 };
 
-const slugify = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const isInProgress = (project) => project.status === 'in-progress';
 
 function StatusPill({ project, onImage = false }) {
@@ -151,6 +69,10 @@ function useReveal() {
   const ref = React.useRef(null);
   const [shown, setShown] = React.useState(false);
   React.useEffect(() => {
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      setShown(true);
+      return undefined;
+    }
     if (!ref.current) return;
     const io = new IntersectionObserver((entries) => {
       for (const e of entries) if (e.isIntersecting) { setShown(true); io.disconnect(); return; }
@@ -164,7 +86,7 @@ function useReveal() {
 function Reveal({ children, delay = 0, style }) {
   const [ref, shown] = useReveal();
   return (
-    <div ref={ref} style={{
+    <div ref={ref} className="reveal" style={{
       transform: shown ? 'translateY(0)' : 'translateY(16px)',
       opacity: shown ? 1 : 0,
       transition: `transform .8s cubic-bezier(.2,.7,.3,1) ${delay}ms, opacity .8s ease ${delay}ms`,
@@ -175,23 +97,28 @@ function Reveal({ children, delay = 0, style }) {
 
 function TopBar({ dark, setDark, active, sections }) {
   return (
-    <div style={{
+    <div className="topbar portfolio-topbar" style={{
       position: 'sticky', top: 0, zIndex: 40,
       backdropFilter: 'blur(14px) saturate(140%)',
       WebkitBackdropFilter: 'blur(14px) saturate(140%)',
       background: 'var(--bg-blur)',
       borderBottom: '1px solid var(--border)',
     }}>
-      <div style={{
+      <div className="portfolio-topbar-inner" style={{
         display: 'grid', gridTemplateColumns: '1fr auto 1fr',
         alignItems: 'center', padding: '16px 40px', fontSize: 11,
         letterSpacing: '0.12em', fontFamily: 'var(--mono)',
       }}>
         <div style={{ justifySelf: 'start' }} />
 
-        <nav style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+        <nav className="portfolio-nav" aria-label="Portfolio sections" style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
           {sections.map((s) => (
-            <a key={s.id} href={`#${s.id}`} style={{
+            <a
+              key={s.id}
+              href={`#${s.id}`}
+              aria-current={active === s.id ? 'location' : undefined}
+              className={`portfolio-nav-link${s.id === 'skills' || s.id === 'education' ? ' portfolio-nav-link-secondary' : ''}`}
+              style={{
               padding: '6px 10px', borderRadius: 999, textDecoration: 'none',
               fontSize: 10, letterSpacing: '0.15em',
               color: active === s.id ? 'var(--fg)' : 'var(--muted)',
@@ -199,12 +126,12 @@ function TopBar({ dark, setDark, active, sections }) {
               transition: 'color .2s, background .2s',
             }}>{s.label}</a>
           ))}
-          <span style={{ width: 1, height: 14, background: 'var(--border)', margin: '0 6px' }} />
-          <div style={{
+          <span className="portfolio-nav-divider" aria-hidden="true" style={{ width: 1, height: 14, background: 'var(--border)', margin: '0 6px' }} />
+          <div className="theme-switch" role="group" aria-label="Color theme" style={{
             display: 'inline-flex', border: '1px solid var(--border)', borderRadius: 999, padding: 2,
           }}>
-            <button onClick={() => setDark(true)} style={themeBtn(dark)}>DARK</button>
-            <button onClick={() => setDark(false)} style={themeBtn(!dark)}>LIGHT</button>
+            <button aria-pressed={dark} onClick={() => setDark(true)} style={themeBtn(dark)}>DARK</button>
+            <button aria-pressed={!dark} onClick={() => setDark(false)} style={themeBtn(!dark)}>LIGHT</button>
           </div>
         </nav>
 
@@ -224,7 +151,7 @@ const themeBtn = (on) => ({
 
 function SectionHead({ index, title, subtitle }) {
   return (
-    <div style={{
+    <div className="section-head" style={{
       display: 'grid', gridTemplateColumns: '80px 1fr', gap: 24, alignItems: 'baseline',
       paddingBottom: 32, borderBottom: '1px solid var(--border)', marginBottom: 40,
     }}>
@@ -245,37 +172,65 @@ function SectionHead({ index, title, subtitle }) {
   );
 }
 
-function Hero() {
+// The hero previously stopped at maxWidth 1000 and left the right half of a
+// desktop viewport empty. The index panel fills it with the fastest possible
+// route into the actual work.
+function HeroIndex({ projects }) {
+  if (!projects.length) return null;
   return (
-    <div style={{ padding: '80px 40px 60px', maxWidth: 1000 }}>
-      <div style={{
+    <aside className="hero-index" aria-label="Selected work index">
+      <div className="hero-index-label">/ SELECTED WORK</div>
+      <ol className="hero-index-list">
+        {projects.map((p, i) => (
+          <li key={projectSlug(p)}>
+            <Link to={`/project/${projectSlug(p)}`}>
+              <span className="hero-index-num">{String(i + 1).padStart(2, '0')}</span>
+              <span className="hero-index-name">{p.name}</span>
+              <span className="hero-index-kind">{(p.stack || [])[0] || p.kind}</span>
+            </Link>
+          </li>
+        ))}
+      </ol>
+      <Link className="hero-index-all" to="/all-works">ALL PROJECTS →</Link>
+    </aside>
+  );
+}
+
+function Hero({ indexProjects = [] }) {
+  return (
+    <div className="portfolio-hero" style={{ padding: '80px 40px 60px' }}>
+      <div className="portfolio-hero-copy">
+      <div className="availability-line" style={{
         fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.24em',
         color: 'var(--muted)', marginBottom: 24,
         display: 'flex', alignItems: 'center', gap: 10,
       }}>
         <span style={{ width: 6, height: 6, borderRadius: 3, background: '#4ade80', boxShadow: '0 0 8px #4ade80' }} />
-        Software Engineer (Full-Stack) · Available Summer 2026
+        Software Engineer (Full-Stack) · Open to opportunities
       </div>
-      <h1 style={{
+      <h1 className="portfolio-hero-title" style={{
         margin: 0, fontFamily: 'var(--sans)', fontWeight: 400,
         fontSize: 'clamp(40px, 4.5vw, 64px)', lineHeight: 1.05,
         letterSpacing: 'var(--letter)', color: 'var(--fg)',
       }}>
-        Full-Stack Engineer Building Reliable Web Systems
+        I Build Reliable Backend and Full-Stack Systems
       </h1>
-      <p style={{
+      <p className="portfolio-hero-summary" style={{
         margin: '28px 0 0', fontFamily: 'var(--sans)', fontWeight: 300,
         fontSize: 'clamp(16px, 1.4vw, 19px)', lineHeight: 1.5,
         color: 'var(--muted)', maxWidth: 620, letterSpacing: 'var(--letter)',
       }}>
-        Recent Informatics graduate from UC Irvine. I design and ship
-        end-to-end web systems, from APIs and data models to interfaces
-        that make complex workflows clear and usable.
+        UC Irvine Informatics graduate focused on the seams that make software
+        hold up: transactions, retries, data validation, role-based workflows,
+        and clear operational interfaces.
       </p>
-      <div style={{ display: 'flex', gap: 16, marginTop: 40, fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.14em' }}>
+      <div className="hero-actions" style={{ display: 'flex', gap: 16, marginTop: 40, fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.14em' }}>
         <a href="#work" style={ctaPrimary()}>SEE THE WORK</a>
-        <a href="#" style={ctaGhost()}>VIEW RESUME</a>
+        <a href="#contact" style={ctaGhost()}>GET IN TOUCH</a>
       </div>
+      </div>
+
+      <HeroIndex projects={indexProjects} />
     </div>
   );
 }
@@ -299,7 +254,7 @@ function ProjectTile({ project }) {
   const detailSlug = projectSlug(project);
   return (
     <article>
-      <div style={{
+      <div className="featured-card" style={{
           display: 'flex', flexDirection: 'column', gap: 18,
           position: 'relative',
           transform: hover ? 'translateY(-4px)' : 'translateY(0)',
@@ -307,6 +262,10 @@ function ProjectTile({ project }) {
         }}
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
+        onFocusCapture={() => setHover(true)}
+        onBlurCapture={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget)) setHover(false);
+        }}
       >
         <div style={{
           position: 'absolute', left: -14, top: 28, bottom: 14, width: 2,
@@ -341,7 +300,7 @@ function ProjectTile({ project }) {
           {project.accent && (
             <div style={{ position: 'absolute', inset: 0, background: project.accent, mixBlendMode: 'screen', pointerEvents: 'none' }} />
           )}
-          <div style={{ position: 'absolute', top: 10, left: 12, zIndex: 2 }}>
+          <div style={{ position: 'absolute', top: 10, left: 12, zIndex: 2, pointerEvents: 'none' }}>
             <StatusPill project={project} onImage />
           </div>
           <div style={{
@@ -367,19 +326,28 @@ function ProjectTile({ project }) {
             <span style={{ color: 'var(--fg)' }}>Summary: </span>{project.summary}
           </p>
           <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.16em' }}>
-            <Link to={`/project/${detailSlug}`} style={{ color: 'var(--fg)', textDecoration: 'underline', textUnderlineOffset: 4 }}>
+            <Link
+              className="featured-card-primary"
+              to={`/project/${detailSlug}`}
+              aria-label={`View ${project.name} case study`}
+              style={{ color: 'var(--fg)', textDecoration: 'underline', textUnderlineOffset: 4 }}
+            >
               VIEW CASE STUDY →
             </Link>
-            <a
-              href={hasSource ? sourceHref : '#'}
-              {...externalLinkProps(sourceHref)}
-              onClick={(e) => { if (!hasSource) e.preventDefault(); }}
-              style={{ color: 'var(--muted)', textDecoration: 'underline', textUnderlineOffset: 4 }}
-            >
-              SOURCE →
-            </a>
+            {hasSource && (
+              <a
+                className="featured-card-secondary-action"
+                href={sourceHref}
+                {...externalLinkProps(sourceHref)}
+                aria-label={`Open ${project.name} GitHub repository`}
+                style={{ color: 'var(--muted)', textDecoration: 'underline', textUnderlineOffset: 4 }}
+              >
+                GITHUB REPO ↗
+              </a>
+            )}
             {hasDemo && (
               <a
+                className="featured-card-secondary-action"
                 href={demoHref}
                 {...externalLinkProps(demoHref)}
                 style={{ color: 'var(--fg)', textDecoration: 'underline', textUnderlineOffset: 4 }}
@@ -396,33 +364,16 @@ function ProjectTile({ project }) {
 
 function About() {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 40, alignItems: 'start' }}>
-      <div style={{ position: 'sticky', top: 100 }}>
-        <div style={{
-          width: '100%', aspectRatio: '1 / 1.2', maxWidth: 260,
-          background: 'linear-gradient(165deg, #1a1a1a 0%, #0a0a0a 100%)',
-          border: '1px solid var(--border)', position: 'relative', overflow: 'hidden',
-        }}>
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: 'radial-gradient(circle at 50% 40%, rgba(242,241,236,0.08), transparent 60%)',
-          }} />
-          <div style={{
-            position: 'absolute', bottom: 10, left: 12,
-            fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.45)',
-          }}>Richard Zhang · 2026</div>
-        </div>
-      </div>
-      <div style={{ fontFamily: 'var(--sans)', fontSize: 'clamp(16px, 1.4vw, 19px)', lineHeight: 1.55, letterSpacing: 'var(--letter)', color: 'var(--fg)', fontWeight: 300, maxWidth: 640 }}>
+    <div className="about-layout" style={{ maxWidth: 760 }}>
+      <div style={{ fontFamily: 'var(--sans)', fontSize: 'clamp(16px, 1.4vw, 19px)', lineHeight: 1.55, letterSpacing: 'var(--letter)', color: 'var(--fg)', fontWeight: 300, maxWidth: 700 }}>
         <p style={{ marginTop: 0 }}>
-          I’m a recent Informatics graduate from UC Irvine with a Computer
-          Science and systems foundation. My work sits between backend
-          engineering and product-facing software: APIs, data models, and
-          interfaces that make complex workflows usable. I’m looking for
-          entry-level roles where I can build reliable web systems and grow
-          across backend, full-stack, and infrastructure work.
+          I’m a recent Informatics graduate from UC Irvine who likes the seams
+          where product behavior meets backend correctness: queues, APIs, data
+          models, authentication, and the operational interfaces around them.
+          I’m looking for an entry-level team where I can contribute across the
+          stack while continuing to deepen my backend and infrastructure skills.
         </p>
-        <div style={{
+        <div className="about-facts" style={{
           marginTop: 32, padding: '22px 24px',
           border: '1px solid var(--border)',
           display: 'grid', gridTemplateColumns: '112px 1fr', gap: '14px 18px',
@@ -511,7 +462,7 @@ function Contact() {
         full-stack, and infrastructure-oriented software engineering roles.
       </div>
 
-      <div style={{
+      <div className="contact-grid" style={{
         marginTop: 40, display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
         border: '1px solid var(--border)',
@@ -522,6 +473,7 @@ function Contact() {
           { k: 'LINKEDIN', v: 'linkedin.com/in/richard-zhang-7ba1802b3', href: 'https://linkedin.com/in/richard-zhang-7ba1802b3' },
         ].map((c, i) => (
           <a
+            className="contact-link"
             key={c.k}
             href={c.href}
             target={c.href.startsWith('https://') ? '_blank' : undefined}
@@ -547,38 +499,48 @@ function Contact() {
 
 function Footer() {
   return (
-    <div style={{
+    <div className="portfolio-footer" style={{
       marginTop: 80, padding: '32px 40px 40px', display: 'flex',
       justifyContent: 'space-between', alignItems: 'center',
       borderTop: '1px solid var(--border)',
       fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.14em', color: 'var(--muted)',
     }}>
       <span>© 2026 / Richard · BUILT IN REACT + TOO MUCH COFFEE</span>
-      <span>LAST SYNC · 04.26</span>
+      <span>OPEN TO SOFTWARE ENGINEERING OPPORTUNITIES</span>
     </div>
   );
 }
 
+// Seed the panel's dark toggle from the visitor's stored/system preference so
+// arriving from a case study (or a second visit) doesn't snap back to dark.
+const TWEAK_INITIAL = { ...TWEAK_DEFAULTS, dark: initialThemeIsDark() };
+
 export default function Portfolio() {
-  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const [t, setTweak] = useTweaks(TWEAK_INITIAL);
   const [active, setActive] = React.useState('work');
-  const [PROJECTS, setProjects] = React.useState(PROJECTS_FALLBACK);
+  const [PROJECTS, setProjects] = React.useState(null);
   const fonts = FONTS[t.font] || FONTS.neue;
   const dark = t.dark;
 
   React.useEffect(() => {
-    fetch(`${import.meta.env.BASE_URL}data/projects.json`)
-      .then((r) => r.ok ? r.json() : null)
-      .then((data) => { if (data && data.projects) setProjects(data.projects); })
-      .catch(() => {});
+    document.title = 'Richard Zhang — Full-Stack Software Engineer';
+    document.querySelector('meta[name="description"]')?.setAttribute(
+      'content',
+      'Richard Zhang is a UC Irvine Informatics graduate building reliable backend and full-stack systems.',
+    );
   }, []);
 
-  const featured = PROJECTS
-    .filter((p) => p.featured)
-    .sort((a, b) => (a.featuredRank ?? 999) - (b.featuredRank ?? 999))
-    .slice(0, t.projectCount);
+  React.useEffect(() => {
+    fetch(`${import.meta.env.BASE_URL}data/projects.json`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => setProjects(Array.isArray(data?.projects) ? data.projects : []))
+      .catch(() => setProjects([]));
+  }, []);
+
+  const projectsList = PROJECTS || [];
+  const featured = curatedProjects(projectsList).slice(0, t.projectCount);
   const shownSlugs = new Set(featured.map((p) => projectSlug(p)));
-  const extra = PROJECTS.filter((p) => !shownSlugs.has(projectSlug(p)));
+  const extra = projectsList.filter((p) => !shownSlugs.has(projectSlug(p)));
 
   const sections = [
     { id: 'work',      label: 'WORK',      show: true },
@@ -599,14 +561,13 @@ export default function Portfolio() {
     return () => io.disconnect();
   }, [sections.map((s) => s.id).join(',')]);
 
+  // Colour tokens live in index.css under :root[data-theme]. This page owns its
+  // own `dark` (it comes from the tweaks panel), so it pushes the choice out to
+  // the shared attribute + storage rather than reading it back.
+  React.useEffect(() => { applyTheme(dark); }, [dark]);
+
+  // Only the values the tweaks panel can actually change stay inline.
   const vars = {
-    '--bg': dark ? '#0a0a0a' : '#f5f4ef',
-    '--bg-blur': dark ? 'rgba(10,10,10,0.72)' : 'rgba(245,244,239,0.72)',
-    '--fg': dark ? '#f2f1ec' : '#131312',
-    '--muted': dark ? 'rgba(242,241,236,0.5)' : 'rgba(19,19,18,0.55)',
-    '--border': dark ? 'rgba(242,241,236,0.12)' : 'rgba(19,19,18,0.12)',
-    '--tile-bg': dark ? '#0e0e0e' : '#e9e8e3',
-    '--hover': dark ? 'rgba(242,241,236,0.06)' : 'rgba(19,19,18,0.04)',
     '--accent': t.accent,
     '--sans': fonts.sans, '--mono': fonts.mono, '--letter': fonts.letter,
   };
@@ -615,24 +576,35 @@ export default function Portfolio() {
   const nextIdx = () => ++sectionIdx;
 
   return (
-    <div style={{ ...vars, background: 'var(--bg)', color: 'var(--fg)', minHeight: '100vh', fontFamily: 'var(--sans)' }}>
+    <div className="portfolio-page" style={{ ...vars, background: 'var(--bg)', color: 'var(--fg)', minHeight: '100vh', fontFamily: 'var(--sans)' }}>
       <TopBar dark={dark} setDark={(v) => setTweak('dark', v)} active={active} sections={sections} />
 
-      <Hero />
+      <main>
+        <Hero indexProjects={featured} />
 
-      <section id="work" style={{ padding: '40px 40px 0', scrollMarginTop: 80 }}>
+        <section id="work" className="portfolio-section portfolio-work" style={{ padding: '40px 40px 0', scrollMarginTop: 80 }}>
         <Reveal><SectionHead index={nextIdx()} title="Selected Engineering Work" subtitle="Systems-focused projects with emphasis on reliability, data, and APIs" /></Reveal>
-        <div style={{
+        <div className="featured-grid" style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
           gap: 32,
           transition: 'grid-template-columns .3s',
         }}>
-          {featured.map((p, i) => (
-            <Reveal key={p.name} delay={i * 60}>
-              <ProjectTile project={p} />
-            </Reveal>
-          ))}
+          {PROJECTS === null ? (
+            <div role="status" style={{ gridColumn: '1 / -1', padding: '28px 0', fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.18em', color: 'var(--muted)' }}>
+              LOADING SELECTED WORK…
+            </div>
+          ) : featured.length > 0 ? (
+            featured.map((p, i) => (
+              <Reveal key={p.name} delay={i * 60}>
+                <ProjectTile project={p} />
+              </Reveal>
+            ))
+          ) : (
+            <div role="status" style={{ gridColumn: '1 / -1', padding: '28px 0', fontFamily: 'var(--mono)', fontSize: 10, lineHeight: 1.6, letterSpacing: '0.18em', color: 'var(--muted)' }}>
+              SELECTED PROJECTS ARE TEMPORARILY UNAVAILABLE.
+            </div>
+          )}
         </div>
         {extra.length > 0 && (
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: 56 }}>
@@ -646,37 +618,38 @@ export default function Portfolio() {
                 onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--hover)'; e.currentTarget.style.paddingLeft = '32px'; e.currentTarget.style.paddingRight = '32px'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.paddingLeft = '28px'; e.currentTarget.style.paddingRight = '28px'; }}
               >
-                <span>VIEW ALL PROJECTS →</span>
+                <span>VIEW SELECTED WORK →</span>
               </Link>
           </div>
         )}
-      </section>
-
-      {t.showAbout && (
-        <section id="about" style={{ padding: '120px 40px 0', scrollMarginTop: 80 }}>
-          <Reveal><SectionHead index={nextIdx()} title="About" subtitle="Background and focus" /></Reveal>
-          <Reveal delay={100}><About /></Reveal>
         </section>
-      )}
 
-      {t.showSkills && (
-        <section id="skills" style={{ padding: '120px 40px 0', scrollMarginTop: 80 }}>
-          <Reveal><SectionHead index={nextIdx()} title="Technical Stack" subtitle="Tools and practices behind my selected work" /></Reveal>
-          <Reveal delay={100}><Skills /></Reveal>
+        {t.showAbout && (
+          <section id="about" className="portfolio-section" style={{ padding: '120px 40px 0', scrollMarginTop: 80 }}>
+            <Reveal><SectionHead index={nextIdx()} title="About" subtitle="Background and focus" /></Reveal>
+            <Reveal delay={100}><About /></Reveal>
+          </section>
+        )}
+
+        {t.showSkills && (
+          <section id="skills" className="portfolio-section" style={{ padding: '120px 40px 0', scrollMarginTop: 80 }}>
+            <Reveal><SectionHead index={nextIdx()} title="Technical Stack" subtitle="Tools and practices behind my selected work" /></Reveal>
+            <Reveal delay={100}><Skills /></Reveal>
+          </section>
+        )}
+
+        {t.showEducation && (
+          <section id="education" className="portfolio-section" style={{ padding: '120px 40px 0', scrollMarginTop: 80 }}>
+            <Reveal><SectionHead index={nextIdx()} title="Education" subtitle="Academic background" /></Reveal>
+            <Reveal delay={100}><Education /></Reveal>
+          </section>
+        )}
+
+        <section id="contact" className="portfolio-section portfolio-contact" style={{ padding: '140px 40px 0', scrollMarginTop: 80 }}>
+          <Reveal><SectionHead index={nextIdx()} title="Contact" subtitle="Hiring contact" /></Reveal>
+          <Reveal delay={100}><Contact /></Reveal>
         </section>
-      )}
-
-      {t.showEducation && (
-        <section id="education" style={{ padding: '120px 40px 0', scrollMarginTop: 80 }}>
-          <Reveal><SectionHead index={nextIdx()} title="Education" subtitle="Academic background" /></Reveal>
-          <Reveal delay={100}><Education /></Reveal>
-        </section>
-      )}
-
-      <section id="contact" style={{ padding: '140px 40px 0', scrollMarginTop: 80 }}>
-        <Reveal><SectionHead index={nextIdx()} title="Contact" subtitle="Hiring contact" /></Reveal>
-        <Reveal delay={100}><Contact /></Reveal>
-      </section>
+      </main>
 
       <Footer />
 

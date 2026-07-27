@@ -21,17 +21,26 @@
         "DOCKER COMPOSE",
         "GITHUB ACTIONS"
       ],
-      "summary": "A FastAPI/PostgreSQL platform for background jobs and signed webhook delivery: API-key auth, worker retries, dead-letter replay, cron schedules, metrics, Docker Compose, CI, and a React admin dashboard.",
+      "summary": "A Postgres-backed job queue and signed-webhook platform built around idempotent creation, row-level locking, retries, dead-letter recovery, and an operator dashboard.",
       "img": "assets/project-screenshots/reliableflow.png",
+      "media": {
+        "layout": "landscape",
+        "width": 1280,
+        "height": 720,
+        "label": "OPERATOR DASHBOARD",
+        "alt": "ReliableFlow queue dashboard showing job, webhook delivery, schedule, and dead-letter counts.",
+        "caption": "Operator dashboard using seeded mock data to surface queue health and recovery paths."
+      },
       "details": [
         "PostgreSQL-backed worker loop claims pending jobs with SELECT ... FOR UPDATE SKIP LOCKED, records attempts, retries failures with exponential backoff, and promotes exhausted jobs to dead letter.",
-        "Webhook layer stores signed delivery records; a dedicated dispatcher claims pending deliveries, sends HMAC-signed HTTP POSTs, records attempts, and is wired as its own Docker Compose service.",
+        "Webhook delivery records, HMAC signing, attempt history, and retry state are implemented; automatic dispatcher polling remains a documented limitation.",
         "Portfolio polish includes Docker Compose services, live migration checks in CI, frontend smoke tests, screenshots, architecture docs, demo docs, and explicit known limitations."
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/ReliableFlow"
         }
       ],
       "sections": [
@@ -41,9 +50,51 @@
           "body": "ReliableFlow is a background-job and webhook-delivery platform. API clients submit jobs with idempotency keys; workers claim and process queued work; failed jobs retry with backoff and eventually move to a dead-letter queue; schedules create future jobs; operators inspect queue health, webhook deliveries, and replay paths through a React dashboard."
         },
         {
+          "kind": "diagram",
+          "label": "REQUEST + RECOVERY FLOW",
+          "caption": "A job's full lifecycle, including both failure exits.",
+          "nodes": [
+            {
+              "t": "API",
+              "s": "idempotency key dedupes retried submits"
+            },
+            {
+              "t": "JOBS TABLE",
+              "s": "PostgreSQL is the queue of record"
+            },
+            {
+              "t": "WORKER CLAIM",
+              "s": "SELECT … FOR UPDATE SKIP LOCKED"
+            },
+            {
+              "t": "ATTEMPT WRITTEN",
+              "s": "every try persisted, success or not"
+            }
+          ],
+          "branches": [
+            {
+              "t": "SUCCESS",
+              "s": "pending webhook-delivery record created, signed HMAC SHA-256",
+              "tone": "ok"
+            },
+            {
+              "t": "FAILURE",
+              "s": "exponential backoff re-queue → attempts exhausted → dead letter → operator replay",
+              "tone": "warn"
+            }
+          ]
+        },
+        {
           "kind": "paragraph",
           "label": "02 — HOW IT WORKS",
-          "body": "FastAPI exposes the API surface; PostgreSQL is the queue of record; async SQLAlchemy drives transactions; Alembic manages schema changes; Redis is health-checked but not used as the queue backend. The worker uses PostgreSQL row-level locking for job claiming, records JobAttempt rows, and calls create_deliveries_for_job on success to store pending WebhookDelivery rows. The admin dashboard is a Vite/React SPA with mock mode plus API-key-backed live mode."
+          "body": "FastAPI exposes the API surface; PostgreSQL is the queue of record; async SQLAlchemy drives transactions; and Alembic manages schema changes. Workers claim jobs with row-level locks, persist every attempt, and create pending webhook-delivery records after successful work. A Vite/React dashboard exposes queue health and recovery paths; automatic webhook polling is not yet proven end to end."
+        },
+        {
+          "kind": "code",
+          "label": "THE CLAIM PATTERN",
+          "lang": "SQL",
+          "caption": "FOR UPDATE is what stops two workers taking the same row; SKIP LOCKED is what stops the second worker blocking on it, so N workers claim concurrently instead of serializing.",
+          "body": "-- the claim pattern the worker loop is built on\nUPDATE jobs SET status = 'running', attempts = attempts + 1\nWHERE id = (\n    SELECT id FROM jobs\n    WHERE status = 'pending' AND run_after <= now()\n    ORDER BY run_after\n    FOR UPDATE SKIP LOCKED   -- step over rows another worker holds\n    LIMIT 1\n)\nRETURNING *;"
         },
         {
           "kind": "metrics",
@@ -72,9 +123,30 @@
           "body": "The project is strongest as a reliability and systems-design story: transaction boundaries, idempotent job creation, retry policy, dead-letter replay, audit events, migration discipline, and honest documentation of what is proven versus what remains mocked or deferred."
         },
         {
+          "kind": "tradeoffs",
+          "label": "TRADEOFFS",
+          "items": [
+            {
+              "d": "PostgreSQL as the queue, not Redis or RabbitMQ",
+              "w": "Enqueue, idempotency-key dedupe, and attempt history all commit atomically, and there is no second datastore to keep in sync.",
+              "c": "Throughput ceilings at Postgres, and workers poll rather than receive a push."
+            },
+            {
+              "d": "At-least-once delivery, not exactly-once",
+              "w": "Exactly-once across an HTTP boundary needs the receiver to cooperate, which I cannot guarantee.",
+              "c": "Consumers must be idempotent. This is documented rather than solved."
+            },
+            {
+              "d": "Dashboard ships with both mock and live modes",
+              "w": "Mock mode makes the UI reviewable without standing up the stack; live mode reads the real API behind an API key.",
+              "c": "It has not been exercised against live multi-process queue traffic."
+            }
+          ]
+        },
+        {
           "kind": "paragraph",
           "label": "04 — STATUS",
-          "body": "Finished portfolio project. Local demo path, screenshots, tests, CI, architecture docs, and resume bullets are included. Known limits are explicit: no live multi-process SKIP LOCKED proof, no exactly-once delivery guarantee, and no production deployment."
+          "body": "Finished portfolio project with a local demo path, screenshots, tests, CI, and architecture documentation. Known limits are explicit: automatic webhook dispatcher polling and live multi-process SKIP LOCKED behavior are not proven end to end; delivery is not exactly once; and the system is not deployed to production."
         }
       ]
     },
@@ -85,7 +157,8 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal project · v0.1",
-      "featured": false,
+      "featured": true,
+      "featuredRank": 2,
       "stack": [
         "CHROME EXT MV3",
         "NODE.JS",
@@ -93,8 +166,16 @@
         "GEMINI / OPENAI / ANTHROPIC (EXT)",
         "FILE SYSTEM ACCESS API"
       ],
-      "summary": "A Chrome extension + local Node backend that injects an AI assistant into any webpage — summarize, extract, save notes, search them later by vector similarity.",
+      "summary": "A local-first Chrome extension that summarizes and extracts supported webpages, saves searchable notes, and can mirror them to disk, with provider fallback across Gemini, OpenAI, and Anthropic.",
       "img": "assets/project-screenshots/ai-assistant-across-websites.png",
+      "media": {
+        "layout": "landscape",
+        "width": 1440,
+        "height": 900,
+        "label": "BROWSER EXTENSION",
+        "alt": "Browser page with the Memo extension panel offering summarize, rewrite, extract, note capture, and memory search.",
+        "caption": "In-page assistant panel for analysis, note capture, and searchable memory."
+      },
       "details": [
         "Manifest V3 extension with service-worker background, content-script panel, and a separate options page.",
         "Local Node backend persists notes to JSON; saves can mirror to any folder on disk via File System Access API or the backend's NOTES_DIR.",
@@ -102,20 +183,63 @@
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/Web_Page_Reader"
         }
       ],
       "sections": [
         {
           "kind": "paragraph",
           "label": "01 — WHAT IT DOES",
-          "body": "Open a panel on any page and ask it to summarize, rewrite, or extract structured info from what you're reading. Save the output as a note; later, search your notes by keyword + vector similarity. The notes can also be mirrored to a folder on disk so they live outside the browser."
+          "body": "Open a panel on a supported webpage and ask it to summarize, rewrite, or extract structured information. Save the output as a note, then retrieve it later with keyword and vector-similarity search. Notes can also be mirrored to a folder on disk so they live outside the browser."
+        },
+        {
+          "kind": "diagram",
+          "label": "MESSAGE PATH",
+          "caption": "Why the MV3 service worker sits in the middle of everything.",
+          "nodes": [
+            {
+              "t": "CONTENT SCRIPT",
+              "s": "in-page panel; cannot reach extension-only APIs"
+            },
+            {
+              "t": "SERVICE WORKER",
+              "s": "MV3 background broker for every privileged call"
+            },
+            {
+              "t": "PROVIDER",
+              "s": "Gemini / OpenAI / Anthropic, deterministic local fallback"
+            },
+            {
+              "t": "NOTE STORE",
+              "s": "local Node backend, JSON on disk"
+            }
+          ],
+          "branches": [
+            {
+              "t": "RETRIEVAL",
+              "s": "keyword match + vector similarity over embeddings",
+              "tone": "ok"
+            },
+            {
+              "t": "NO API KEY",
+              "s": "hashed-embedding fallback keeps search working, at lower quality",
+              "tone": "warn"
+            }
+          ]
         },
         {
           "kind": "paragraph",
           "label": "02 — HOW IT WORKS",
           "body": "MV3 service worker brokers messages between the content-script panel and the local Node backend. The extension can call Gemini, OpenAI, or Anthropic directly in built-in mode (deterministic local fallback if no key); the Node backend is Gemini-only. For the extract action, only the Gemini path uses Google's native responseSchema — OpenAI and Anthropic use prompt-based schema instructions. Embeddings stored as NDJSON. Folder mirror on the extension side uses the File System Access API; the folder handle persists in IndexedDB across Chrome restarts (one re-grant per session)."
+        },
+        {
+          "kind": "code",
+          "label": "THE MV3 ASYMMETRY",
+          "lang": "JavaScript",
+          "caption": "chrome.runtime.openOptionsPage is undefined in a content script, so calling it throws rather than opening anything. Every privileged call gets delegated to the service worker.",
+          "body": "// content.js — openOptionsPage is unavailable in content scripts,\n// so delegate to the service worker via runtime messaging.\nfunction openOptionsPage() {\n  try {\n    chrome.runtime.sendMessage({ type: 'OPEN_OPTIONS' }, () => {\n      if (chrome.runtime.lastError) {\n        console.warn('[aaw] openOptionsPage failed:', chrome.runtime.lastError.message);\n      }\n    });\n  } catch (err) {\n    console.warn('[aaw] openOptionsPage threw:', err && err.message);\n  }\n}"
         },
         {
           "kind": "metrics",
@@ -144,9 +268,30 @@
           "body": "Content scripts can't call chrome.runtime.openOptionsPage directly — that one's only available to the extension surface, so the click silently no-ops. Had to route through a background-worker message. Generally the MV3 surface is full of these little asymmetries; the docs are right but easy to skim past."
         },
         {
+          "kind": "tradeoffs",
+          "label": "TRADEOFFS",
+          "items": [
+            {
+              "d": "Three providers in the extension, Gemini only in the backend",
+              "w": "The extension is the surface people actually use, so it got the portable path.",
+              "c": "Two code paths that drift — structured extract uses Gemini's native responseSchema, while OpenAI and Anthropic get prompt-based schema instructions."
+            },
+            {
+              "d": "Hashed-embedding fallback when no API key is set",
+              "w": "The tool should do something useful on first run without any configuration.",
+              "c": "Fallback retrieval is noticeably worse than real embeddings."
+            },
+            {
+              "d": "Local Node backend writing JSON files",
+              "w": "Notes stay on the machine, and the folder mirror means they outlive the browser profile.",
+              "c": "No sync, no multi-device, no auth, no concurrent access story."
+            }
+          ]
+        },
+        {
           "kind": "paragraph",
           "label": "04 — STATUS",
-          "body": "Personal tool, v0.1.0, no real users. The May 2026 update added the on-disk folder mirror and refreshed the model lists to current Gemini/Claude/GPT names. No auth, no multi-user, no Web Store submission — by design."
+          "body": "Personal tool, v0.1.0, with no real users. The current build includes the on-disk folder mirror and configurable Gemini, OpenAI, and Anthropic providers. There is no authentication, multi-user support, or Web Store submission — by design."
         }
       ]
     },
@@ -168,8 +313,17 @@
         "TYPESCRIPT",
         "EXPO-SECURE-STORE"
       ],
-      "summary": "Cross-platform service-booking app with three roles (customer / provider / admin). Laravel API + RN/Expo client; auth, roles, listings, bookings with slot checks, Stripe-ready payments, reviews, admin dashboard.",
+      "summary": "A Laravel and React Native service marketplace with customer, provider, and admin workflows, server-side slot checks, completion-gated reviews, and a Stripe-ready payment driver.",
       "img": "linear-gradient(135deg,#221612 0%,#3f261c 48%,#6f4b32 100%)",
+      "media": {
+        "layout": "portrait",
+        "width": 1179,
+        "height": 2556,
+        "label": "MOBILE APPLICATION",
+        "alt": "AIHL mobile service-booking interface.",
+        "caption": "Customer booking workflow for selecting provider availability and creating a service booking.",
+        "src": "assets/project-screenshots/aihl-secure-booking.png"
+      },
       "details": [
         "Built across 10 staged milestones: foundation → auth → listings/search → booking core → provider workflow → Stripe payments → notifications → reviews → admin dashboard → test+CI hardening.",
         "Stack: Laravel 13 / PHP 8.3 with Sanctum and the official stripe-php SDK; RN 0.81 / Expo SDK 54 with expo-secure-store for token storage; SQLite by default, MySQL via env.",
@@ -177,8 +331,9 @@
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/Secure-Service-Booking-Platform"
         }
       ],
       "sections": [
@@ -188,9 +343,51 @@
           "body": "A three-sided booking platform. Customers browse service categories, search providers, check availability, book, reschedule, cancel. Providers manage requests, block their calendar, complete jobs. Admins run a dashboard with reporting and flag handling."
         },
         {
+          "kind": "diagram",
+          "label": "THREE-SIDED FLOW",
+          "caption": "Customer, provider, and admin paths through one Laravel API.",
+          "nodes": [
+            {
+              "t": "RN / EXPO CLIENT",
+              "s": "token held in expo-secure-store"
+            },
+            {
+              "t": "SANCTUM AUTH",
+              "s": "role-gated controllers per surface"
+            },
+            {
+              "t": "BOOKING CORE",
+              "s": "availability, book, reschedule, cancel, complete"
+            },
+            {
+              "t": "PAYMENT_DRIVER",
+              "s": "fake by default; stripe when configured"
+            }
+          ],
+          "branches": [
+            {
+              "t": "PROVIDER",
+              "s": "accepts requests, blocks calendar, marks jobs complete",
+              "tone": "ok"
+            },
+            {
+              "t": "REVIEW GATE",
+              "s": "server refuses reviews until booking status is completed",
+              "tone": "ok"
+            }
+          ]
+        },
+        {
           "kind": "paragraph",
           "label": "02 — HOW IT WORKS",
           "body": "Laravel 13 API with Sanctum for token auth and role-based controllers; SQLite by default with a MySQL .env profile; Stripe SDK behind a PAYMENT_DRIVER switch (fake by default, stripe when configured) so the integration is decoupled from the booking core. Mobile is RN 0.81 / Expo SDK 54 with expo-secure-store for credentials. The repo is structured so each of the 10 build stages is a discrete, reviewable slice — useful for showing the development arc, not just the end state."
+        },
+        {
+          "kind": "code",
+          "label": "PAYMENTS BEHIND A SWITCH",
+          "lang": "PHP",
+          "caption": "The booking core depends on the PaymentGateway interface, never on Stripe. Injecting StripeClient is what makes the gateway unit-testable.",
+          "body": "// app/Providers/AppServiceProvider.php\n$this->app->singleton(PaymentGateway::class, function () {\n    $driver = config('payment.driver', 'fake');\n\n    return match ($driver) {\n        'stripe' => new StripePaymentGateway(\n            new StripeClient((string) config('payment.stripe.secret'))\n        ),\n        default => new FakePaymentGateway(),   // clone and run, no keys\n    };\n});"
         },
         {
           "kind": "metrics",
@@ -216,7 +413,28 @@
         {
           "kind": "paragraph",
           "label": "03 — DELIBERATE LIMITS",
-          "body": "Payments default to a 'fake' driver locally; switching to live Stripe is a single env flip but has never been used in anger — no real charges have happened. Reviews can only be left after a booking transitions to completed — enforced server-side, not just hidden in the UI. CI workflow is included; remote deploy was intentionally not performed (this is a portfolio piece, not an operating service)."
+          "body": "Payments default to a fake local driver. A Stripe driver is implemented, but it has never processed real charges. Reviews can only be created after a booking reaches completed status, enforced server-side rather than only hidden in the interface. CI is included; the project has not been remotely deployed."
+        },
+        {
+          "kind": "tradeoffs",
+          "label": "TRADEOFFS",
+          "items": [
+            {
+              "d": "Payments behind PAYMENT_DRIVER, defaulting to fake",
+              "w": "The booking core stays fully testable without live keys, and the repo clones and runs.",
+              "c": "The Stripe driver is implemented but has never processed a real charge."
+            },
+            {
+              "d": "SQLite by default, MySQL via env profile",
+              "w": "Removes all setup friction for anyone reviewing the repo.",
+              "c": "Production parity is unproven — the MySQL profile exists but SQLite is what actually gets run."
+            },
+            {
+              "d": "Review eligibility enforced server-side",
+              "w": "Hiding a button is not access control; the rule belongs where it cannot be bypassed.",
+              "c": "Extra checks on every review write, and the client has to handle a rejection it could have predicted."
+            }
+          ]
         },
         {
           "kind": "paragraph",
@@ -224,7 +442,8 @@
           "body": "All 10 build stages complete with CI workflow. No production deployment. Solo build."
         }
       ],
-      "featured": false
+      "featured": true,
+      "featuredRank": 3
     },
     {
       "slug": "error-monitoring",
@@ -245,6 +464,14 @@
       ],
       "summary": "A simplified Sentry/Datadog-style monitoring platform — ingests application error logs, runs alert rules over rolling windows, and serves a dashboard.",
       "img": "assets/project-screenshots/error-monitoring.png",
+      "media": {
+        "layout": "landscape",
+        "width": 1440,
+        "height": 1000,
+        "label": "LOG EXPLORER",
+        "alt": "Error Monitor log explorer with severity, source, and date filters above open and acknowledged error rows.",
+        "caption": "Operations workflow for filtering and acknowledging ingested application errors."
+      },
       "details": [
         "ASP.NET Core 10 Web API with EF Core 9; clean three-project layout (Core / Infrastructure / API).",
         "Background IHostedService workers run alert checks and log retention; alerts fire when severity-bucketed counts cross a configured threshold within a rolling time window.",
@@ -252,8 +479,9 @@
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/Simple-Application-Error-Monitoring-System"
         }
       ],
       "sections": [
@@ -263,9 +491,51 @@
           "body": "Apps post error logs (severity, message, stack trace, source app) to an ingestion endpoint authenticated by a per-app API key. The platform stores them, evaluates configurable alert rules over a rolling time window, and surfaces everything in an Angular 21 dashboard with severity-bucketed views and acknowledgement flow."
         },
         {
+          "kind": "diagram",
+          "label": "INGEST TO ALERT",
+          "caption": "Two background workers run on the same host as the API.",
+          "nodes": [
+            {
+              "t": "CLIENT APP",
+              "s": "POSTs severity, message, stack trace, source"
+            },
+            {
+              "t": "INGESTION API",
+              "s": "per-application API key authenticates the write"
+            },
+            {
+              "t": "EF CORE / SQL",
+              "s": "composite index on (Timestamp, Severity)"
+            },
+            {
+              "t": "IHOSTEDSERVICE",
+              "s": "rolling-window rule evaluation + log retention"
+            }
+          ],
+          "branches": [
+            {
+              "t": "THRESHOLD CROSSED",
+              "s": "alert raised, surfaced in the Angular dashboard",
+              "tone": "warn"
+            },
+            {
+              "t": "OPERATOR",
+              "s": "severity-bucketed views and acknowledgement flow",
+              "tone": "ok"
+            }
+          ]
+        },
+        {
           "kind": "paragraph",
           "label": "02 — HOW IT WORKS",
-          "body": "Layered .NET solution: Core (domain/DTOs/interfaces), Infrastructure (EF Core + repositories + services), API (controllers + background services). Composite index on (Timestamp, Severity) covers the dashboard's most common filter — a single B-tree seek instead of a bitmap AND between two single-column indexes. Background services tick periodically: one evaluates alert rules, the other prunes old logs."
+          "body": "Layered .NET solution: Core (domain, DTOs, and interfaces), Infrastructure (EF Core, repositories, and services), and API (controllers and background services). A composite index on (Timestamp, Severity) supports the dashboard's common timestamp-and-severity filter. Background services periodically evaluate alert rules and prune old logs."
+        },
+        {
+          "kind": "code",
+          "label": "INDEXING FOR THE REAL QUERY",
+          "lang": "C#",
+          "caption": "Leading with Timestamp lets one index serve both the range filter and the ORDER BY, avoiding a separate sort. Reasoned from query shape — not yet confirmed against a measured plan.",
+          "body": "// src/ErrorMonitoring.Infrastructure/Data/AppDbContext.cs\nmodelBuilder.Entity<LogEntry>(entity =>\n{\n    entity.Property(e => e.Severity).HasConversion<string>();\n\n    // The dashboard filters a time range and sorts by Timestamp desc.\n    // One composite seek beats two single-column indexes here because\n    // it satisfies the filter and the ordering in the same pass.\n    entity.HasIndex(e => new { e.Timestamp, e.Severity })\n          .HasDatabaseName(\"IX_LogEntries_Timestamp_Severity\");\n});"
         },
         {
           "kind": "metrics",
@@ -291,7 +561,28 @@
         {
           "kind": "paragraph",
           "label": "03 — DESIGN CHOICE: COMPOSITE INDEX",
-          "body": "The README explicitly walks through why (Timestamp, Severity) beats two single-column indexes here: the dashboard's hot query filters on both columns and orders by timestamp, so a single composite seek satisfies the query plan without a sort step. A small thing to write about, but it's the kind of decision that makes monitoring-platform queries fast enough to feel real-time."
+          "body": "The dashboard's common query filters by time and severity, so the schema includes a composite (Timestamp, Severity) index rather than relying only on separate single-column indexes. The choice is documented as a query-shape decision; a production query-plan benchmark remains future validation."
+        },
+        {
+          "kind": "tradeoffs",
+          "label": "TRADEOFFS",
+          "items": [
+            {
+              "d": "Composite (Timestamp, Severity) index",
+              "w": "It matches the filter the dashboard actually issues, rather than two independent single-column indexes.",
+              "c": "Chosen by reasoning about query shape. A real query-plan benchmark is still outstanding."
+            },
+            {
+              "d": "Alerting in an in-process IHostedService",
+              "w": "One deployable unit, no external scheduler or queue to operate.",
+              "c": "Alert evaluation stops when the API stops, and running two instances would double-fire without leader election."
+            },
+            {
+              "d": "Three-project Core / Infrastructure / API split",
+              "w": "Domain logic stays testable without EF Core or HTTP in the way.",
+              "c": "More ceremony than an app this size strictly needs."
+            }
+          ]
         },
         {
           "kind": "paragraph",
@@ -299,7 +590,8 @@
           "body": "Solo build. Runs against SQLite locally and Azure SQL in the prod profile; deploy targets are Azure App Service + Static Web Apps. No live deployment."
         }
       ],
-      "featured": false
+      "featured": true,
+      "featuredRank": 4
     },
     {
       "slug": "crypto-data-pipeline",
@@ -318,6 +610,14 @@
       ],
       "summary": "An ETL pipeline that pulls crypto market snapshots from CoinGecko, lands raw JSON in a partitioned data-lake layout, validates with a rules engine, and loads structured rows into a SQLite warehouse. CLI + tiny web/HTTP API.",
       "img": "assets/project-screenshots/crypto-data-pipeline.png",
+      "media": {
+        "layout": "landscape",
+        "width": 1440,
+        "height": 900,
+        "label": "PIPELINE DASHBOARD",
+        "alt": "Crypto Pipeline dashboard with ingestion controls and a ranked market snapshot table.",
+        "caption": "Saved warehouse snapshot with ingestion controls and ranked market data."
+      },
       "details": [
         "Two run modes: `--mode once` for a single ingestion + load cycle, `--mode daemon --interval 300` for continuous polling.",
         "Data-lake layout: raw JSON lands at `data_lake/raw/coin_gecko/date=YYYY-MM-DD/hour=HH/markets_*.json` (Hive-style partitioning), then transforms into `dim/fact` tables in SQLite — including a `fact_price_series` table fanned out from CoinGecko's 7-day sparkline.",
@@ -325,8 +625,9 @@
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/Data_Pipeline"
         }
       ],
       "sections": [
@@ -336,9 +637,51 @@
           "body": "Polls CoinGecko for the top N coins (default 50), captures snapshot fields and the 7-day sparkline, lands the raw JSON in a partitioned lake, validates it, then loads the clean rows into a SQLite warehouse. A small Flask web app sits on top exposing /api/run-once, /api/latest, and /api/series/<symbol>."
         },
         {
+          "kind": "diagram",
+          "label": "LAKE → WAREHOUSE",
+          "caption": "The raw layer is what makes the whole thing replayable.",
+          "nodes": [
+            {
+              "t": "COINGECKO",
+              "s": "top N coins, snapshot + 7-day sparkline"
+            },
+            {
+              "t": "RAW LAKE",
+              "s": "written before any parsing — date=/hour= partitions"
+            },
+            {
+              "t": "TRANSFORM",
+              "s": "market snapshot + sparkline fan-out to price series"
+            },
+            {
+              "t": "VALIDATION",
+              "s": "rules engine runs per dataset, after shaping"
+            }
+          ],
+          "branches": [
+            {
+              "t": "VALID ROWS",
+              "s": "loaded into the SQLite dim / fact warehouse",
+              "tone": "ok"
+            },
+            {
+              "t": "INVALID ROWS",
+              "s": "held back; a validation report lands in its own lake partition",
+              "tone": "warn"
+            }
+          ]
+        },
+        {
           "kind": "paragraph",
           "label": "02 — HOW IT WORKS",
           "body": "The pipeline is split into discrete modules — extractor (HTTP via requests), transformer (sparkline fan-out + dataset shaping), validation (rules engine), raw_store (lake writer), warehouse (sqlite3 schema + loader). main.py is the CLI; app.py exposes the same backend over HTTP via Flask. SQL analytics queries live alongside in crypto_pipeline/sql/."
+        },
+        {
+          "kind": "code",
+          "label": "LAND FIRST, THEN VALIDATE",
+          "lang": "Python",
+          "caption": "Raw records hit the lake before any transform runs, so a bad transform costs a re-run rather than another rate-limited API call.",
+          "body": "# crypto_pipeline/pipeline.py\nraw_records = self.extractor.fetch_market_snapshots()\nraw_path = self.raw_store.write(raw_records, ingested_at)   # land first\n\nsnapshot_rows = transform_market_snapshot(raw_records, ingested_at)\nseries_rows = transform_price_series(raw_records, ingested_at)\n\nsnapshot_validation = self.validator.validate_market_snapshot(snapshot_rows)\nseries_validation = self.validator.validate_price_series(series_rows)\n\n# only rows that passed the rules engine reach the warehouse\nself.warehouse.load_market_snapshot(snapshot_validation.valid_rows)\nself.warehouse.load_price_series(series_validation.valid_rows)\n\nself.raw_store.write_validation_report(validation_report, ingested_at)"
         },
         {
           "kind": "metrics",
@@ -367,12 +710,34 @@
           "body": "I could have written transformed rows straight to SQLite. Keeping the raw JSON landing zone means the pipeline is replayable — if the schema changes or a transform has a bug, I can reload from raw without re-hitting CoinGecko's rate limit. The validation report writes to the lake too, so failures don't disappear."
         },
         {
+          "kind": "tradeoffs",
+          "label": "TRADEOFFS",
+          "items": [
+            {
+              "d": "Raw landing zone before any transform",
+              "w": "The pipeline is replayable — a schema change or transform bug can be reloaded from raw without re-hitting CoinGecko's rate limit.",
+              "c": "Every payload is stored twice, and the lake grows whether or not the rows were usable."
+            },
+            {
+              "d": "Invalid rows rejected rather than coerced",
+              "w": "The warehouse only ever contains rows that passed the rules engine.",
+              "c": "Rejections need a human to look at the validation report; nothing retries them automatically."
+            },
+            {
+              "d": "SQLite as the warehouse",
+              "w": "Single file, zero setup, and the star schema is the part worth demonstrating.",
+              "c": "No real concurrency. The shape would port to Postgres or Snowflake, but the project is not wired for either."
+            }
+          ]
+        },
+        {
           "kind": "paragraph",
           "label": "04 — STATUS",
           "body": "Solo build. Pytest suite covers validation + pipeline integration. Single-machine SQLite warehouse — the architecture would translate to Postgres/Snowflake but the project's not wired for it."
         }
       ],
-      "featured": false
+      "featured": true,
+      "featuredRank": 5
     },
     {
       "slug": "ai-candidate-dashboard",
@@ -391,20 +756,14 @@
         "STRUCTURED JSON LOGGING"
       ],
       "summary": "A full-stack hiring workflow with a shipped React 19 + TypeScript SPA for resume ingestion, async structured extraction, candidate review, role workspaces, shortlisting, comparison, and funnel analytics.",
-      "featured": true,
-      "featuredRank": 3,
+      "featured": false,
       "img": "assets/project-screenshots/ai-candidate-dashboard.png",
       "details": [
         "Async resume processing: PDF/text upload triggers a Celery job that extracts skills, years of experience, education, summary, and a match score against a job description.",
         "Reviewer workflow: search, status/tag/score filtering, pagination, candidate detail with evidence snippets, notes, tags, and a six-state lifecycle (Applied → Screened → Interview → Offer → Hired, with Rejected as a terminal path).",
         "Reliability/ops: Pydantic schema validation on extraction output, Celery retries with backoff, Redis-backed queueing, structured JSON logs, persisted JobFailure model tracking retry counts."
       ],
-      "links": [
-        {
-          "k": "SOURCE",
-          "v": "github"
-        }
-      ],
+      "links": [],
       "sections": [
         {
           "kind": "paragraph",
@@ -476,8 +835,9 @@
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/inbox_copilot"
         }
       ],
       "sections": [
@@ -551,12 +911,7 @@
         "Study workflow: manual sections, highlights, page notes, retrieval context with citations, provider settings for OpenAI/Anthropic/Gemini, multi-step generation, saved outputs, review queue, pinned snippets, progress aggregates, and PDF export.",
         "Packaging hardening: macOS/Windows unpacked targets, resource checks, CSP/security hardening, packaged smoke checks, and 395 passing tests documented in the M11 capstone report."
       ],
-      "links": [
-        {
-          "k": "SOURCE",
-          "v": "github"
-        }
-      ],
+      "links": [],
       "sections": [
         {
           "kind": "paragraph",
@@ -631,8 +986,9 @@
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/clientflow"
         }
       ],
       "sections": [
@@ -700,8 +1056,7 @@
         "GITHUB ACTIONS"
       ],
       "summary": "A Next.js commerce operations platform with a public storefront and admin dashboard: products, cart, coupons, Stripe test checkout, webhook-driven orders, inventory, CMS/blog, SEO drafts, CSV import/export, and operational alerts.",
-      "featured": true,
-      "featuredRank": 2,
+      "featured": false,
       "img": "assets/project-screenshots/commerceops.png",
       "details": [
         "Checkout re-prices the cart from the database, stores money as integer cents, applies exact coupon discounts, and creates orders from Stripe webhooks rather than trusting the success redirect.",
@@ -710,8 +1065,9 @@
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/commerceops"
         }
       ],
       "sections": [
@@ -785,8 +1141,9 @@
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/clinical-imaging-pipeline"
         }
       ],
       "sections": [
@@ -859,8 +1216,9 @@
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/taskq"
         }
       ],
       "sections": [
@@ -935,8 +1293,9 @@
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/B2B-client-portal-mobile-web-platform"
         }
       ],
       "sections": [
@@ -1010,12 +1369,7 @@
         "The repository implements desktop clipboard support for macOS, Linux, and Windows, plus native Android and iOS apps, a browser extension, and a Windows installer; the latest mobile and protocol changes still require compilation and live verification.",
         "Networking includes mDNS discovery, identity/pairing/roster modules, QUIC/TLS, a WebSocket relay, and end-to-end XChaCha20-Poly1305 encrypted envelopes."
       ],
-      "links": [
-        {
-          "k": "SOURCE",
-          "v": "github"
-        }
-      ],
+      "links": [],
       "sections": [
         {
           "kind": "paragraph",
@@ -1089,8 +1443,9 @@
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/city_plus"
         }
       ],
       "sections": [
@@ -1160,8 +1515,9 @@
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/Data-processing-with-Spark"
         }
       ],
       "sections": [
@@ -1234,8 +1590,9 @@
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/Java-Banking-System"
         }
       ],
       "sections": [
@@ -1311,12 +1668,7 @@
         "Three-layer caching: optional Caffeine L1 (10k, 5min TTL), optional Redis L2 (10min TTL), Postgres source of truth. Every /{slug} response sets X-Cache-Source ∈ {L1, L2, DB, MISS} for traceable cache analysis. The original M3 Redis run was a broken-L2 serialization run; after fixing it, L2 still offered no meaningful benefit on the cache-hot 10k working set.",
         "Per-milestone Spring profiles + JVM args in scripts/run-app.sh — switching milestones never requires a rebuild. Observability: Prometheus 5s scrape, three pre-provisioned Grafana dashboards, X-Correlation-Id and X-Response-Time-Ms on every response."
       ],
-      "links": [
-        {
-          "k": "SOURCE",
-          "v": "github"
-        }
-      ],
+      "links": [],
       "sections": [
         {
           "kind": "paragraph",
@@ -1387,12 +1739,7 @@
         "~94 DAX measures across 14 measure files and a Python ETL (pandas) feeding a SQLite + Parquet backing store organized in raw / bronze / silver / cleaned layers — the layer separation makes recompute and audit cheap.",
         "Row-Level Security design for four roles is specified, but model enforcement still needs validation once the .pbix exists."
       ],
-      "links": [
-        {
-          "k": "SOURCE",
-          "v": "github"
-        }
-      ],
+      "links": [],
       "sections": [
         {
           "kind": "paragraph",
@@ -1462,12 +1809,7 @@
         "Reviewer dashboard with search across candidate, transcript, summary, and job title, plus filters on processing status and reviewer status. Detail page surfaces transcript, summary, extracted signals (JSON), reviewer notes, and a retry-failed-processing action.",
         "Whisper for STT + an LLM for extraction — both have a local mock fallback so the pipeline runs end-to-end without an API key during dev."
       ],
-      "links": [
-        {
-          "k": "SOURCE",
-          "v": "github"
-        }
-      ],
+      "links": [],
       "sections": [
         {
           "kind": "paragraph",
@@ -1535,8 +1877,9 @@
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/web_builder_llm"
         }
       ],
       "sections": [
@@ -1613,8 +1956,9 @@
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/enterprise-ticket-management-system"
         }
       ],
       "sections": [
@@ -1684,12 +2028,7 @@
         "A Python/Bash harness assembles the routine/test inputs and checks deterministic output. Current results come from a custom stand-in interpreter explicitly labeled provisional, not from MARS.",
         "Documentation covers calling convention, register mapping, debug notes, test plan, and sample output."
       ],
-      "links": [
-        {
-          "k": "SOURCE",
-          "v": "github"
-        }
-      ],
+      "links": [],
       "sections": [
         {
           "kind": "paragraph",
@@ -1759,8 +2098,9 @@
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/matrixops-cli"
         }
       ],
       "sections": [
@@ -1837,8 +2177,9 @@
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/pocketlm"
         }
       ],
       "sections": [
@@ -1996,8 +2337,9 @@
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/Simple-Task-Management-System"
         }
       ],
       "sections": [

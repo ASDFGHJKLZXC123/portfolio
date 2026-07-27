@@ -4,7 +4,9 @@ Dark editorial portfolio for a recent UCI Informatics grad.
 
 ## Selected projects
 
-The homepage is intentionally narrowed to five finished projects:
+The public hiring set is intentionally narrowed to five finished projects. The
+homepage leads with the first three; the selected-work page presents all five
+before offering the complete build archive.
 
 1. ReliableFlow
 2. AI Assistant Across Websites
@@ -33,8 +35,8 @@ npm run preview    # serve the production build
 ## Files
 
 - `public/data/projects.json` — project data and case-study content
-- `public/data/writing.json` — writing page content
-- `public/data/now.json` — now page content
+- `public/data/writing.json` — draft writing content; not publicly routed until its claims are verified
+- `public/data/now.json` — draft activity content; not publicly routed until its claims are verified
 - `src/pages/Portfolio.jsx` — homepage layout and selected-project count
 - `src/components/` — shared UI controls
 - `src/index.css` — global base

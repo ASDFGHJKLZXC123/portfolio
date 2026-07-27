@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "check:render": "vite build --config vite.ssr.config.mjs && node node_modules/.ssr-check/render-check.js"
   },
   "dependencies": {
     "react": "^18.3.1",

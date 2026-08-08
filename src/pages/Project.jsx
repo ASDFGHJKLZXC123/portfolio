@@ -8,12 +8,18 @@ import { curatedProjects } from '../lib/portfolio-curation';
 import { useTheme } from '../lib/use-theme';
 import Reveal from '../components/Reveal';
 import { BuildNotes, CaseSection } from '../components/CaseSections';
+import TechnicalCover from '../components/TechnicalCover';
 
-const isInProgress = (project) => project.status === 'in-progress';
-const projectStatusLabel = (project) => isInProgress(project) ? 'IN PROGRESS' : 'COMPLETE';
+const pendingStatusLabel = (project) => project.status === 'in-progress'
+  ? 'IN PROGRESS'
+  : project.status === 'verification-pending'
+    ? 'VERIFICATION PENDING'
+    : '';
+const projectStatusLabel = (project) => pendingStatusLabel(project) || 'COMPLETE';
 
 function StatusPill({ project, onImage = false }) {
-  if (!isInProgress(project)) return null;
+  const label = pendingStatusLabel(project);
+  if (!label) return null;
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap',
@@ -25,7 +31,7 @@ function StatusPill({ project, onImage = false }) {
       fontFamily: 'var(--mono)', fontSize: onImage ? 8 : 9,
       lineHeight: 1, letterSpacing: '0.16em',
     }}>
-      IN PROGRESS
+      {label}
     </span>
   );
 }
@@ -86,7 +92,7 @@ function Hero({ p }) {
       <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.24em', color: 'var(--muted)', marginBottom: 24 }}>
         / {(p.kind || 'project').toUpperCase()} · {p.year}
       </div>
-      {isInProgress(p) && (
+      {pendingStatusLabel(p) && (
         <div style={{ marginBottom: 18 }}>
           <StatusPill project={p} />
         </div>
@@ -144,6 +150,7 @@ function Hero({ p }) {
 
 function ProjectMedia({ p }) {
   const media = p.media || {};
+  const technicalCover = p.technicalCover && typeof p.technicalCover === 'object' ? p.technicalCover : null;
   const rawSource = projectImageSource(media.src || p.img);
   const shouldRefresh = media.state === 'refresh';
   const requestedSource = shouldRefresh ? '' : rawSource;
@@ -151,16 +158,19 @@ function ProjectMedia({ p }) {
   const imageFailed = Boolean(requestedSource && failedSource === requestedSource);
   const source = imageFailed ? '' : requestedSource;
   const layout = media.layout === 'portrait' ? 'portrait' : 'landscape';
-  const label = media.label || (layout === 'portrait' ? 'MOBILE INTERFACE' : 'PROJECT INTERFACE');
+  const interfaceLabel = media.label || (layout === 'portrait' ? 'MOBILE INTERFACE' : 'PROJECT INTERFACE');
+  const label = technicalCover?.label || interfaceLabel;
   const alt = media.alt || `${p.name} project interface`;
   const normalizedAlt = alt.replace(/[.\s]+$/, '');
-  const caption = media.caption || 'Primary project interface';
+  const interfaceCaption = media.caption || 'Primary project interface';
+  const caption = technicalCover?.caption || interfaceCaption;
   const placeholderState = imageFailed ? 'SCREENSHOT UNAVAILABLE' : shouldRefresh ? 'SCREENSHOT REFRESH NEEDED' : 'INTERFACE PREVIEW';
   const placeholderBackground = rawSource
     ? 'linear-gradient(135deg, #11151a 0%, #18212b 52%, #243241 100%)'
     : projectImageBackground(p.img);
 
   return (
+    <>
     <figure className={`project-media project-media--${layout}`}>
       <div className="project-media-heading">
         <span>/ {label}</span>
@@ -168,10 +178,12 @@ function ProjectMedia({ p }) {
       </div>
 
       <div
-        className={`project-media-stage project-media-stage--${layout}${source ? '' : ' project-media-stage--placeholder'}`}
-        style={source ? undefined : { background: placeholderBackground }}
+        className={`project-media-stage project-media-stage--${layout}${source || technicalCover ? '' : ' project-media-stage--placeholder'}${technicalCover ? ' project-media-stage--technical' : ''}`}
+        style={source || technicalCover ? undefined : { background: placeholderBackground }}
       >
-        {source ? (
+        {technicalCover ? (
+          <TechnicalCover cover={technicalCover} projectName={p.name} />
+        ) : source ? (
           <img
             className="project-media-image"
             src={source}
@@ -203,7 +215,9 @@ function ProjectMedia({ p }) {
 
       <figcaption className="project-media-caption">
         <span>{caption}</span>
-        {source ? (
+        {technicalCover ? (
+          <span>REPOSITORY-GROUNDED TECHNICAL VIEW</span>
+        ) : source ? (
           <a href={source} target="_blank" rel="noreferrer" aria-label={`Open full-size ${p.name} project screenshot`}>
             OPEN FULL SIZE ↗
           </a>
@@ -212,6 +226,33 @@ function ProjectMedia({ p }) {
         )}
       </figcaption>
     </figure>
+    {technicalCover && source && (
+      <figure className={`project-media project-media--${layout} project-media--supporting`}>
+        <div className="project-media-heading">
+          <span>/ SUPPORTING INTERFACE · {interfaceLabel}</span>
+          <span>{p.name} · 02</span>
+        </div>
+        <div className={`project-media-stage project-media-stage--${layout}`}>
+          <img
+            className="project-media-image"
+            src={source}
+            width={media.width}
+            height={media.height}
+            alt={alt}
+            loading="lazy"
+            decoding="async"
+            onError={() => setFailedSource(requestedSource)}
+          />
+        </div>
+        <figcaption className="project-media-caption">
+          <span>{interfaceCaption}</span>
+          <a href={source} target="_blank" rel="noreferrer" aria-label={`Open full-size ${p.name} supporting interface screenshot`}>
+            OPEN FULL SIZE ↗
+          </a>
+        </figcaption>
+      </figure>
+    )}
+    </>
   );
 }
 

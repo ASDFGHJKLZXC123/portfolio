@@ -12,6 +12,7 @@ import { projectImageBackground } from '../lib/project-image';
 import { externalLinkProps, isUsableHref, projectSlug, projectSourceHref, projectDemoHref } from '../lib/project-links';
 import { curatedProjects } from '../lib/portfolio-curation';
 import { applyTheme, initialThemeIsDark } from '../lib/use-theme';
+import TechnicalCover from '../components/TechnicalCover';
 
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "dark": true,
@@ -39,10 +40,15 @@ const EDUCATION = {
   coursework: ['Data Structure Implementation & Analysis', 'Introduction to Data Management', 'Computer Networks', 'Introduction to Artificial Intelligence', 'Engineering of AI Software', 'Probability & Statistics for CS', 'Requirements Analysis & Engineering', 'Software Design', 'Human-Computer Interaction', 'Project Management'],
 };
 
-const isInProgress = (project) => project.status === 'in-progress';
+const pendingStatusLabel = (project) => project.status === 'in-progress'
+  ? 'IN PROGRESS'
+  : project.status === 'verification-pending'
+    ? 'VERIFICATION PENDING'
+    : '';
 
 function StatusPill({ project, onImage = false }) {
-  if (!isInProgress(project)) return null;
+  const label = pendingStatusLabel(project);
+  if (!label) return null;
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap',
@@ -54,7 +60,7 @@ function StatusPill({ project, onImage = false }) {
       fontFamily: 'var(--mono)', fontSize: onImage ? 8 : 9,
       lineHeight: 1, letterSpacing: '0.16em',
     }}>
-      IN PROGRESS
+      {label}
     </span>
   );
 }
@@ -283,13 +289,17 @@ function ProjectTile({ project }) {
           boxShadow: hover ? '0 22px 52px -28px rgba(0,0,0,0.65)' : '0 0 0 rgba(0,0,0,0)',
           transition: 'height .35s cubic-bezier(.2,.7,.3,1), border-color .3s, box-shadow .4s',
         }}>
-          <div data-img style={{
-            position: 'absolute', inset: 0,
-            background: projectImageBackground(project.img),
-            transform: hover ? 'scale(1.06)' : 'scale(1)',
-            filter: hover ? 'brightness(1.12) saturate(1.1)' : 'brightness(1) saturate(1)',
-            transition: 'transform .8s cubic-bezier(.2,.7,.3,1), filter .5s',
-          }} />
+          {project.technicalCover ? (
+            <TechnicalCover cover={project.technicalCover} projectName={project.name} compact />
+          ) : (
+            <div data-img style={{
+              position: 'absolute', inset: 0,
+              background: projectImageBackground(project.img),
+              transform: hover ? 'scale(1.06)' : 'scale(1)',
+              filter: hover ? 'brightness(1.12) saturate(1.1)' : 'brightness(1) saturate(1)',
+              transition: 'transform .8s cubic-bezier(.2,.7,.3,1), filter .5s',
+            }} />
+          )}
           <div style={{
             position: 'absolute', inset: 0,
             background: 'radial-gradient(circle at 50% 100%, rgba(255,255,255,0.18), transparent 60%)',
@@ -297,12 +307,14 @@ function ProjectTile({ project }) {
             transition: 'opacity .5s',
             pointerEvents: 'none',
           }} />
-          {project.accent && (
+          {!project.technicalCover && project.accent && (
             <div style={{ position: 'absolute', inset: 0, background: project.accent, mixBlendMode: 'screen', pointerEvents: 'none' }} />
           )}
-          <div style={{ position: 'absolute', top: 10, left: 12, zIndex: 2, pointerEvents: 'none' }}>
-            <StatusPill project={project} onImage />
-          </div>
+          {!project.technicalCover && (
+            <div style={{ position: 'absolute', top: 10, left: 12, zIndex: 2, pointerEvents: 'none' }}>
+              <StatusPill project={project} onImage />
+            </div>
+          )}
           <div style={{
             position: 'absolute', inset: 0,
             background: 'repeating-linear-gradient(0deg, transparent 0 2px, rgba(255,255,255,0.012) 2px 3px)', pointerEvents: 'none',
@@ -342,7 +354,7 @@ function ProjectTile({ project }) {
                 aria-label={`Open ${project.name} GitHub repository`}
                 style={{ color: 'var(--muted)', textDecoration: 'underline', textUnderlineOffset: 4 }}
               >
-                GITHUB REPO ↗
+                {project.sourceLabel || 'GITHUB REPO'} ↗
               </a>
             )}
             {hasDemo && (

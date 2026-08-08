@@ -319,10 +319,35 @@
         "layout": "portrait",
         "width": 1179,
         "height": 2556,
+        "state": "refresh",
         "label": "MOBILE APPLICATION",
         "alt": "AIHL mobile service-booking interface.",
         "caption": "Customer booking workflow for selecting provider availability and creating a service booking.",
         "src": "assets/project-screenshots/aihl-secure-booking.png"
+      },
+      "technicalCover": {
+        "type": "flow",
+        "label": "CUSTOMER BOOKING FLOW",
+        "signal": "REACT NATIVE · LARAVEL API",
+        "kicker": "SERVER-VERIFIED AVAILABILITY",
+        "title": "BOOK A SERVICE WITHOUT DOUBLE-BOOKING",
+        "subtitle": "The mobile client guides discovery and selection; Laravel remains authoritative for provider availability, overlapping bookings, pricing, state transitions, and review eligibility.",
+        "flowLabel": "Customer booking lifecycle",
+        "caption": "Repository-grounded booking workflow shown while a clean healthy-state mobile capture is pending; the previous 404 screenshot is intentionally withheld.",
+        "nodes": [
+          { "title": "BROWSE SERVICES", "detail": "Explore categories, duration, and base pricing." },
+          { "title": "CHOOSE PROVIDER", "detail": "Match an active provider to the selected service." },
+          { "title": "LOAD AVAILABILITY", "detail": "Combine weekly hours with blocked windows." },
+          { "title": "SERVER SLOT CHECK", "detail": "Reject invalid times and overlapping active bookings." },
+          { "title": "CREATE BOOKING", "detail": "Persist price, currency, schedule, and pending status." },
+          { "title": "COMPLETE → REVIEW", "detail": "Provider completion unlocks the review gate." }
+        ],
+        "stats": [
+          { "value": "3", "label": "USER ROLES" },
+          { "value": "10 / 10", "label": "BUILD STAGES" },
+          { "value": "SERVER-SIDE", "label": "SLOT CONFLICT CHECK" },
+          { "value": "0", "label": "PRODUCTION DEPLOYS" }
+        ]
       },
       "details": [
         "Built across 10 staged milestones: foundation → auth → listings/search → booking core → provider workflow → Stripe payments → notifications → reviews → admin dashboard → test+CI hardening.",
@@ -1501,17 +1526,62 @@
       "role": "Solo",
       "timeline": "personal project",
       "stack": [
-        "PYSPARK 3.5+",
+        "PYSPARK 3.5.3",
         "STREAMLIT",
         "PARQUET",
         "JDBC"
       ],
-      "summary": "A configurable Spark ETL: ingests raw datasets (parquet/csv/json), enforces schema, dedupes, lands a partitioned Parquet warehouse, and writes KPI/aggregation tables to either a Parquet sink or a JDBC database. Bonus: a Streamlit UI for the NYC TLC taxi flow.",
+      "summary": "A schema-guarded PySpark 3.5.3 batch ETL for Parquet, CSV, and JSON. It cleans and deduplicates a fixed event schema, stores Snappy Parquet by event_date, and builds three Spark SQL analytics tables with a Parquet sink or an optional externally configured JDBC path.",
       "img": "assets/project-screenshots/spark-pipeline.png",
+      "media": {
+        "layout": "landscape",
+        "width": 1440,
+        "height": 900,
+        "label": "NYC TLC RUNNER",
+        "alt": "Local Streamlit runner for configuring and launching the separate NYC TLC Spark workflow.",
+        "caption": "Supporting interface: a real local Streamlit configuration and log viewer for the separate NYC TLC workflow.",
+        "src": "assets/project-screenshots/spark-pipeline.png"
+      },
+      "technicalCover": {
+        "type": "flow",
+        "label": "DATA FLOW",
+        "signal": "PYSPARK 3.5.3 · BATCH ETL",
+        "kicker": "SCHEMA-GUARDED PIPELINE",
+        "title": "SPARK DATA PIPELINE",
+        "subtitle": "Three input formats cross a six-field schema guard, cleaning and deduplication, partitioned storage, Spark SQL analytics, and one selected result sink.",
+        "caption": "Repository-grounded generic ETL path; the supporting Streamlit screenshot below drives a separate NYC TLC workflow.",
+        "nodes": [
+          { "title": "RAW EVENTS", "detail": "Parquet, CSV, or JSON input." },
+          { "title": "SCHEMA GUARD", "detail": "Six required fields; mismatches fail fast." },
+          { "title": "CLEAN + DEDUPE", "detail": "Filter invalid rows and derive date/hour." },
+          { "title": "CLEANED STORE", "detail": "Snappy Parquet partitioned by event_date." },
+          { "title": "SPARK SQL", "detail": "Daily KPIs, devices, and event trends." },
+          { "title": "SELECTABLE SINK", "detail": "Parquet warehouse or external-driver JDBC." }
+        ],
+        "terminal": {
+          "title": "spark.pipeline",
+          "lines": [
+            "$ python3 main.py \\",
+            "  --input /data/events --format parquet \\",
+            "  --output /data/pipeline_output \\",
+            "  --results-sink warehouse \\",
+            "  --shuffle-partitions 800 \\",
+            "  --repartition 400",
+            "",
+            "Pipeline completed successfully"
+          ]
+        },
+        "stats": [
+          { "value": "3", "label": "INPUT FORMATS" },
+          { "value": "6", "label": "REQUIRED FIELDS" },
+          { "value": "3", "label": "ANALYTICS TABLES" },
+          { "value": "12 / 12", "label": "LOCAL TESTS" }
+        ]
+      },
       "details": [
         "Generic pipeline (main.py) with a fixed expected schema (event_time, user_id, region, device_type, event_type, metric_value); does schema enforcement, null filtering, normalization, dedup; writes cleaned data partitioned by event_date.",
-        "Two result-sink modes: `warehouse` (partitioned Parquet outputs for daily_kpis, device_breakdown, event_type_trends) or `jdbc` (same shape into Postgres or any JDBC-reachable warehouse).",
-        "NYC TLC flow (nyc_tlc_trip_workflow.py + Streamlit UI in ui_app.py) downloads and processes NYC taxi parquet files end-to-end."
+        "Each run selects one result-sink mode: `warehouse` writes partitioned Parquet outputs for daily_kpis, device_breakdown, and event_type_trends; `jdbc` uses the same shapes but requires an externally supplied driver and remains untested.",
+        "The separate NYC TLC workflow has a real Streamlit configuration/log UI. Local verification passes 12 tests covering the Spark fixture, format-specific schema validation, and fail-fast schema mismatch behavior—not full ETL, JDBC, NYC workflow, or UI coverage."
       ],
       "links": [
         {
@@ -1524,43 +1594,43 @@
         {
           "kind": "paragraph",
           "label": "01 — WHAT IT DOES",
-          "body": "Point it at a folder of raw parquet/csv/json files and it produces a cleaned partitioned dataset plus three KPI tables (daily_kpis, device_breakdown, event_type_trends). Sink is configurable: write to Parquet for analyst-friendly storage, or push straight to a relational warehouse over JDBC. A separate workflow script handles the NYC Taxi & Limousine Commission datasets specifically."
+          "body": "Point the generic pipeline at Parquet, CSV, or JSON and it produces a cleaned partitioned dataset plus three analytics tables: daily_kpis, device_breakdown, and event_type_trends. Each run selects either a Parquet warehouse sink or an optional JDBC path that requires external driver setup. A separate workflow script handles NYC Taxi & Limousine Commission data."
         },
         {
           "kind": "paragraph",
           "label": "02 — HOW IT WORKS",
-          "body": "PySpark 3.5+ does all the work. CLI surface exposes the knobs that matter at scale: --shuffle-partitions for cluster-size tuning, --repartition for write parallelism / output file count. The Streamlit UI is a thin wrapper over the NYC TLC script — pick taxi type / year / month, it downloads the parquet file from CloudFront and shells out to the workflow."
+          "body": "PySpark 3.5.3 runs the batch transforms. The CLI exposes --shuffle-partitions for Spark SQL shuffles and --repartition for write parallelism and output file count. The Streamlit UI belongs to the separate NYC TLC path: it collects taxi type, year, and month, downloads a Parquet file, launches the workflow as a separate Python process, and presents its logs."
         },
         {
           "kind": "metrics",
           "items": [
             {
-              "v": "Parquet + JDBC",
-              "k": "DUAL SINK"
+              "v": "3",
+              "k": "INPUT FORMATS"
             },
             {
-              "v": "event_date",
-              "k": "PARTITION KEY"
+              "v": "6",
+              "k": "REQUIRED FIELDS"
             },
             {
-              "v": "3 KPI tables",
-              "k": "AGGREGATIONS"
+              "v": "3",
+              "k": "ANALYTICS TABLES"
             },
             {
-              "v": "Streamlit",
-              "k": "DEMO UI"
+              "v": "12 / 12",
+              "k": "LOCAL TESTS"
             }
           ]
         },
         {
           "kind": "paragraph",
-          "label": "03 — WHY DUAL SINK",
-          "body": "Most analytics flows want both: Parquet for cheap storage and ad-hoc query, JDBC for the BI tools that won't speak parquet. Shipping both behind one CLI flag keeps the pipeline reusable across teams that have different downstream tooling."
+          "label": "03 — WHY A SELECTABLE SINK",
+          "body": "The output shape stays stable while deployment context chooses the destination. Local or analyst-oriented runs can keep partitioned Parquet; environments that provide a compatible JDBC driver can target a relational warehouse instead. The current repository proves sink selection and the Parquet path, but does not supply or test a JDBC driver."
         },
         {
           "kind": "paragraph",
           "label": "04 — STATUS",
-          "body": "Solo project. Not run on a real cluster — designed and tested locally; the --shuffle-partitions and --repartition tuning notes describe how it would scale up."
+          "body": "Complete local prototype, not run on a real cluster and not deployed. Twelve local tests pass, narrowly covering fixtures, input-format schema validation, and schema-mismatch failure. Transform values, writes, JDBC, the NYC workflow, and the Streamlit UI do not have automated coverage; JDBC also requires external driver/classpath setup."
         }
       ],
       "featured": false
@@ -1572,6 +1642,7 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal project",
+      "status": "complete",
       "stack": [
         "JAVA 21",
         "MAVEN",
@@ -1580,13 +1651,49 @@
         "JUNIT 5",
         "MOCKITO"
       ],
-      "summary": "A multi-user banking backend in Core Java. Clients connect over TCP with a line-based protocol; register / login / open accounts / deposit / withdraw / transfer / history; SQLite persistence; strict layered architecture.",
+      "summary": "A multi-user Core Java banking backend with a nine-command TCP protocol, atomic SQLite transfers, an append-only ledger, and a documented layered architecture with one acknowledged boundary exception.",
       "img": "linear-gradient(135deg,#1a260a 0%,#243f10 45%,#3a6e1d 100%)",
       "accent": "radial-gradient(ellipse at 30% 35%, rgba(180,255,120,.30), transparent 55%)",
+      "technicalCover": {
+        "type": "flow",
+        "label": "TRANSACTION PATH",
+        "signal": "JAVA 21 · TCP · SQLITE",
+        "kicker": "BACKEND PROTOCOL",
+        "title": "JAVA BANKING SYSTEM",
+        "subtitle": "A persistent TCP session crosses a sealed command boundary, service-owned transaction rules, ordered account locks, and an append-only SQLite ledger.",
+        "caption": "Repository-grounded request path and verified protocol transcript; this project intentionally has no browser frontend.",
+        "nodes": [
+          { "title": "CONSOLE CLIENT", "detail": "Persistent UTF-8 TCP connection." },
+          { "title": "PROTOCOL", "detail": "4096-char cap; nine sealed commands." },
+          { "title": "AUTH + SESSION", "detail": "Per-connection auth and PBKDF2 hashing." },
+          { "title": "SERVICE + LOCKS", "detail": "Money rules and ordered account locks." },
+          { "title": "DAO / JDBC", "detail": "Prepared statements within commit/rollback boundaries." },
+          { "title": "SQLITE LEDGER", "detail": "WAL-backed accounts and append-only history." }
+        ],
+        "terminal": {
+          "title": "banking.protocol",
+          "lines": [
+            "$ java -jar target/banking-system-1.0.0.jar client",
+            "connected to 127.0.0.1:5000",
+            "> DEPOSIT|1|100.00",
+            "< OK|1|100.00",
+            "> TRANSFER|1|2|10.00",
+            "< OK",
+            "> BALANCE|2",
+            "< OK|2|10.00"
+          ]
+        },
+        "stats": [
+          { "value": "85 / 85", "label": "TESTS PASSING" },
+          { "value": "2", "label": "REAL-SOCKET E2E" },
+          { "value": "9", "label": "PROTOCOL COMMANDS" },
+          { "value": "210K", "label": "PBKDF2 ITERATIONS" }
+        ]
+      },
       "details": [
-        "Layered architecture (network → service → dao → model + util) with downward-only dependencies as the rule; one small leak — network imports a dao exception type — that an archunit rule would catch.",
-        "Custom line-based UTF-8 wire protocol over raw TCP — verbs (REGISTER/LOGIN/OPEN/DEPOSIT/WITHDRAW/TRANSFER/BALANCE/HISTORY) with `|`-separated fields, OK/ERROR responses, max 4096 chars per line.",
-        "Account-level locking in the service layer for concurrent safety; sealed Command interface for exhaustive dispatch; Observer pattern wires AccountService → TransactionLogger after every balance-changing op."
+        "Documented network → service → dao → model/util layering with downward dependencies as the rule and one acknowledged exception: ClientHandler imports the DAO-owned DataAccessException type.",
+        "Custom line-based UTF-8 protocol over raw TCP supports nine commands — REGISTER, LOGIN, LOGOUT, OPEN, DEPOSIT, WITHDRAW, TRANSFER, BALANCE, and HISTORY — with `|`-separated fields, OK/ERROR responses, and a 4096-character line cap.",
+        "Fresh verification under JDK 21 passes all 85 tests, including two real-server/real-socket integration tests plus service-level concurrency coverage."
       ],
       "links": [
         {
@@ -1604,26 +1711,26 @@
         {
           "kind": "paragraph",
           "label": "02 — ARCHITECTURE",
-          "body": "Five packages, downward-only dependencies as the rule: network (TCP server, client, sealed-Command dispatch), service (business rules, account-level locking, money policy), dao (JDBC, PreparedStatement, row mapping), model (immutable records + enums), util (DB singleton, hashing, observer). The architecture.md document spells out the layer rules. There's one self-noted leak — network imports a DataAccessException from dao — exactly the kind of drift you'd catch with an archunit rule if this grew bigger."
+          "body": "Five packages follow a documented downward dependency rule: network (TCP server, client, sealed-command dispatch), service (business rules, account-level locking, money policy), dao (JDBC, prepared statements, row mapping), model (immutable records and enums), and util (database connection, hashing, observer). One boundary exception is documented honestly: ClientHandler imports the DAO-owned DataAccessException type."
         },
         {
           "kind": "metrics",
           "items": [
             {
-              "v": "Java 21 LTS",
-              "k": "FLOOR"
+              "v": "85 / 85",
+              "k": "TESTS PASSING"
             },
             {
-              "v": "Sealed Cmd",
-              "k": "DISPATCH"
+              "v": "2",
+              "k": "SOCKET E2E TESTS"
             },
             {
-              "v": "Account-level",
-              "k": "LOCK SCOPE"
+              "v": "9",
+              "k": "PROTOCOL COMMANDS"
             },
             {
-              "v": "Singleton/DAO/Observer",
-              "k": "PATTERNS"
+              "v": "210K",
+              "k": "PBKDF2 ITERATIONS"
             }
           ]
         },
@@ -1635,7 +1742,7 @@
         {
           "kind": "paragraph",
           "label": "04 — STATUS",
-          "body": "Solo build, intentionally portfolio-scoped: not for production. JUnit 5 + Mockito test suite covers the layers."
+          "body": "Complete educational portfolio build. A fresh JDK 21 run passes all 85 tests, including two real-server/real-socket integration tests. It remains intentionally single-server and console-only: raw TCP has no TLS, sessions live for one connection, SQLite is single-writer, and the application has no browser frontend."
         }
       ],
       "featured": false
@@ -1643,10 +1750,10 @@
     {
       "slug": "jvm-tuning-benchmark",
       "name": "JVM TUNING BENCHMARK",
-      "kind": "personal · performance scaffold",
+      "kind": "personal · performance engineering",
       "year": "2026",
       "role": "Solo",
-      "timeline": "personal · scaffold + M0–M8 runs",
+      "timeline": "personal · M0–M6 + M8 single runs",
       "status": "in-progress",
       "stack": [
         "JAVA 21+",
@@ -1660,13 +1767,34 @@
         "GRAFANA",
         "GATLING 3.10"
       ],
-      "summary": "A URL-shortener service wired for systematic JVM-tuning experiments — multi-profile caching (Caffeine L1 + Redis L2), HikariCP, Flyway migrations, Gatling load, Prometheus + Grafana. Ran the M0–M8 milestones end-to-end: redirect p99 went from 2892 ms → 13 ms.",
+      "summary": "An instrumented Spring Boot URL shortener used to compare heap, caching, pool, virtual-thread, and collector configurations under Gatling redirect load. Archived single runs take global p99 from 2,892 ms at M0 to 13 ms at M2, with warmup included.",
       "img": "linear-gradient(135deg,#260a1a 0%,#3f1024 45%,#6e1d3a 100%)",
       "accent": "radial-gradient(ellipse at 30% 35%, rgba(255,120,180,.30), transparent 55%)",
+      "technicalCover": {
+        "type": "benchmark",
+        "label": "BENCHMARK RESULTS",
+        "signal": "LOWER IS BETTER",
+        "kicker": "GATLING · GLOBAL REDIRECT P99",
+        "title": "2,892 → 13 MS",
+        "subtitle": "M0 baseline to M2 Caffeine L1; each archived run contains 25,000 requests, zero failures, one repetition, and warmup in the global percentile.",
+        "chartLabel": "Gatling global redirect p99 latency: M0 2892 milliseconds, M1 154 milliseconds, M2 13 milliseconds.",
+        "caption": "Single-run Gatling global percentiles from April 17, 2026; warmup is included and the chart intentionally stops before the target load changes.",
+        "series": [
+          { "label": "M0", "value": 2892, "display": "2,892 ms", "note": "512 MB · default G1 · cache configured off" },
+          { "label": "M1", "value": 154, "display": "154 ms", "note": "1 GB · explicit G1 · link_hits index" },
+          { "label": "M2", "value": 13, "display": "13 ms", "note": "M1 configuration + Caffeine L1" }
+        ],
+        "stats": [
+          { "value": "25,000", "label": "REQUESTS / RUN" },
+          { "value": "0", "label": "FAILED / RUN" },
+          { "value": "1", "label": "REPETITION / MILESTONE" },
+          { "value": "M2 / 16 GB", "label": "APPLE HOST" }
+        ]
+      },
       "details": [
-        "Eight tuning milestones executed (M0 baseline → M1 index+heap+G1 → M2 Caffeine → M3 Redis → M4 pool → M5 GC tuning → M6 virtual threads → M8 generational ZGC). M7 (WebFlux) skipped, M9 (alloc rewrite) deferred. Documented in tuning-journal.md with raw Gatling results.",
-        "Three-layer caching: optional Caffeine L1 (10k, 5min TTL), optional Redis L2 (10min TTL), Postgres source of truth. Every /{slug} response sets X-Cache-Source ∈ {L1, L2, DB, MISS} for traceable cache analysis. The original M3 Redis run was a broken-L2 serialization run; after fixing it, L2 still offered no meaningful benefit on the cache-hot 10k working set.",
-        "Per-milestone Spring profiles + JVM args in scripts/run-app.sh — switching milestones never requires a rebuild. Observability: Prometheus 5s scrape, three pre-provisioned Grafana dashboards, X-Correlation-Id and X-Response-Time-Ms on every response."
+        "Eight configurations were exercised: M0 through M6 and M8. M7 WebFlux was skipped and M9 allocation work was deferred. Only redirect-steady has archived results, with one repetition per milestone instead of the three specified by the design.",
+        "The redirect path checks optional Caffeine L1, optional Redis L2, and PostgreSQL, then reports X-Cache-Source. The original M3 run used broken Redis serialization; one fixed rerun was captured, which is not enough to establish repeatable L2 benefit or lack of benefit.",
+        "Profiles and JVM arguments are switchable without rebuilding, with Prometheus, Grafana, correlation IDs, GC logs, and partial JFR evidence. Archived run metadata is mis-stamped as baseline, and the M8 JFR artifact is empty, so milestone attribution relies on the journal plus timestamped artifacts."
       ],
       "links": [],
       "sections": [
@@ -1678,38 +1806,38 @@
         {
           "kind": "paragraph",
           "label": "02 — THE EXPERIMENT DESIGN",
-          "body": "M0 is the captured baseline profile: no link-hit index, no Redis L2, 512MB heap, with the app's boot-default L1 behavior documented in the journal. Each subsequent milestone adds one variable: M1 turns on the (slug, time) index via Flyway V2, M2 formalizes Caffeine tuning, M3 adds Redis, M4 tunes Hikari + prep-stmt caching, M5 bumps heap + targets a 50ms G1 pause, M6 swaps to virtual threads, M8 swaps to generational ZGC. Profiles are additive deltas so the comparison stays clean."
+          "body": "The sequence explores a 512 MB baseline, a larger heap plus explicit G1 and an index at M1, Caffeine L1 at M2, Redis L2 at M3, pool changes at M4, further GC flags at M5, virtual threads at M6, and generational ZGC at M8. This is an engineering exploration rather than a controlled one-variable study: some milestones change several settings, the target load changes after M3, and only one repetition was archived."
         },
         {
           "kind": "metrics",
           "items": [
             {
-              "v": "2892 → 13 ms",
-              "k": "p99 M0→M2"
+              "v": "2,892 → 13 ms",
+              "k": "GLOBAL P99 M0→M2"
             },
             {
-              "v": "−95% / −92%",
-              "k": "M1 / M2 WIN"
+              "v": "25,000",
+              "k": "REQUESTS / RUN"
             },
             {
-              "v": "+238%",
-              "k": "M3 BROKEN-L2 RUN"
+              "v": "0",
+              "k": "FAILED / RUN"
             },
             {
-              "v": "~6,700 RPS",
-              "k": "LAPTOP CEILING"
+              "v": "1",
+              "k": "REPETITION / MILESTONE"
             }
           ]
         },
         {
           "kind": "paragraph",
           "label": "03 — INTERESTING RESULTS",
-          "body": "M1's big win was mostly heap+GC, not the index — the redirect path doesn't actually touch link_hits. The first M3 result exposed a broken-L2 serialization path; after that fix, Redis L2 still did not help because the 10k-slug working set fits in Caffeine and L2 misses only add network RTT. M6 (virtual threads) and M8 (generational ZGC) were no-ops on this workload — cache-hot, low-allocation, requests complete in µs so carrier threads never park and ZGC's pause advantage isn't exercised. All of those are valuable negative results to have in writing."
+          "body": "M1 changed heap, explicit collector settings, and an index together, so its gain cannot be assigned to one cause; the redirect path does not use link_hits. The original M3 result exposed broken Redis serialization, while one fixed rerun reached 2 ms p99 but cannot establish a repeatable L2 effect. At the later 1,500 target, M6 virtual threads recorded 15 ms and M8 generational ZGC recorded 13 ms versus M5 at 13 ms—no improvement on this cache-hot workload in the available single runs."
         },
         {
           "kind": "paragraph",
           "label": "04 — STATUS",
-          "body": "Solo. Runs done on Apple M2 / 16 GB / OpenJDK 23 / Postgres 15.6 / Redis 7.2 / Gatling 3.10.5. M7 (WebFlux) skipped as out-of-scope; M9 (allocation-hot-path rewrite) deferred pending JFR analysis. Design doc, journal, and ceiling-sweep results all in repo."
+          "body": "In-progress performance experiment. Runs were captured on Apple M2 / 16 GB with OpenJDK 23.0.2, PostgreSQL 15.6, Redis 7.2, and Gatling 3.10.5. Results are single-run global percentiles with warmup included; only redirect-steady is archived, M7 was skipped, M9 is deferred, provenance metadata needs repair, and the M8 JFR file is empty."
         }
       ],
       "featured": false
@@ -2012,7 +2140,8 @@
       "kind": "personal · systems testing",
       "year": "2026",
       "role": "Solo",
-      "timeline": "personal project",
+      "timeline": "implementation complete · MARS verification pending",
+      "status": "verification-pending",
       "stack": [
         "MIPS ASSEMBLY",
         "MARS 4.5 TARGET",
@@ -2023,17 +2152,54 @@
       "summary": "A low-level MIPS diagnostics project with six assembly routines and a deterministic 28-case harness; current results are provisional from a custom Python stand-in interpreter, with real MARS 4.5 execution still pending.",
       "img": "linear-gradient(135deg,#111111 0%,#1f2630 45%,#405263 100%)",
       "accent": "radial-gradient(ellipse at 32% 35%, rgba(180,210,230,.25), transparent 55%)",
+      "technicalCover": {
+        "type": "flow",
+        "label": "TEST EVIDENCE",
+        "signal": "PROVISIONAL · NOT MARS",
+        "kicker": "MIPS32 SYSTEMS LAB",
+        "title": "MIPS SYSTEMS DIAGNOSTICS",
+        "subtitle": "Six leaf routines and a 28-case assembly harness produce byte-exact provisional evidence; the authoritative MARS 4.5 gate remains blocked on the missing simulator jar.",
+        "flowLabel": "Build and verification paths",
+        "caption": "Repository-grounded test path. Passing evidence comes from the custom fallback and remains explicitly provisional until MARS 4.5 runs.",
+        "nodes": [
+          { "title": "6 LEAF ROUTINES", "detail": "Bitwise, arithmetic, matrix, array, checksum, and string work." },
+          { "title": "28-CASE HARNESS", "detail": "Assembly-owned cases and counters." },
+          { "title": "ATOMIC BUNDLE", "detail": "Fixed-order Python source bundler." },
+          { "title": "all_tests.asm", "detail": "Generated target assembly." },
+          { "title": "FALLBACK: 28 / 0", "detail": "Byte-exact but provisional Python result." },
+          { "title": "MARS 4.5: PENDING", "detail": "Authoritative jar is not present." }
+        ],
+        "terminal": {
+          "title": "provisional.test.evidence",
+          "lines": [
+            "$ python3 tools/mips_check.py build/all_tests.asm | tail -n 8",
+            "[PASS] checksum_empty",
+            "[PASS] checksum_single",
+            "[PASS] checksum_duplicate_pairs",
+            "[PASS] string_length_empty",
+            "[PASS] string_length_hello",
+            "[PASS] string_length_with_spaces",
+            "28 passed, 0 failed"
+          ]
+        },
+        "stats": [
+          { "value": "6", "label": "LEAF ROUTINES" },
+          { "value": "28 / 0", "label": "PROVISIONAL RESULT" },
+          { "value": "BYTE-EXACT", "label": "OUTPUT CONTRACT" },
+          { "value": "27 / 1", "label": "MUTATION DETECTED" }
+        ]
+      },
       "details": [
         "Implements bit swapping, triple-range arithmetic, 3x3 determinant, min/max scan, XOR checksum, and null-terminated string length routines.",
-        "A Python/Bash harness assembles the routine/test inputs and checks deterministic output. Current results come from a custom stand-in interpreter explicitly labeled provisional, not from MARS.",
-        "Documentation covers calling convention, register mapping, debug notes, test plan, and sample output."
+        "An assembly harness owns the 28 cases and counters; Python bundles the sources and provides the provisional fallback interpreter, while Bash orchestrates the still-pending MARS path.",
+        "The fallback produces a byte-exact 28/0 match against the tracked 32-line output contract, and an injected expected-value mutation produces 27/1. This validates a failure path, not independent conformance with MIPS semantics."
       ],
       "links": [],
       "sections": [
         {
           "kind": "paragraph",
           "label": "01 — WHAT IT DOES",
-          "body": "The project implements small MIPS assembly routines and verifies them with a deterministic harness. The intended signal is low-level debugging discipline: registers, memory layout, bitwise operations, function contracts, and predictable tests."
+          "body": "The project tests six MIPS leaf routines with a deterministic assembly harness. The intended signal is low-level debugging discipline: registers, memory layout, bitwise operations, function contracts, and boundary-focused tests. Current execution evidence is provisional pending MARS 4.5."
         },
         {
           "kind": "paragraph",
@@ -2044,20 +2210,20 @@
           "kind": "metrics",
           "items": [
             {
-              "v": "6",
-              "k": "ROUTINES"
+              "v": "28 / 0",
+              "k": "PROVISIONAL RESULT"
             },
             {
-              "v": "28",
-              "k": "TEST CASES"
+              "v": "27 / 1",
+              "k": "MUTATION DETECTED"
             },
             {
-              "v": "Provisional",
-              "k": "VERIFICATION"
+              "v": "Byte-exact",
+              "k": "OUTPUT CONTRACT"
             },
             {
-              "v": "MARS pending",
-              "k": "AUTHORITATIVE RUN"
+              "v": "Jar missing",
+              "k": "MARS 4.5 GATE"
             }
           ]
         },
@@ -2069,7 +2235,7 @@
         {
           "kind": "paragraph",
           "label": "04 — STATUS",
-          "body": "Finished implementation with six routines and a 28-case harness. Runner-independent work is complete, but authoritative MARS 4.5 execution remains gated until the simulator jar is supplied; current stand-in results are provisional."
+          "body": "Implementation complete; target-runtime verification pending. The six routines, 28-case harness, deterministic bundle, byte-exact fallback result, and mutation check are present, but authoritative MARS 4.5 execution remains blocked until the simulator jar is supplied. The reserved real-MARS output file is still empty."
         }
       ],
       "featured": false
@@ -2080,7 +2246,8 @@
       "kind": "personal · c++ cli",
       "year": "2026",
       "role": "Solo",
-      "timeline": "personal project",
+      "timeline": "documented scope complete · local main",
+      "status": "complete",
       "stack": [
         "C++20",
         "CMAKE",
@@ -2089,17 +2256,46 @@
         "CSV"
       ],
       "summary": "A C++20 command-line matrix utility for CSV validation, add/subtract/multiply/transpose operations, 2x2 and 3x3 determinants, output writing, and exact-result comparison.",
+      "sourceLabel": "GITHUB SNAPSHOT",
       "img": "linear-gradient(135deg,#201a12 0%,#3a2e1c 45%,#735b34 100%)",
       "accent": "radial-gradient(ellipse at 30% 35%, rgba(235,190,110,.28), transparent 55%)",
+      "technicalCover": {
+        "type": "terminal",
+        "label": "CLI PROOF",
+        "signal": "C++20 · CSV · EXACT COMPARE",
+        "kicker": "REPRESENTATIVE VERIFIED SESSION",
+        "title": "MATRIXOPS CLI",
+        "subtitle": "C++20 matrix operations with CSV validation, deterministic output files, and exact-result comparison.",
+        "caption": "Repository-grounded terminal session; file-producing operations are intentionally silent, so output is inspected with a separate shell command.",
+        "terminal": {
+          "title": "matrixops.session",
+          "lines": [
+            "$ build/matrixops add --a data/sample_a.csv \\",
+            "  --b data/sample_b.csv --out result.csv",
+            "",
+            "$ cat result.csv",
+            "11,22",
+            "33,44",
+            "$ build/matrixops compare --actual result.csv --expected expected/sample_add_expected.csv",
+            "PASS: actual output matches expected output."
+          ]
+        },
+        "stats": [
+          { "value": "7", "label": "CLI COMMANDS" },
+          { "value": "33 / 33", "label": "UNIT CASES" },
+          { "value": "25 / 25", "label": "FUNCTIONAL CASES" },
+          { "value": "ASAN CLEAN", "label": "LINUX SIGN-OFF" }
+        ]
+      },
       "details": [
         "CLI supports add, subtract, multiply, transpose, determinant, validate, compare, and help commands.",
-        "CMake build with CTest unit tests plus Python functional tests against generated outputs.",
-        "Known limits are documented: simple numeric CSV only, no quoted fields, determinants limited to 2x2/3x3, and exact double comparison."
+        "Fresh local verification passes all 33 unit cases under Apple Clang; the committed Linux release sign-off records 25/25 functional cases and clean AddressSanitizer runs.",
+        "Known limits are documented: simple numeric CSV only, no quoted fields, determinants limited to 2x2/3x3, and exact double comparison. The local main branch is five commits ahead of the linked public repository."
       ],
       "links": [
         {
           "k": "GITHUB",
-          "v": "REPOSITORY",
+          "v": "PUBLIC SNAPSHOT · 5 COMMITS BEHIND",
           "href": "https://github.com/ASDFGHJKLZXC123/matrixops-cli"
         }
       ],
@@ -2118,20 +2314,20 @@
           "kind": "metrics",
           "items": [
             {
-              "v": "C++20",
-              "k": "LANGUAGE"
-            },
-            {
               "v": "7",
-              "k": "COMMANDS"
+              "k": "CLI COMMANDS"
             },
             {
-              "v": "CTest",
-              "k": "UNIT TESTS"
+              "v": "33 / 33",
+              "k": "UNIT CASES"
             },
             {
-              "v": "Python",
-              "k": "FUNCTIONAL TESTS"
+              "v": "25 / 25",
+              "k": "FUNCTIONAL CASES"
+            },
+            {
+              "v": "ASAN clean",
+              "k": "LINUX SIGN-OFF"
             }
           ]
         },
@@ -2143,7 +2339,7 @@
         {
           "kind": "paragraph",
           "label": "04 — STATUS",
-          "body": "Finished, feature-complete CLI with CTest unit tests and Python functional tests. Release evidence was produced with GCC 11.4 on Linux; the other documented compilers remain intended but unverified baselines."
+          "body": "Finished for its documented scope. A fresh Apple Clang build passes 33/33 unit cases; the committed GCC 11.4/Linux sign-off records 25/25 functional cases and clean AddressSanitizer runs. The public GitHub branch is currently five commits behind this locally verified state."
         }
       ],
       "featured": false

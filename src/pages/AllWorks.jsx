@@ -6,14 +6,20 @@ import { projectImageBackground } from '../lib/project-image';
 import { externalLinkProps, isUsableHref, projectSlug, projectSourceHref } from '../lib/project-links';
 import { curatedProjects } from '../lib/portfolio-curation';
 import { useTheme } from '../lib/use-theme';
+import TechnicalCover from '../components/TechnicalCover';
 
 const NUMBER_WORDS = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'];
 const countWord = (n) => NUMBER_WORDS[n] || String(n);
 
-const isInProgress = (project) => project.status === 'in-progress';
+const pendingStatusLabel = (project) => project.status === 'in-progress'
+  ? 'IN PROGRESS'
+  : project.status === 'verification-pending'
+    ? 'VERIFICATION PENDING'
+    : '';
 
 function StatusPill({ project, onImage = false }) {
-  if (!isInProgress(project)) return null;
+  const label = pendingStatusLabel(project);
+  if (!label) return null;
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap',
@@ -25,7 +31,7 @@ function StatusPill({ project, onImage = false }) {
       fontFamily: 'var(--mono)', fontSize: onImage ? 8 : 9,
       lineHeight: 1, letterSpacing: '0.16em',
     }}>
-      IN PROGRESS
+      {label}
     </span>
   );
 }
@@ -108,24 +114,30 @@ function WorkCard({ project, index }) {
           onMouseEnter={(e) => { const im = e.currentTarget.querySelector('[data-img]'); if (im) { im.style.transform = 'scale(1.04)'; im.style.filter = 'brightness(1.1)'; } }}
           onMouseLeave={(e) => { const im = e.currentTarget.querySelector('[data-img]'); if (im) { im.style.transform = 'scale(1)'; im.style.filter = 'brightness(1)'; } }}
         >
-          <div data-img style={{
-            position: 'absolute', inset: 0, background: projectImageBackground(project.img),
-            transition: 'transform .6s cubic-bezier(.2,.7,.3,1), filter .4s',
-          }} />
-          {project.accent && <div style={{ position: 'absolute', inset: 0, background: project.accent, mixBlendMode: 'screen', pointerEvents: 'none' }} />}
-          <div style={{ position: 'absolute', top: 12, left: 12, zIndex: 2 }}>
-            <StatusPill project={project} onImage />
-          </div>
+          {project.technicalCover ? (
+            <TechnicalCover cover={project.technicalCover} projectName={project.name} compact />
+          ) : (
+            <div data-img style={{
+              position: 'absolute', inset: 0, background: projectImageBackground(project.img),
+              transition: 'transform .6s cubic-bezier(.2,.7,.3,1), filter .4s',
+            }} />
+          )}
+          {!project.technicalCover && project.accent && <div style={{ position: 'absolute', inset: 0, background: project.accent, mixBlendMode: 'screen', pointerEvents: 'none' }} />}
+          {!project.technicalCover && (
+            <div style={{ position: 'absolute', top: 12, left: 12, zIndex: 2 }}>
+              <StatusPill project={project} onImage />
+            </div>
+          )}
           <div style={{
             position: 'absolute', inset: 0,
             background: 'repeating-linear-gradient(0deg, transparent 0 2px, rgba(255,255,255,0.012) 2px 3px)', pointerEvents: 'none',
           }} />
-          <div style={{
+          {!project.technicalCover && <div style={{
             position: 'absolute', bottom: 10, left: 12,
             fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.45)',
           }}>
             — {project.kind.toUpperCase()}
-          </div>
+          </div>}
         </Link>
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.14em', color: 'var(--muted)', marginBottom: 16 }}>
@@ -160,7 +172,7 @@ function WorkCard({ project, index }) {
                 aria-label={`Open ${project.name} GitHub repository`}
                 style={{ color: 'var(--fg)', textDecoration: 'underline', textUnderlineOffset: 4 }}
               >
-                GITHUB REPO ↗
+                {project.sourceLabel || 'GITHUB REPO'} ↗
               </a>
             )}
             <Link to={`/project/${detailSlug}`} style={{ color: 'var(--fg)', textDecoration: 'underline', textUnderlineOffset: 4 }}>CASE STUDY →</Link>

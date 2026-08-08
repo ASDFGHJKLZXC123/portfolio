@@ -118,6 +118,10 @@ button, a { -webkit-tap-highlight-color: transparent; }
   margin: 60px 40px 0;
 }
 
+.project-media--supporting {
+  margin-top: 36px;
+}
+
 .project-media-heading,
 .project-media-caption {
   display: flex;
@@ -256,6 +260,410 @@ button, a { -webkit-tap-highlight-color: transparent; }
   flex: 0 0 auto;
   color: var(--fg);
   text-underline-offset: 4px;
+}
+
+/* Portfolio-native covers for projects whose natural interface is a protocol,
+   pipeline, benchmark, or terminal rather than a browser UI. */
+.technical-cover {
+  --bg: #090b0e;
+  --tile-bg: #0f1217;
+  --fg: #f2f1ec;
+  --muted: rgba(242, 241, 236, 0.58);
+  --border: rgba(242, 241, 236, 0.14);
+  --hover: rgba(242, 241, 236, 0.07);
+  position: relative;
+  isolation: isolate;
+  width: min(1080px, 100%);
+  min-height: 500px;
+  display: grid;
+  grid-template-columns: minmax(210px, 0.72fr) minmax(0, 1.28fr);
+  grid-template-rows: auto 1fr auto;
+  gap: clamp(20px, 3vw, 38px);
+  padding: clamp(24px, 4vw, 52px);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--tile-bg);
+  background:
+    radial-gradient(circle at 92% 4%, var(--hover), transparent 32%),
+    linear-gradient(145deg, color-mix(in srgb, var(--tile-bg) 90%, var(--fg) 10%), var(--tile-bg));
+  color: var(--fg);
+  box-shadow: 0 32px 80px -52px rgba(0, 0, 0, 0.9);
+}
+
+.technical-cover-grid {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  opacity: 0.42;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 38px 38px;
+  mask-image: linear-gradient(to bottom right, rgba(0, 0, 0, 0.7), transparent 68%);
+}
+
+.technical-cover-header {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 9px;
+  line-height: 1.5;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+}
+
+.technical-cover-title {
+  align-self: start;
+  display: grid;
+  gap: 12px;
+}
+
+.technical-cover-title > span {
+  font-family: var(--mono);
+  font-size: 9px;
+  line-height: 1.5;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+}
+
+.technical-cover-title > strong {
+  max-width: 11ch;
+  font-family: var(--sans);
+  font-size: clamp(30px, 4vw, 58px);
+  font-weight: 400;
+  line-height: 0.98;
+  letter-spacing: var(--letter);
+}
+
+.technical-cover-title p {
+  max-width: 36ch;
+  margin: 4px 0 0;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.technical-cover-primary {
+  min-width: 0;
+  align-self: center;
+}
+
+.technical-cover-flow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.technical-cover-node {
+  position: relative;
+  min-height: 116px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 54%, transparent);
+}
+
+.technical-cover-node:not(:last-child)::after {
+  content: '→';
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  right: -10px;
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  transform: translateY(-50%);
+  background: var(--tile-bg);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+.technical-cover-node-index {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+}
+
+.technical-cover-node strong {
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.35;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+
+.technical-cover-node small {
+  font-family: var(--sans);
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.technical-cover-terminal {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 76%, transparent);
+}
+
+.technical-cover:not(.technical-cover--terminal) > .technical-cover-terminal {
+  grid-column: 2;
+}
+
+.technical-cover-terminal-bar {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 8px;
+  line-height: 1.5;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+.technical-cover-terminal pre {
+  min-height: 112px;
+  margin: 0;
+  padding: 14px;
+  overflow: hidden;
+  white-space: pre-wrap;
+  font-family: var(--mono);
+  font-size: 10px;
+  line-height: 1.65;
+  color: var(--fg);
+}
+
+.technical-cover-benchmark {
+  display: grid;
+  gap: 14px;
+}
+
+.technical-cover-benchmark-row {
+  display: grid;
+  grid-template-columns: 38px minmax(80px, 1fr) 78px;
+  gap: 12px;
+  align-items: center;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+}
+
+.technical-cover-benchmark-row > span:first-child {
+  color: var(--muted);
+}
+
+.technical-cover-benchmark-row > strong {
+  font-size: 10px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.technical-cover-benchmark-row > small {
+  grid-column: 2 / -1;
+  margin-top: -8px;
+  color: var(--muted);
+  line-height: 1.4;
+  letter-spacing: 0.04em;
+}
+
+.technical-cover-benchmark-track {
+  height: 9px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--hover);
+}
+
+.technical-cover-benchmark-track > span {
+  display: block;
+  height: 100%;
+  background: var(--fg);
+}
+
+.technical-cover-stats {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+  border-top: 1px solid var(--border);
+}
+
+.technical-cover-stats > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 8px;
+  padding: 16px 16px 0;
+  border-left: 1px solid var(--border);
+}
+
+.technical-cover-stats > div:first-child {
+  padding-left: 0;
+  border-left: none;
+}
+
+.technical-cover-stats dt,
+.technical-cover-stats dd {
+  margin: 0;
+  font-family: var(--mono);
+  line-height: 1.35;
+}
+
+.technical-cover-stats dt {
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+}
+
+.technical-cover-stats dd {
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  color: var(--fg);
+}
+
+.technical-cover--compact {
+  width: 100%;
+  min-height: 100%;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  grid-template-rows: auto 1fr;
+  gap: 14px 20px;
+  padding: 20px;
+  border: 0;
+  box-shadow: none;
+}
+
+.technical-cover--compact .technical-cover-header {
+  padding-bottom: 9px;
+  font-size: 7px;
+}
+
+.technical-cover--compact .technical-cover-title {
+  align-self: center;
+  gap: 7px;
+}
+
+.technical-cover--compact .technical-cover-title > span {
+  font-size: 7px;
+}
+
+.technical-cover--compact .technical-cover-title > strong {
+  max-width: 12ch;
+  font-size: clamp(20px, 2.2vw, 32px);
+}
+
+.technical-cover--compact .technical-cover-flow {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.technical-cover--compact .technical-cover-node {
+  min-height: 48px;
+  justify-content: flex-end;
+  gap: 4px;
+  padding: 8px;
+}
+
+.technical-cover--compact .technical-cover-node-index {
+  font-size: 6px;
+}
+
+.technical-cover--compact .technical-cover-node strong {
+  font-size: 7px;
+}
+
+.technical-cover--compact .technical-cover-node::after {
+  display: none;
+}
+
+.technical-cover--compact .technical-cover-terminal pre {
+  min-height: 104px;
+  padding: 10px;
+  font-size: 7px;
+  line-height: 1.55;
+}
+
+.technical-cover--compact .technical-cover-terminal-bar {
+  padding: 6px 8px;
+  font-size: 6px;
+}
+
+.technical-cover--compact .technical-cover-benchmark {
+  gap: 8px;
+}
+
+.technical-cover--compact .technical-cover-benchmark-row {
+  grid-template-columns: 24px minmax(48px, 1fr) 54px;
+  gap: 7px;
+  font-size: 7px;
+}
+
+.technical-cover--compact .technical-cover-benchmark-row > strong {
+  font-size: 7px;
+}
+
+.technical-cover--compact .technical-cover-stats {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .technical-cover:not(.technical-cover--compact) {
+    min-height: 0;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+
+  .technical-cover:not(.technical-cover--compact) .technical-cover-header,
+  .technical-cover:not(.technical-cover--compact) .technical-cover-stats,
+  .technical-cover:not(.technical-cover--compact) > .technical-cover-terminal {
+    grid-column: 1;
+  }
+
+  .technical-cover:not(.technical-cover--compact) .technical-cover-title > strong {
+    max-width: 14ch;
+  }
+
+  .technical-cover-flow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .technical-cover-node:not(:last-child)::after {
+    display: none;
+  }
+
+  .technical-cover-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .technical-cover-stats > div:nth-child(3) {
+    padding-left: 0;
+    border-left: none;
+  }
+
+  .technical-cover--compact {
+    grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.28fr);
+    padding: 16px;
+  }
+
+  .technical-cover--compact .technical-cover-title > strong {
+    font-size: clamp(18px, 6vw, 28px);
+  }
 }
 
 .case-content-heading {

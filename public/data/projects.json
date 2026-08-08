@@ -21,17 +21,26 @@
         "DOCKER COMPOSE",
         "GITHUB ACTIONS"
       ],
-      "summary": "A FastAPI/PostgreSQL platform for background jobs and signed webhook delivery: API-key auth, worker retries, dead-letter replay, cron schedules, metrics, Docker Compose, CI, and a React admin dashboard.",
+      "summary": "A Postgres-backed job queue and signed-webhook platform built around idempotent creation, row-level locking, retries, dead-letter recovery, and an operator dashboard.",
       "img": "assets/project-screenshots/reliableflow.png",
+      "media": {
+        "layout": "landscape",
+        "width": 1280,
+        "height": 720,
+        "label": "OPERATOR DASHBOARD",
+        "alt": "ReliableFlow queue dashboard showing job, webhook delivery, schedule, and dead-letter counts.",
+        "caption": "Operator dashboard using seeded mock data to surface queue health and recovery paths."
+      },
       "details": [
         "PostgreSQL-backed worker loop claims pending jobs with SELECT ... FOR UPDATE SKIP LOCKED, records attempts, retries failures with exponential backoff, and promotes exhausted jobs to dead letter.",
-        "Webhook layer stores signed delivery records, HMAC-verifies outbound test events, exposes delivery/attempt inspection, and documents the current limitation that no background webhook dispatcher poller is wired.",
+        "Webhook delivery records, HMAC signing, attempt history, and retry state are implemented; automatic dispatcher polling remains a documented limitation.",
         "Portfolio polish includes Docker Compose services, live migration checks in CI, frontend smoke tests, screenshots, architecture docs, demo docs, and explicit known limitations."
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/ReliableFlow"
         }
       ],
       "sections": [
@@ -41,9 +50,51 @@
           "body": "ReliableFlow is a background-job and webhook-delivery platform. API clients submit jobs with idempotency keys; workers claim and process queued work; failed jobs retry with backoff and eventually move to a dead-letter queue; schedules create future jobs; operators inspect queue health, webhook deliveries, and replay paths through a React dashboard."
         },
         {
+          "kind": "diagram",
+          "label": "REQUEST + RECOVERY FLOW",
+          "caption": "A job's full lifecycle, including both failure exits.",
+          "nodes": [
+            {
+              "t": "API",
+              "s": "idempotency key dedupes retried submits"
+            },
+            {
+              "t": "JOBS TABLE",
+              "s": "PostgreSQL is the queue of record"
+            },
+            {
+              "t": "WORKER CLAIM",
+              "s": "SELECT … FOR UPDATE SKIP LOCKED"
+            },
+            {
+              "t": "ATTEMPT WRITTEN",
+              "s": "every try persisted, success or not"
+            }
+          ],
+          "branches": [
+            {
+              "t": "SUCCESS",
+              "s": "pending webhook-delivery record created, signed HMAC SHA-256",
+              "tone": "ok"
+            },
+            {
+              "t": "FAILURE",
+              "s": "exponential backoff re-queue → attempts exhausted → dead letter → operator replay",
+              "tone": "warn"
+            }
+          ]
+        },
+        {
           "kind": "paragraph",
           "label": "02 — HOW IT WORKS",
-          "body": "FastAPI exposes the API surface; PostgreSQL is the queue of record; async SQLAlchemy drives transactions; Alembic manages schema changes; Redis is health-checked but not used as the queue backend. The worker uses PostgreSQL row-level locking for job claiming, records JobAttempt rows, and calls create_deliveries_for_job on success to store pending WebhookDelivery rows. The admin dashboard is a Vite/React SPA with mock mode plus API-key-backed live mode."
+          "body": "FastAPI exposes the API surface; PostgreSQL is the queue of record; async SQLAlchemy drives transactions; and Alembic manages schema changes. Workers claim jobs with row-level locks, persist every attempt, and create pending webhook-delivery records after successful work. A Vite/React dashboard exposes queue health and recovery paths; automatic webhook polling is not yet proven end to end."
+        },
+        {
+          "kind": "code",
+          "label": "THE CLAIM PATTERN",
+          "lang": "SQL",
+          "caption": "FOR UPDATE is what stops two workers taking the same row; SKIP LOCKED is what stops the second worker blocking on it, so N workers claim concurrently instead of serializing.",
+          "body": "-- the claim pattern the worker loop is built on\nUPDATE jobs SET status = 'running', attempts = attempts + 1\nWHERE id = (\n    SELECT id FROM jobs\n    WHERE status = 'pending' AND run_after <= now()\n    ORDER BY run_after\n    FOR UPDATE SKIP LOCKED   -- step over rows another worker holds\n    LIMIT 1\n)\nRETURNING *;"
         },
         {
           "kind": "metrics",
@@ -61,7 +112,7 @@
               "k": "LOCAL RUN"
             },
             {
-              "v": "4 CI jobs",
+              "v": "5 CI jobs",
               "k": "GITHUB ACTIONS"
             }
           ]
@@ -72,9 +123,30 @@
           "body": "The project is strongest as a reliability and systems-design story: transaction boundaries, idempotent job creation, retry policy, dead-letter replay, audit events, migration discipline, and honest documentation of what is proven versus what remains mocked or deferred."
         },
         {
+          "kind": "tradeoffs",
+          "label": "TRADEOFFS",
+          "items": [
+            {
+              "d": "PostgreSQL as the queue, not Redis or RabbitMQ",
+              "w": "Enqueue, idempotency-key dedupe, and attempt history all commit atomically, and there is no second datastore to keep in sync.",
+              "c": "Throughput ceilings at Postgres, and workers poll rather than receive a push."
+            },
+            {
+              "d": "At-least-once delivery, not exactly-once",
+              "w": "Exactly-once across an HTTP boundary needs the receiver to cooperate, which I cannot guarantee.",
+              "c": "Consumers must be idempotent. This is documented rather than solved."
+            },
+            {
+              "d": "Dashboard ships with both mock and live modes",
+              "w": "Mock mode makes the UI reviewable without standing up the stack; live mode reads the real API behind an API key.",
+              "c": "It has not been exercised against live multi-process queue traffic."
+            }
+          ]
+        },
+        {
           "kind": "paragraph",
           "label": "04 — STATUS",
-          "body": "Finished portfolio project. Local demo path, screenshots, tests, CI, architecture docs, and resume bullets are included. Known limits are explicit: no live multi-process SKIP LOCKED proof, no background webhook dispatcher poller, no exactly-once delivery guarantee, and no production deployment."
+          "body": "Finished portfolio project with a local demo path, screenshots, tests, CI, and architecture documentation. Known limits are explicit: automatic webhook dispatcher polling and live multi-process SKIP LOCKED behavior are not proven end to end; delivery is not exactly once; and the system is not deployed to production."
         }
       ]
     },
@@ -85,7 +157,8 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal project · v0.1",
-      "featured": false,
+      "featured": true,
+      "featuredRank": 2,
       "stack": [
         "CHROME EXT MV3",
         "NODE.JS",
@@ -93,8 +166,16 @@
         "GEMINI / OPENAI / ANTHROPIC (EXT)",
         "FILE SYSTEM ACCESS API"
       ],
-      "summary": "A Chrome extension + local Node backend that injects an AI assistant into any webpage — summarize, extract, save notes, search them later by vector similarity.",
+      "summary": "A local-first Chrome extension that summarizes and extracts supported webpages, saves searchable notes, and can mirror them to disk, with provider fallback across Gemini, OpenAI, and Anthropic.",
       "img": "assets/project-screenshots/ai-assistant-across-websites.png",
+      "media": {
+        "layout": "landscape",
+        "width": 1440,
+        "height": 900,
+        "label": "BROWSER EXTENSION",
+        "alt": "Browser page with the Memo extension panel offering summarize, rewrite, extract, note capture, and memory search.",
+        "caption": "In-page assistant panel for analysis, note capture, and searchable memory."
+      },
       "details": [
         "Manifest V3 extension with service-worker background, content-script panel, and a separate options page.",
         "Local Node backend persists notes to JSON; saves can mirror to any folder on disk via File System Access API or the backend's NOTES_DIR.",
@@ -102,20 +183,63 @@
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/Web_Page_Reader"
         }
       ],
       "sections": [
         {
           "kind": "paragraph",
           "label": "01 — WHAT IT DOES",
-          "body": "Open a panel on any page and ask it to summarize, rewrite, or extract structured info from what you're reading. Save the output as a note; later, search your notes by keyword + vector similarity. The notes can also be mirrored to a folder on disk so they live outside the browser."
+          "body": "Open a panel on a supported webpage and ask it to summarize, rewrite, or extract structured information. Save the output as a note, then retrieve it later with keyword and vector-similarity search. Notes can also be mirrored to a folder on disk so they live outside the browser."
+        },
+        {
+          "kind": "diagram",
+          "label": "MESSAGE PATH",
+          "caption": "Why the MV3 service worker sits in the middle of everything.",
+          "nodes": [
+            {
+              "t": "CONTENT SCRIPT",
+              "s": "in-page panel; cannot reach extension-only APIs"
+            },
+            {
+              "t": "SERVICE WORKER",
+              "s": "MV3 background broker for every privileged call"
+            },
+            {
+              "t": "PROVIDER",
+              "s": "Gemini / OpenAI / Anthropic, deterministic local fallback"
+            },
+            {
+              "t": "NOTE STORE",
+              "s": "local Node backend, JSON on disk"
+            }
+          ],
+          "branches": [
+            {
+              "t": "RETRIEVAL",
+              "s": "keyword match + vector similarity over embeddings",
+              "tone": "ok"
+            },
+            {
+              "t": "NO API KEY",
+              "s": "hashed-embedding fallback keeps search working, at lower quality",
+              "tone": "warn"
+            }
+          ]
         },
         {
           "kind": "paragraph",
           "label": "02 — HOW IT WORKS",
           "body": "MV3 service worker brokers messages between the content-script panel and the local Node backend. The extension can call Gemini, OpenAI, or Anthropic directly in built-in mode (deterministic local fallback if no key); the Node backend is Gemini-only. For the extract action, only the Gemini path uses Google's native responseSchema — OpenAI and Anthropic use prompt-based schema instructions. Embeddings stored as NDJSON. Folder mirror on the extension side uses the File System Access API; the folder handle persists in IndexedDB across Chrome restarts (one re-grant per session)."
+        },
+        {
+          "kind": "code",
+          "label": "THE MV3 ASYMMETRY",
+          "lang": "JavaScript",
+          "caption": "chrome.runtime.openOptionsPage is undefined in a content script, so calling it throws rather than opening anything. Every privileged call gets delegated to the service worker.",
+          "body": "// content.js — openOptionsPage is unavailable in content scripts,\n// so delegate to the service worker via runtime messaging.\nfunction openOptionsPage() {\n  try {\n    chrome.runtime.sendMessage({ type: 'OPEN_OPTIONS' }, () => {\n      if (chrome.runtime.lastError) {\n        console.warn('[aaw] openOptionsPage failed:', chrome.runtime.lastError.message);\n      }\n    });\n  } catch (err) {\n    console.warn('[aaw] openOptionsPage threw:', err && err.message);\n  }\n}"
         },
         {
           "kind": "metrics",
@@ -144,9 +268,30 @@
           "body": "Content scripts can't call chrome.runtime.openOptionsPage directly — that one's only available to the extension surface, so the click silently no-ops. Had to route through a background-worker message. Generally the MV3 surface is full of these little asymmetries; the docs are right but easy to skim past."
         },
         {
+          "kind": "tradeoffs",
+          "label": "TRADEOFFS",
+          "items": [
+            {
+              "d": "Three providers in the extension, Gemini only in the backend",
+              "w": "The extension is the surface people actually use, so it got the portable path.",
+              "c": "Two code paths that drift — structured extract uses Gemini's native responseSchema, while OpenAI and Anthropic get prompt-based schema instructions."
+            },
+            {
+              "d": "Hashed-embedding fallback when no API key is set",
+              "w": "The tool should do something useful on first run without any configuration.",
+              "c": "Fallback retrieval is noticeably worse than real embeddings."
+            },
+            {
+              "d": "Local Node backend writing JSON files",
+              "w": "Notes stay on the machine, and the folder mirror means they outlive the browser profile.",
+              "c": "No sync, no multi-device, no auth, no concurrent access story."
+            }
+          ]
+        },
+        {
           "kind": "paragraph",
           "label": "04 — STATUS",
-          "body": "Personal tool, v0.1.0, no real users. The May 2026 update added the on-disk folder mirror and refreshed the model lists to current Gemini/Claude/GPT names. No auth, no multi-user, no Web Store submission — by design."
+          "body": "Personal tool, v0.1.0, with no real users. The current build includes the on-disk folder mirror and configurable Gemini, OpenAI, and Anthropic providers. There is no authentication, multi-user support, or Web Store submission — by design."
         }
       ]
     },
@@ -168,8 +313,42 @@
         "TYPESCRIPT",
         "EXPO-SECURE-STORE"
       ],
-      "summary": "Cross-platform service-booking app with three roles (customer / provider / admin). Laravel API + RN/Expo client; auth, roles, listings, bookings with slot checks, Stripe-ready payments, reviews, admin dashboard.",
+      "summary": "A Laravel and React Native service marketplace with customer, provider, and admin workflows, server-side slot checks, completion-gated reviews, and a Stripe-ready payment driver.",
       "img": "linear-gradient(135deg,#221612 0%,#3f261c 48%,#6f4b32 100%)",
+      "media": {
+        "layout": "portrait",
+        "width": 1179,
+        "height": 2556,
+        "state": "refresh",
+        "label": "MOBILE APPLICATION",
+        "alt": "AIHL mobile service-booking interface.",
+        "caption": "Customer booking workflow for selecting provider availability and creating a service booking.",
+        "src": "assets/project-screenshots/aihl-secure-booking.png"
+      },
+      "technicalCover": {
+        "type": "flow",
+        "label": "CUSTOMER BOOKING FLOW",
+        "signal": "REACT NATIVE · LARAVEL API",
+        "kicker": "SERVER-VERIFIED AVAILABILITY",
+        "title": "BOOK A SERVICE WITHOUT DOUBLE-BOOKING",
+        "subtitle": "The mobile client guides discovery and selection; Laravel remains authoritative for provider availability, overlapping bookings, pricing, state transitions, and review eligibility.",
+        "flowLabel": "Customer booking lifecycle",
+        "caption": "Repository-grounded booking workflow shown while a clean healthy-state mobile capture is pending; the previous 404 screenshot is intentionally withheld.",
+        "nodes": [
+          { "title": "BROWSE SERVICES", "detail": "Explore categories, duration, and base pricing." },
+          { "title": "CHOOSE PROVIDER", "detail": "Match an active provider to the selected service." },
+          { "title": "LOAD AVAILABILITY", "detail": "Combine weekly hours with blocked windows." },
+          { "title": "SERVER SLOT CHECK", "detail": "Reject invalid times and overlapping active bookings." },
+          { "title": "CREATE BOOKING", "detail": "Persist price, currency, schedule, and pending status." },
+          { "title": "COMPLETE → REVIEW", "detail": "Provider completion unlocks the review gate." }
+        ],
+        "stats": [
+          { "value": "3", "label": "USER ROLES" },
+          { "value": "10 / 10", "label": "BUILD STAGES" },
+          { "value": "SERVER-SIDE", "label": "SLOT CONFLICT CHECK" },
+          { "value": "0", "label": "PRODUCTION DEPLOYS" }
+        ]
+      },
       "details": [
         "Built across 10 staged milestones: foundation → auth → listings/search → booking core → provider workflow → Stripe payments → notifications → reviews → admin dashboard → test+CI hardening.",
         "Stack: Laravel 13 / PHP 8.3 with Sanctum and the official stripe-php SDK; RN 0.81 / Expo SDK 54 with expo-secure-store for token storage; SQLite by default, MySQL via env.",
@@ -177,8 +356,9 @@
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/Secure-Service-Booking-Platform"
         }
       ],
       "sections": [
@@ -188,9 +368,51 @@
           "body": "A three-sided booking platform. Customers browse service categories, search providers, check availability, book, reschedule, cancel. Providers manage requests, block their calendar, complete jobs. Admins run a dashboard with reporting and flag handling."
         },
         {
+          "kind": "diagram",
+          "label": "THREE-SIDED FLOW",
+          "caption": "Customer, provider, and admin paths through one Laravel API.",
+          "nodes": [
+            {
+              "t": "RN / EXPO CLIENT",
+              "s": "token held in expo-secure-store"
+            },
+            {
+              "t": "SANCTUM AUTH",
+              "s": "role-gated controllers per surface"
+            },
+            {
+              "t": "BOOKING CORE",
+              "s": "availability, book, reschedule, cancel, complete"
+            },
+            {
+              "t": "PAYMENT_DRIVER",
+              "s": "fake by default; stripe when configured"
+            }
+          ],
+          "branches": [
+            {
+              "t": "PROVIDER",
+              "s": "accepts requests, blocks calendar, marks jobs complete",
+              "tone": "ok"
+            },
+            {
+              "t": "REVIEW GATE",
+              "s": "server refuses reviews until booking status is completed",
+              "tone": "ok"
+            }
+          ]
+        },
+        {
           "kind": "paragraph",
           "label": "02 — HOW IT WORKS",
           "body": "Laravel 13 API with Sanctum for token auth and role-based controllers; SQLite by default with a MySQL .env profile; Stripe SDK behind a PAYMENT_DRIVER switch (fake by default, stripe when configured) so the integration is decoupled from the booking core. Mobile is RN 0.81 / Expo SDK 54 with expo-secure-store for credentials. The repo is structured so each of the 10 build stages is a discrete, reviewable slice — useful for showing the development arc, not just the end state."
+        },
+        {
+          "kind": "code",
+          "label": "PAYMENTS BEHIND A SWITCH",
+          "lang": "PHP",
+          "caption": "The booking core depends on the PaymentGateway interface, never on Stripe. Injecting StripeClient is what makes the gateway unit-testable.",
+          "body": "// app/Providers/AppServiceProvider.php\n$this->app->singleton(PaymentGateway::class, function () {\n    $driver = config('payment.driver', 'fake');\n\n    return match ($driver) {\n        'stripe' => new StripePaymentGateway(\n            new StripeClient((string) config('payment.stripe.secret'))\n        ),\n        default => new FakePaymentGateway(),   // clone and run, no keys\n    };\n});"
         },
         {
           "kind": "metrics",
@@ -216,7 +438,28 @@
         {
           "kind": "paragraph",
           "label": "03 — DELIBERATE LIMITS",
-          "body": "Payments default to a 'fake' driver locally; switching to live Stripe is a single env flip but has never been used in anger — no real charges have happened. Reviews can only be left after a booking transitions to completed — enforced server-side, not just hidden in the UI. CI workflow is included; remote deploy was intentionally not performed (this is a portfolio piece, not an operating service)."
+          "body": "Payments default to a fake local driver. A Stripe driver is implemented, but it has never processed real charges. Reviews can only be created after a booking reaches completed status, enforced server-side rather than only hidden in the interface. CI is included; the project has not been remotely deployed."
+        },
+        {
+          "kind": "tradeoffs",
+          "label": "TRADEOFFS",
+          "items": [
+            {
+              "d": "Payments behind PAYMENT_DRIVER, defaulting to fake",
+              "w": "The booking core stays fully testable without live keys, and the repo clones and runs.",
+              "c": "The Stripe driver is implemented but has never processed a real charge."
+            },
+            {
+              "d": "SQLite by default, MySQL via env profile",
+              "w": "Removes all setup friction for anyone reviewing the repo.",
+              "c": "Production parity is unproven — the MySQL profile exists but SQLite is what actually gets run."
+            },
+            {
+              "d": "Review eligibility enforced server-side",
+              "w": "Hiding a button is not access control; the rule belongs where it cannot be bypassed.",
+              "c": "Extra checks on every review write, and the client has to handle a rejection it could have predicted."
+            }
+          ]
         },
         {
           "kind": "paragraph",
@@ -224,7 +467,8 @@
           "body": "All 10 build stages complete with CI workflow. No production deployment. Solo build."
         }
       ],
-      "featured": false
+      "featured": true,
+      "featuredRank": 3
     },
     {
       "slug": "error-monitoring",
@@ -245,6 +489,14 @@
       ],
       "summary": "A simplified Sentry/Datadog-style monitoring platform — ingests application error logs, runs alert rules over rolling windows, and serves a dashboard.",
       "img": "assets/project-screenshots/error-monitoring.png",
+      "media": {
+        "layout": "landscape",
+        "width": 1440,
+        "height": 1000,
+        "label": "LOG EXPLORER",
+        "alt": "Error Monitor log explorer with severity, source, and date filters above open and acknowledged error rows.",
+        "caption": "Operations workflow for filtering and acknowledging ingested application errors."
+      },
       "details": [
         "ASP.NET Core 10 Web API with EF Core 9; clean three-project layout (Core / Infrastructure / API).",
         "Background IHostedService workers run alert checks and log retention; alerts fire when severity-bucketed counts cross a configured threshold within a rolling time window.",
@@ -252,8 +504,9 @@
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/Simple-Application-Error-Monitoring-System"
         }
       ],
       "sections": [
@@ -263,9 +516,51 @@
           "body": "Apps post error logs (severity, message, stack trace, source app) to an ingestion endpoint authenticated by a per-app API key. The platform stores them, evaluates configurable alert rules over a rolling time window, and surfaces everything in an Angular 21 dashboard with severity-bucketed views and acknowledgement flow."
         },
         {
+          "kind": "diagram",
+          "label": "INGEST TO ALERT",
+          "caption": "Two background workers run on the same host as the API.",
+          "nodes": [
+            {
+              "t": "CLIENT APP",
+              "s": "POSTs severity, message, stack trace, source"
+            },
+            {
+              "t": "INGESTION API",
+              "s": "per-application API key authenticates the write"
+            },
+            {
+              "t": "EF CORE / SQL",
+              "s": "composite index on (Timestamp, Severity)"
+            },
+            {
+              "t": "IHOSTEDSERVICE",
+              "s": "rolling-window rule evaluation + log retention"
+            }
+          ],
+          "branches": [
+            {
+              "t": "THRESHOLD CROSSED",
+              "s": "alert raised, surfaced in the Angular dashboard",
+              "tone": "warn"
+            },
+            {
+              "t": "OPERATOR",
+              "s": "severity-bucketed views and acknowledgement flow",
+              "tone": "ok"
+            }
+          ]
+        },
+        {
           "kind": "paragraph",
           "label": "02 — HOW IT WORKS",
-          "body": "Layered .NET solution: Core (domain/DTOs/interfaces), Infrastructure (EF Core + repositories + services), API (controllers + background services). Composite index on (Timestamp, Severity) covers the dashboard's most common filter — a single B-tree seek instead of a bitmap AND between two single-column indexes. Background services tick periodically: one evaluates alert rules, the other prunes old logs."
+          "body": "Layered .NET solution: Core (domain, DTOs, and interfaces), Infrastructure (EF Core, repositories, and services), and API (controllers and background services). A composite index on (Timestamp, Severity) supports the dashboard's common timestamp-and-severity filter. Background services periodically evaluate alert rules and prune old logs."
+        },
+        {
+          "kind": "code",
+          "label": "INDEXING FOR THE REAL QUERY",
+          "lang": "C#",
+          "caption": "Leading with Timestamp lets one index serve both the range filter and the ORDER BY, avoiding a separate sort. Reasoned from query shape — not yet confirmed against a measured plan.",
+          "body": "// src/ErrorMonitoring.Infrastructure/Data/AppDbContext.cs\nmodelBuilder.Entity<LogEntry>(entity =>\n{\n    entity.Property(e => e.Severity).HasConversion<string>();\n\n    // The dashboard filters a time range and sorts by Timestamp desc.\n    // One composite seek beats two single-column indexes here because\n    // it satisfies the filter and the ordering in the same pass.\n    entity.HasIndex(e => new { e.Timestamp, e.Severity })\n          .HasDatabaseName(\"IX_LogEntries_Timestamp_Severity\");\n});"
         },
         {
           "kind": "metrics",
@@ -291,7 +586,28 @@
         {
           "kind": "paragraph",
           "label": "03 — DESIGN CHOICE: COMPOSITE INDEX",
-          "body": "The README explicitly walks through why (Timestamp, Severity) beats two single-column indexes here: the dashboard's hot query filters on both columns and orders by timestamp, so a single composite seek satisfies the query plan without a sort step. A small thing to write about, but it's the kind of decision that makes monitoring-platform queries fast enough to feel real-time."
+          "body": "The dashboard's common query filters by time and severity, so the schema includes a composite (Timestamp, Severity) index rather than relying only on separate single-column indexes. The choice is documented as a query-shape decision; a production query-plan benchmark remains future validation."
+        },
+        {
+          "kind": "tradeoffs",
+          "label": "TRADEOFFS",
+          "items": [
+            {
+              "d": "Composite (Timestamp, Severity) index",
+              "w": "It matches the filter the dashboard actually issues, rather than two independent single-column indexes.",
+              "c": "Chosen by reasoning about query shape. A real query-plan benchmark is still outstanding."
+            },
+            {
+              "d": "Alerting in an in-process IHostedService",
+              "w": "One deployable unit, no external scheduler or queue to operate.",
+              "c": "Alert evaluation stops when the API stops, and running two instances would double-fire without leader election."
+            },
+            {
+              "d": "Three-project Core / Infrastructure / API split",
+              "w": "Domain logic stays testable without EF Core or HTTP in the way.",
+              "c": "More ceremony than an app this size strictly needs."
+            }
+          ]
         },
         {
           "kind": "paragraph",
@@ -299,7 +615,8 @@
           "body": "Solo build. Runs against SQLite locally and Azure SQL in the prod profile; deploy targets are Azure App Service + Static Web Apps. No live deployment."
         }
       ],
-      "featured": false
+      "featured": true,
+      "featuredRank": 4
     },
     {
       "slug": "crypto-data-pipeline",
@@ -318,6 +635,14 @@
       ],
       "summary": "An ETL pipeline that pulls crypto market snapshots from CoinGecko, lands raw JSON in a partitioned data-lake layout, validates with a rules engine, and loads structured rows into a SQLite warehouse. CLI + tiny web/HTTP API.",
       "img": "assets/project-screenshots/crypto-data-pipeline.png",
+      "media": {
+        "layout": "landscape",
+        "width": 1440,
+        "height": 900,
+        "label": "PIPELINE DASHBOARD",
+        "alt": "Crypto Pipeline dashboard with ingestion controls and a ranked market snapshot table.",
+        "caption": "Saved warehouse snapshot with ingestion controls and ranked market data."
+      },
       "details": [
         "Two run modes: `--mode once` for a single ingestion + load cycle, `--mode daemon --interval 300` for continuous polling.",
         "Data-lake layout: raw JSON lands at `data_lake/raw/coin_gecko/date=YYYY-MM-DD/hour=HH/markets_*.json` (Hive-style partitioning), then transforms into `dim/fact` tables in SQLite — including a `fact_price_series` table fanned out from CoinGecko's 7-day sparkline.",
@@ -325,8 +650,9 @@
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/Data_Pipeline"
         }
       ],
       "sections": [
@@ -336,9 +662,51 @@
           "body": "Polls CoinGecko for the top N coins (default 50), captures snapshot fields and the 7-day sparkline, lands the raw JSON in a partitioned lake, validates it, then loads the clean rows into a SQLite warehouse. A small Flask web app sits on top exposing /api/run-once, /api/latest, and /api/series/<symbol>."
         },
         {
+          "kind": "diagram",
+          "label": "LAKE → WAREHOUSE",
+          "caption": "The raw layer is what makes the whole thing replayable.",
+          "nodes": [
+            {
+              "t": "COINGECKO",
+              "s": "top N coins, snapshot + 7-day sparkline"
+            },
+            {
+              "t": "RAW LAKE",
+              "s": "written before any parsing — date=/hour= partitions"
+            },
+            {
+              "t": "TRANSFORM",
+              "s": "market snapshot + sparkline fan-out to price series"
+            },
+            {
+              "t": "VALIDATION",
+              "s": "rules engine runs per dataset, after shaping"
+            }
+          ],
+          "branches": [
+            {
+              "t": "VALID ROWS",
+              "s": "loaded into the SQLite dim / fact warehouse",
+              "tone": "ok"
+            },
+            {
+              "t": "INVALID ROWS",
+              "s": "held back; a validation report lands in its own lake partition",
+              "tone": "warn"
+            }
+          ]
+        },
+        {
           "kind": "paragraph",
           "label": "02 — HOW IT WORKS",
           "body": "The pipeline is split into discrete modules — extractor (HTTP via requests), transformer (sparkline fan-out + dataset shaping), validation (rules engine), raw_store (lake writer), warehouse (sqlite3 schema + loader). main.py is the CLI; app.py exposes the same backend over HTTP via Flask. SQL analytics queries live alongside in crypto_pipeline/sql/."
+        },
+        {
+          "kind": "code",
+          "label": "LAND FIRST, THEN VALIDATE",
+          "lang": "Python",
+          "caption": "Raw records hit the lake before any transform runs, so a bad transform costs a re-run rather than another rate-limited API call.",
+          "body": "# crypto_pipeline/pipeline.py\nraw_records = self.extractor.fetch_market_snapshots()\nraw_path = self.raw_store.write(raw_records, ingested_at)   # land first\n\nsnapshot_rows = transform_market_snapshot(raw_records, ingested_at)\nseries_rows = transform_price_series(raw_records, ingested_at)\n\nsnapshot_validation = self.validator.validate_market_snapshot(snapshot_rows)\nseries_validation = self.validator.validate_price_series(series_rows)\n\n# only rows that passed the rules engine reach the warehouse\nself.warehouse.load_market_snapshot(snapshot_validation.valid_rows)\nself.warehouse.load_price_series(series_validation.valid_rows)\n\nself.raw_store.write_validation_report(validation_report, ingested_at)"
         },
         {
           "kind": "metrics",
@@ -367,12 +735,34 @@
           "body": "I could have written transformed rows straight to SQLite. Keeping the raw JSON landing zone means the pipeline is replayable — if the schema changes or a transform has a bug, I can reload from raw without re-hitting CoinGecko's rate limit. The validation report writes to the lake too, so failures don't disappear."
         },
         {
+          "kind": "tradeoffs",
+          "label": "TRADEOFFS",
+          "items": [
+            {
+              "d": "Raw landing zone before any transform",
+              "w": "The pipeline is replayable — a schema change or transform bug can be reloaded from raw without re-hitting CoinGecko's rate limit.",
+              "c": "Every payload is stored twice, and the lake grows whether or not the rows were usable."
+            },
+            {
+              "d": "Invalid rows rejected rather than coerced",
+              "w": "The warehouse only ever contains rows that passed the rules engine.",
+              "c": "Rejections need a human to look at the validation report; nothing retries them automatically."
+            },
+            {
+              "d": "SQLite as the warehouse",
+              "w": "Single file, zero setup, and the star schema is the part worth demonstrating.",
+              "c": "No real concurrency. The shape would port to Postgres or Snowflake, but the project is not wired for either."
+            }
+          ]
+        },
+        {
           "kind": "paragraph",
           "label": "04 — STATUS",
           "body": "Solo build. Pytest suite covers validation + pipeline integration. Single-machine SQLite warehouse — the architecture would translate to Postgres/Snowflake but the project's not wired for it."
         }
       ],
-      "featured": false
+      "featured": true,
+      "featuredRank": 5
     },
     {
       "slug": "ai-candidate-dashboard",
@@ -381,16 +771,16 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal project",
-      "status": "in-progress",
       "stack": [
         "DJANGO + DRF",
         "CELERY + REDIS",
         "POSTGRES",
         "PYDANTIC",
-        "STATIC FRONTEND PROTOTYPE",
+        "REACT 19 + TYPESCRIPT + VITE",
+        "VITEST + PLAYWRIGHT",
         "STRUCTURED JSON LOGGING"
       ],
-      "summary": "A hiring-workflow backend that ingests resumes, extracts structured fields with a Celery worker, and exposes recruiter-facing candidate review APIs. The frontend exists as a static prototype while the React/Vite rebuild is still in progress.",
+      "summary": "A full-stack hiring workflow with a shipped React 19 + TypeScript SPA for resume ingestion, async structured extraction, candidate review, role workspaces, shortlisting, comparison, and funnel analytics.",
       "featured": false,
       "img": "assets/project-screenshots/ai-candidate-dashboard.png",
       "details": [
@@ -398,12 +788,7 @@
         "Reviewer workflow: search, status/tag/score filtering, pagination, candidate detail with evidence snippets, notes, tags, and a six-state lifecycle (Applied → Screened → Interview → Offer → Hired, with Rejected as a terminal path).",
         "Reliability/ops: Pydantic schema validation on extraction output, Celery retries with backoff, Redis-backed queueing, structured JSON logs, persisted JobFailure model tracking retry counts."
       ],
-      "links": [
-        {
-          "k": "SOURCE",
-          "v": "github"
-        }
-      ],
+      "links": [],
       "sections": [
         {
           "kind": "paragraph",
@@ -413,7 +798,7 @@
         {
           "kind": "paragraph",
           "label": "02 — HOW IT WORKS",
-          "body": "Django/DRF API + a Celery worker queue backed by Redis. The extractor returns a payload validated by Pydantic before it hits Postgres. Failed jobs are persisted with their retry count so they're recoverable, not silent. The backend pipeline is implemented; the modern frontend wiring is still being rebuilt."
+          "body": "Django/DRF API + a Celery worker queue backed by Redis. The extractor returns a payload validated by Pydantic before it hits Postgres. The shipped Vite SPA provides authenticated routing across 11 product surfaces, while Vitest unit tests and Playwright end-to-end/accessibility tests exercise the frontend; the old static HTML prototype is reference-only."
         },
         {
           "kind": "metrics",
@@ -444,7 +829,7 @@
         {
           "kind": "paragraph",
           "label": "04 — STATUS",
-          "body": "Solo project. Backend pipeline and resume-processing flow are implemented; frontend/package wiring is in progress. No production deploy or real users — built as a portfolio piece showing the async-extract pattern."
+          "body": "Finished portfolio build. The backend pipeline and React 19 frontend are implemented with authenticated routing, unit tests, and Playwright coverage. No production deploy or real users — built as a portfolio piece showing the async-extract and recruiter-workflow pattern."
         }
       ]
     },
@@ -457,7 +842,7 @@
       "timeline": "personal · MVP",
       "status": "in-progress",
       "stack": [
-        "NEXT 15 (APP ROUTER)",
+        "NEXT 16 (APP ROUTER)",
         "REACT 19",
         "TYPESCRIPT",
         "AUTH.JS v5",
@@ -471,12 +856,13 @@
       "details": [
         "Gmail OAuth sign-in via Auth.js v5; sync merges INBOX + SENT thread IDs so outbound replies land in the local thread model.",
         "Thread summarization, draft generation with tone/clarifying-question modes, and natural-language draft revision — backed by a Claude → Gemini → heuristic-template provider chain, so a missing key in one provider falls through gracefully.",
-        "OAuth tokens encrypted at rest in `.data/inbox.json` with AES-256-GCM when ENCRYPTION_KEY is set; backend webhook routes for Gmail watch + Microsoft Graph subscriptions exist but aren't wired into the current UI."
+        "OAuth tokens are encrypted at rest in `.data/inbox.json` with AES-256-GCM when ENCRYPTION_KEY is set. The Gmail watch/subscription flow is wired end-to-end from the inbox UI; Microsoft Graph subscription routes and adapters exist, but its UI flow is not complete."
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/inbox_copilot"
         }
       ],
       "sections": [
@@ -488,7 +874,7 @@
         {
           "kind": "paragraph",
           "label": "02 — HOW IT WORKS",
-          "body": "Next 15 App Router + Auth.js v5 (beta) for OAuth. Local JSON persistence in .data/inbox.json — no real DB at runtime, even though Drizzle's schema/client/migrations are wired in. LLM calls try Claude first, then fall back to Gemini, then to heuristic templates. OAuth tokens are encrypted at rest with AES-256-GCM if ENCRYPTION_KEY is set, plaintext otherwise. Backend Gmail-watch and Microsoft-Graph webhook routes exist, but only the Gmail UI flow is wired end-to-end."
+          "body": "Next 16 App Router + Auth.js v5 (beta) for OAuth. Local JSON persistence in .data/inbox.json — no real DB at runtime, even though Drizzle's schema/client/migrations are wired in. LLM calls try Claude first, then fall back to Gemini, then to heuristic templates. OAuth tokens are encrypted at rest with AES-256-GCM if ENCRYPTION_KEY is set, plaintext otherwise. Backend Gmail-watch and Microsoft-Graph webhook routes exist, but only the Gmail UI flow is wired end-to-end."
         },
         {
           "kind": "metrics",
@@ -550,12 +936,7 @@
         "Study workflow: manual sections, highlights, page notes, retrieval context with citations, provider settings for OpenAI/Anthropic/Gemini, multi-step generation, saved outputs, review queue, pinned snippets, progress aggregates, and PDF export.",
         "Packaging hardening: macOS/Windows unpacked targets, resource checks, CSP/security hardening, packaged smoke checks, and 395 passing tests documented in the M11 capstone report."
       ],
-      "links": [
-        {
-          "k": "SOURCE",
-          "v": "github"
-        }
-      ],
+      "links": [],
       "sections": [
         {
           "kind": "paragraph",
@@ -621,8 +1002,7 @@
         "GITHUB ACTIONS"
       ],
       "summary": "A multi-tenant client operations portal: org-scoped auth, role-based tickets, comments, SLA tracking, dashboards, weekly reports, simulated notifications, attachment metadata, Docker Compose, and CI.",
-      "featured": true,
-      "featuredRank": 3,
+      "featured": false,
       "img": "assets/project-screenshots/clientflow.png",
       "details": [
         "Role model covers PLATFORM_ADMIN, COMPANY_MANAGER, STAFF, and CLIENT_USER with organization isolation across tickets, rosters, dashboards, comments, notifications, reports, and attachments.",
@@ -631,8 +1011,9 @@
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/clientflow"
         }
       ],
       "sections": [
@@ -700,8 +1081,7 @@
         "GITHUB ACTIONS"
       ],
       "summary": "A Next.js commerce operations platform with a public storefront and admin dashboard: products, cart, coupons, Stripe test checkout, webhook-driven orders, inventory, CMS/blog, SEO drafts, CSV import/export, and operational alerts.",
-      "featured": true,
-      "featuredRank": 2,
+      "featured": false,
       "img": "assets/project-screenshots/commerceops.png",
       "details": [
         "Checkout re-prices the cart from the database, stores money as integer cents, applies exact coupon discounts, and creates orders from Stripe webhooks rather than trusting the success redirect.",
@@ -710,8 +1090,9 @@
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/commerceops"
         }
       ],
       "sections": [
@@ -781,12 +1162,13 @@
       "details": [
         "Pipeline stages cover database init, MedMNIST ingest, SQL-only validation checks, deterministic PyTorch baseline training, scikit-learn evaluation, and sidecar artifacts for metrics, ROC/PR curves, and confusion matrices.",
         "SQLite lineage ties every model artifact, prediction, and QA check back to a pipeline run so the dashboard can explain where each result came from.",
-        "Streamlit/Plotly dashboard includes split and label distributions, prediction confidence histograms, confusion matrix heatmap, ROC/PR curves, run duration charts, image QC, Grad-CAM, saliency, and graceful empty-state guidance."
+        "The Streamlit/Plotly dashboard includes split and label distributions, prediction confidence histograms, confusion matrix heatmap, ROC/PR curves, run duration charts, image QC, and graceful empty-state guidance. Grad-CAM and saliency are implemented and tested as backend explainability functions but are not surfaced in the dashboard."
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/clinical-imaging-pipeline"
         }
       ],
       "sections": [
@@ -816,8 +1198,8 @@
               "k": "QA CHARTS"
             },
             {
-              "v": "Grad-CAM",
-              "k": "INTERPRETABILITY"
+              "v": "Backend only",
+              "k": "EXPLAINABILITY"
             }
           ]
         },
@@ -859,8 +1241,9 @@
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/taskq"
         }
       ],
       "sections": [
@@ -935,8 +1318,9 @@
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/B2B-client-portal-mobile-web-platform"
         }
       ],
       "sections": [
@@ -991,6 +1375,7 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal project",
+      "status": "in-progress",
       "stack": [
         "GO 1.22+",
         "JSON WIRE + PROTO SCHEMA",
@@ -998,31 +1383,28 @@
         "QUIC + TLS",
         "TOML CONFIG",
         "STRUCTURED JSON LOGGING",
-        "COBRA CLI"
+        "COBRA CLI",
+        "WEBSOCKET RELAY",
+        "KOTLIN + SWIFT"
       ],
-      "summary": "A cross-device clipboard-sync daemon written in Go. Peers discover each other on the local network via mDNS, pair with a one-time secret, and exchange clipboard updates over QUIC/TLS using length-prefixed JSON envelopes shaped for a future proto migration.",
+      "summary": "A cross-device encrypted clipboard-sync system spanning a Go daemon and CLI, WebSocket relay, browser extension, native Kotlin Android and Swift iOS clients, and Windows packaging.",
       "img": "assets/project-screenshots/clipsync.png",
       "details": [
         "Daemon polls the system clipboard at a configurable interval (default 200 ms) and emits structured JSON log lines on every change.",
-        "Cross-platform clipboard: macOS, Linux (X11 + Wayland), Windows. Integration tests with fake clipboards run cross-platform; the real-clipboard test requires a graphical macOS session.",
-        "Networking layer is a hand-rolled stack: mDNS discovery, an identity/pairing/roster module, QUIC/TLS transport, and a length-prefixed JSON envelope (Hello / ClipboardUpdate / Ack) kept schema-compatible with the proto3 definitions — not gRPC."
+        "The repository implements desktop clipboard support for macOS, Linux, and Windows, plus native Android and iOS apps, a browser extension, and a Windows installer; the latest mobile and protocol changes still require compilation and live verification.",
+        "Networking includes mDNS discovery, identity/pairing/roster modules, QUIC/TLS, a WebSocket relay, and end-to-end XChaCha20-Poly1305 encrypted envelopes."
       ],
-      "links": [
-        {
-          "k": "SOURCE",
-          "v": "github"
-        }
-      ],
+      "links": [],
       "sections": [
         {
           "kind": "paragraph",
           "label": "01 — WHAT IT DOES",
-          "body": "Run the daemon on every device you own, pair them once, and your clipboard follows you across machines. CLI is Cobra-built: `daemon`, `get`/`set`, `ping`, `pair host` / `pair join`, `devices list` / `devices remove`. Configuration lives in TOML at the platform-appropriate config dir."
+          "body": "The implemented system is designed to pair desktop, mobile, and browser clients and synchronize encrypted clipboard updates across local or relayed connections. The Cobra CLI provides daemon, clipboard, ping, pairing, and device-management commands, while native Kotlin and Swift clients cover mobile surfaces."
         },
         {
           "kind": "paragraph",
           "label": "02 — HOW IT WORKS",
-          "body": "Internal Go packages: clipboard (polling abstraction per OS), mdns (peer discovery on the local network), pairing (one-time secret exchange), identity + crypto (device keys, signatures), roster (known peers), transport + tls (QUIC/TLS), wire (length-prefixed JSON envelopes kept compatible with proto3 message shapes). Daemon polls clipboard, hashes the content, and broadcasts a ClipboardUpdate envelope to peers when it changes; receivers ack."
+          "body": "Internal Go packages cover clipboard polling, mDNS discovery, pairing, identity, cryptography, peer rosters, QUIC/TLS transport, relay connectivity, and wire envelopes. The wider repository adds a WebSocket relay server, browser extension, Kotlin Android client, Swift iOS client, and Windows packaging."
         },
         {
           "kind": "metrics",
@@ -1053,7 +1435,7 @@
         {
           "kind": "paragraph",
           "label": "04 — STATUS",
-          "body": "Solo build. Daemon + CLI work end-to-end on macOS; cross-platform clipboard support is in code, but only the macOS real-clipboard path is exercised by the live integration test."
+          "body": "Implementation is present across desktop, relay, extension, Android, and iOS, including encrypted envelopes and mobile pairing. The latest mobile and protocol changes were statically audited but not compiled or tested in the implementation sandbox; Go, Android, Swift, and live-relay verification remain pending."
         }
       ],
       "featured": false
@@ -1081,13 +1463,14 @@
       "img": "assets/project-screenshots/citypulse.png",
       "details": [
         "Client: React 18 + Vite with Redux Toolkit state, Mapbox rendering, Deck.gl layers, sidebar controls, location autocomplete, Recharts summaries, and Jest/React Testing Library coverage.",
-        "Server: Express proxy routes for /api/weather, /api/air-quality, and /api/transit, cache middleware, WebSocket live-update channel, and fallback fixtures when the legacy OpenAQ v2 endpoint returns 410 Gone.",
+        "Server: Express proxy routes for /api/weather, /api/air-quality, and /api/transit, cache middleware, WebSocket live-update channel, OpenAQ v3 coordinate-based station requests, and fallback fixtures on upstream or request failures.",
         "Operational shape: workspace scripts for client/server dev, production build for the client, server tests with node:test, Docker Compose files, and GitHub Actions that run client and server tests."
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/city_plus"
         }
       ],
       "sections": [
@@ -1125,7 +1508,7 @@
         {
           "kind": "paragraph",
           "label": "03 — DATA LIMITS",
-          "body": "Weather requests are proxied through the backend and require an OpenWeather key. Air quality currently falls back to fixture data when the old OpenAQ v2 endpoint returns 410 Gone, and transit is fixture-backed. That makes the UI demo stable while keeping the migration point explicit."
+          "body": "Weather requests are proxied through the backend and require an OpenWeather key. Air quality calls OpenAQ v3 when coordinates are available and otherwise uses fixtures; a generic catch-all fallback also keeps the demo stable when upstream calls fail. Transit is fixture-backed."
         },
         {
           "kind": "paragraph",
@@ -1143,218 +1526,111 @@
       "role": "Solo",
       "timeline": "personal project",
       "stack": [
-        "PYSPARK 3.5+",
+        "PYSPARK 3.5.3",
         "STREAMLIT",
         "PARQUET",
         "JDBC"
       ],
-      "summary": "A configurable Spark ETL: ingests raw datasets (parquet/csv/json), enforces schema, dedupes, lands a partitioned Parquet warehouse, and writes KPI/aggregation tables to either a Parquet sink or a JDBC database. Bonus: a Streamlit UI for the NYC TLC taxi flow.",
+      "summary": "A schema-guarded PySpark 3.5.3 batch ETL for Parquet, CSV, and JSON. It cleans and deduplicates a fixed event schema, stores Snappy Parquet by event_date, and builds three Spark SQL analytics tables with a Parquet sink or an optional externally configured JDBC path.",
       "img": "assets/project-screenshots/spark-pipeline.png",
-      "details": [
-        "Generic pipeline (main.py) with a fixed expected schema (event_time, user_id, region, device_type, event_type, metric_value); does schema enforcement, null filtering, normalization, dedup; writes cleaned data partitioned by event_date.",
-        "Two result-sink modes: `warehouse` (partitioned Parquet outputs for daily_kpis, device_breakdown, event_type_trends) or `jdbc` (same shape into Postgres or any JDBC-reachable warehouse).",
-        "NYC TLC flow (nyc_tlc_trip_workflow.py + Streamlit UI in ui_app.py) downloads and processes NYC taxi parquet files end-to-end."
-      ],
-      "links": [
-        {
-          "k": "SOURCE",
-          "v": "github"
-        }
-      ],
-      "sections": [
-        {
-          "kind": "paragraph",
-          "label": "01 — WHAT IT DOES",
-          "body": "Point it at a folder of raw parquet/csv/json files and it produces a cleaned partitioned dataset plus three KPI tables (daily_kpis, device_breakdown, event_type_trends). Sink is configurable: write to Parquet for analyst-friendly storage, or push straight to a relational warehouse over JDBC. A separate workflow script handles the NYC Taxi & Limousine Commission datasets specifically."
-        },
-        {
-          "kind": "paragraph",
-          "label": "02 — HOW IT WORKS",
-          "body": "PySpark 3.5+ does all the work. CLI surface exposes the knobs that matter at scale: --shuffle-partitions for cluster-size tuning, --repartition for write parallelism / output file count. The Streamlit UI is a thin wrapper over the NYC TLC script — pick taxi type / year / month, it downloads the parquet file from CloudFront and shells out to the workflow."
-        },
-        {
-          "kind": "metrics",
-          "items": [
-            {
-              "v": "Parquet + JDBC",
-              "k": "DUAL SINK"
-            },
-            {
-              "v": "event_date",
-              "k": "PARTITION KEY"
-            },
-            {
-              "v": "3 KPI tables",
-              "k": "AGGREGATIONS"
-            },
-            {
-              "v": "Streamlit",
-              "k": "DEMO UI"
-            }
+      "media": {
+        "layout": "landscape",
+        "width": 1440,
+        "height": 900,
+        "label": "NYC TLC RUNNER",
+        "alt": "Local Streamlit runner for configuring and launching the separate NYC TLC Spark workflow.",
+        "caption": "Supporting interface: a real local Streamlit configuration and log viewer for the separate NYC TLC workflow.",
+        "src": "assets/project-screenshots/spark-pipeline.png"
+      },
+      "technicalCover": {
+        "type": "flow",
+        "label": "DATA FLOW",
+        "signal": "PYSPARK 3.5.3 · BATCH ETL",
+        "kicker": "SCHEMA-GUARDED PIPELINE",
+        "title": "SPARK DATA PIPELINE",
+        "subtitle": "Three input formats cross a six-field schema guard, cleaning and deduplication, partitioned storage, Spark SQL analytics, and one selected result sink.",
+        "caption": "Repository-grounded generic ETL path; the supporting Streamlit screenshot below drives a separate NYC TLC workflow.",
+        "nodes": [
+          { "title": "RAW EVENTS", "detail": "Parquet, CSV, or JSON input." },
+          { "title": "SCHEMA GUARD", "detail": "Six required fields; mismatches fail fast." },
+          { "title": "CLEAN + DEDUPE", "detail": "Filter invalid rows and derive date/hour." },
+          { "title": "CLEANED STORE", "detail": "Snappy Parquet partitioned by event_date." },
+          { "title": "SPARK SQL", "detail": "Daily KPIs, devices, and event trends." },
+          { "title": "SELECTABLE SINK", "detail": "Parquet warehouse or external-driver JDBC." }
+        ],
+        "terminal": {
+          "title": "spark.pipeline",
+          "lines": [
+            "$ python3 main.py \\",
+            "  --input /data/events --format parquet \\",
+            "  --output /data/pipeline_output \\",
+            "  --results-sink warehouse \\",
+            "  --shuffle-partitions 800 \\",
+            "  --repartition 400",
+            "",
+            "Pipeline completed successfully"
           ]
         },
-        {
-          "kind": "paragraph",
-          "label": "03 — WHY DUAL SINK",
-          "body": "Most analytics flows want both: Parquet for cheap storage and ad-hoc query, JDBC for the BI tools that won't speak parquet. Shipping both behind one CLI flag keeps the pipeline reusable across teams that have different downstream tooling."
-        },
-        {
-          "kind": "paragraph",
-          "label": "04 — STATUS",
-          "body": "Solo project. Not run on a real cluster — designed and tested locally; the --shuffle-partitions and --repartition tuning notes describe how it would scale up."
-        }
-      ],
-      "featured": false
-    },
-    {
-      "slug": "task-tracker-spring",
-      "name": "TASK TRACKER (SPRING + ANGULAR)",
-      "kind": "personal · full-stack",
-      "year": "2026",
-      "role": "Solo",
-      "timeline": "personal project",
-      "stack": [
-        "JAVA",
-        "SPRING BOOT",
-        "SPRING DATA JPA",
-        "SPRING SECURITY (HTTP BASIC)",
-        "MYSQL",
-        "H2 (TESTS)",
-        "SWAGGER",
-        "JUNIT",
-        "ANGULAR 8",
-        "BOOTSTRAP"
-      ],
-      "summary": "A multi-user task tracker with full CRUD, per-account list/dashboard scoping, filtering, sorting, pagination, and a dashboard summary endpoint. Spring Boot REST API + Angular 8 SPA.",
-      "img": "assets/project-screenshots/task-tracker-spring.png",
+        "stats": [
+          { "value": "3", "label": "INPUT FORMATS" },
+          { "value": "6", "label": "REQUIRED FIELDS" },
+          { "value": "3", "label": "ANALYTICS TABLES" },
+          { "value": "12 / 12", "label": "LOCAL TESTS" }
+        ]
+      },
       "details": [
-        "Backend: Spring Boot + Spring Data JPA + Spring Security (HTTP Basic) + Swagger + JUnit. Per-user scoping on list/dashboard endpoints; per-task ownership checks on get/update/delete are a known gap (auth-z hole I'd close before any real deployment).",
-        "Schema: users / categories / tasks with explicit indexes on status, priority, due_date, assignee_id, creator_id, category_id — the primary filter/join dimensions for the dashboard and list views.",
-        "Frontend: Angular 8 + Bootstrap with login, dashboard, task list (filter/sort/paginate/status-change), and task create/edit forms. Tests via Jasmine + Karma."
+        "Generic pipeline (main.py) with a fixed expected schema (event_time, user_id, region, device_type, event_type, metric_value); does schema enforcement, null filtering, normalization, dedup; writes cleaned data partitioned by event_date.",
+        "Each run selects one result-sink mode: `warehouse` writes partitioned Parquet outputs for daily_kpis, device_breakdown, and event_type_trends; `jdbc` uses the same shapes but requires an externally supplied driver and remains untested.",
+        "The separate NYC TLC workflow has a real Streamlit configuration/log UI. Local verification passes 12 tests covering the Spark fixture, format-specific schema validation, and fail-fast schema mismatch behavior—not full ETL, JDBC, NYC workflow, or UI coverage."
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/Data-processing-with-Spark"
         }
       ],
       "sections": [
         {
           "kind": "paragraph",
           "label": "01 — WHAT IT DOES",
-          "body": "Register an account, log in via HTTP Basic, manage your tasks with title/description/status/priority/due-date/creator/assignee/category. Filter by all of those, sort, paginate. The dashboard and list endpoints scope by the logged-in user; per-task endpoints (get/update/delete) currently rely on knowing the right ID — that's the next thing to fix if this were to leave a portfolio context."
+          "body": "Point the generic pipeline at Parquet, CSV, or JSON and it produces a cleaned partitioned dataset plus three analytics tables: daily_kpis, device_breakdown, and event_type_trends. Each run selects either a Parquet warehouse sink or an optional JDBC path that requires external driver setup. A separate workflow script handles NYC Taxi & Limousine Commission data."
         },
         {
           "kind": "paragraph",
           "label": "02 — HOW IT WORKS",
-          "body": "Standard Spring Boot stack: JPA repositories, Security with HTTP Basic, JUnit for tests against H2 in-memory; MySQL in regular dev. 19 REST endpoints across /api/auth, /api/tasks, /api/users, /api/categories, and /api/dashboard. Swagger UI at /swagger-ui.html. Frontend is Angular 8 with the routes mapped 1:1 to the API surface."
+          "body": "PySpark 3.5.3 runs the batch transforms. The CLI exposes --shuffle-partitions for Spark SQL shuffles and --repartition for write parallelism and output file count. The Streamlit UI belongs to the separate NYC TLC path: it collects taxi type, year, and month, downloads a Parquet file, launches the workflow as a separate Python process, and presents its logs."
         },
         {
           "kind": "metrics",
           "items": [
             {
-              "v": "19",
-              "k": "REST ENDPOINTS"
+              "v": "3",
+              "k": "INPUT FORMATS"
             },
             {
               "v": "6",
-              "k": "INDEXED COLUMNS"
-            },
-            {
-              "v": "HTTP Basic",
-              "k": "AUTH"
-            },
-            {
-              "v": "Jasmine + Karma",
-              "k": "FRONTEND TESTS"
-            }
-          ]
-        },
-        {
-          "kind": "paragraph",
-          "label": "03 — WHY HTTP BASIC",
-          "body": "Basic auth is enough for a single-tenant CRUD demo and keeps the focus on the actual data model + querying patterns rather than session/token management. Indexes are explicit on the columns the dashboard queries hit because that's where the API earns its keep — counting tasks by category and priority for an active user has to be a single index seek, not a table scan."
-        },
-        {
-          "kind": "paragraph",
-          "label": "04 — STATUS",
-          "body": "Solo project. Built as a portfolio piece showing a complete CRUD-+-auth slice end-to-end with reasonable schema design."
-        }
-      ],
-      "featured": false
-    },
-    {
-      "slug": "customer-issue-tracker",
-      "name": "CUSTOMER ISSUE TRACKER",
-      "kind": "personal · full-stack",
-      "year": "2026",
-      "role": "Solo",
-      "timeline": "personal project",
-      "stack": [
-        "JAVA 17",
-        "SPRING BOOT 3",
-        "SPRING SECURITY",
-        "SPRING DATA JPA",
-        "MYSQL",
-        "SWAGGER",
-        "JUNIT 5",
-        "ANGULAR 8",
-        "BOOTSTRAP"
-      ],
-      "summary": "A full-stack customer support app for issue submission, analyst triage, investigation, and resolution. Spring Boot REST API + Angular 8 SPA with role-aware dashboards and a guarded issue lifecycle.",
-      "img": "assets/project-screenshots/customer-issue-tracker.png",
-      "details": [
-        "Backend: Spring Boot REST API with HTTP Basic security, role checks for customer/analyst/admin flows, issue CRUD, comments, reference data, dashboard summary, resolution reporting, Swagger/OpenAPI, seeded demo users, and JUnit tests.",
-        "Issue lifecycle: OPEN → IN_PROGRESS → INVESTIGATING/RESOLVED → CLOSED with explicit validation and blocked invalid transitions. RESOLVED can reopen to IN_PROGRESS; CLOSED is terminal.",
-        "Frontend: Angular 8 + Bootstrap SPA with role-aware routes, auth and role guards, customer submission/detail flow, analyst triage dashboard, admin reporting view, and Jasmine/Karma specs."
-      ],
-      "links": [
-        {
-          "k": "SOURCE",
-          "v": "github"
-        }
-      ],
-      "sections": [
-        {
-          "kind": "paragraph",
-          "label": "01 — WHAT IT DOES",
-          "body": "Customers submit issues with category, priority, description, and optional attachment. Analysts triage the queue, assign ownership, add comments, and move issues through investigation and resolution. Admins can review dashboard totals and resolution reporting."
-        },
-        {
-          "kind": "paragraph",
-          "label": "02 — HOW IT WORKS",
-          "body": "Spring Boot exposes /api/issues, /api/reference, /api/dashboard, and /api/auth endpoints over a MySQL-backed JPA model. Spring Security uses HTTP Basic and role-aware service rules. The Angular client routes customers, analysts, and admins to different dashboards through AuthGuard and RoleGuard."
-        },
-        {
-          "kind": "metrics",
-          "items": [
-            {
-              "v": "5",
-              "k": "ISSUE STATES"
+              "k": "REQUIRED FIELDS"
             },
             {
               "v": "3",
-              "k": "USER ROLES"
+              "k": "ANALYTICS TABLES"
             },
             {
-              "v": "12",
-              "k": "API ROUTES"
-            },
-            {
-              "v": "Swagger + JUnit",
-              "k": "BACKEND QA"
+              "v": "12 / 12",
+              "k": "LOCAL TESTS"
             }
           ]
         },
         {
           "kind": "paragraph",
-          "label": "03 — DESIGN CHOICE: STATE MACHINE",
-          "body": "The issue status is not just a dropdown. The backend owns the allowed transition map, so the UI can be helpful without being trusted. That keeps impossible jumps, like OPEN straight to CLOSED, out of the database even if someone calls the API directly."
+          "label": "03 — WHY A SELECTABLE SINK",
+          "body": "The output shape stays stable while deployment context chooses the destination. Local or analyst-oriented runs can keep partitioned Parquet; environments that provide a compatible JDBC driver can target a relational warehouse instead. The current repository proves sink selection and the Parquet path, but does not supply or test a JDBC driver."
         },
         {
           "kind": "paragraph",
           "label": "04 — STATUS",
-          "body": "Completed portfolio build with seeded credentials for customer, analyst, and admin roles. Backend targets MySQL by default; dependencies were not reinstalled during the latest sandbox verification because registry access is restricted."
+          "body": "Complete local prototype, not run on a real cluster and not deployed. Twelve local tests pass, narrowly covering fixtures, input-format schema validation, and schema-mismatch failure. Transform values, writes, JDBC, the NYC workflow, and the Streamlit UI do not have automated coverage; JDBC also requires external driver/classpath setup."
         }
       ],
       "featured": false
@@ -1366,6 +1642,7 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal project",
+      "status": "complete",
       "stack": [
         "JAVA 21",
         "MAVEN",
@@ -1374,18 +1651,55 @@
         "JUNIT 5",
         "MOCKITO"
       ],
-      "summary": "A multi-user banking backend in Core Java. Clients connect over TCP with a line-based protocol; register / login / open accounts / deposit / withdraw / transfer / history; SQLite persistence; strict layered architecture.",
+      "summary": "A multi-user Core Java banking backend with a nine-command TCP protocol, atomic SQLite transfers, an append-only ledger, and a documented layered architecture with one acknowledged boundary exception.",
       "img": "linear-gradient(135deg,#1a260a 0%,#243f10 45%,#3a6e1d 100%)",
       "accent": "radial-gradient(ellipse at 30% 35%, rgba(180,255,120,.30), transparent 55%)",
+      "technicalCover": {
+        "type": "flow",
+        "label": "TRANSACTION PATH",
+        "signal": "JAVA 21 · TCP · SQLITE",
+        "kicker": "BACKEND PROTOCOL",
+        "title": "JAVA BANKING SYSTEM",
+        "subtitle": "A persistent TCP session crosses a sealed command boundary, service-owned transaction rules, ordered account locks, and an append-only SQLite ledger.",
+        "caption": "Repository-grounded request path and verified protocol transcript; this project intentionally has no browser frontend.",
+        "nodes": [
+          { "title": "CONSOLE CLIENT", "detail": "Persistent UTF-8 TCP connection." },
+          { "title": "PROTOCOL", "detail": "4096-char cap; nine sealed commands." },
+          { "title": "AUTH + SESSION", "detail": "Per-connection auth and PBKDF2 hashing." },
+          { "title": "SERVICE + LOCKS", "detail": "Money rules and ordered account locks." },
+          { "title": "DAO / JDBC", "detail": "Prepared statements within commit/rollback boundaries." },
+          { "title": "SQLITE LEDGER", "detail": "WAL-backed accounts and append-only history." }
+        ],
+        "terminal": {
+          "title": "banking.protocol",
+          "lines": [
+            "$ java -jar target/banking-system-1.0.0.jar client",
+            "connected to 127.0.0.1:5000",
+            "> DEPOSIT|1|100.00",
+            "< OK|1|100.00",
+            "> TRANSFER|1|2|10.00",
+            "< OK",
+            "> BALANCE|2",
+            "< OK|2|10.00"
+          ]
+        },
+        "stats": [
+          { "value": "85 / 85", "label": "TESTS PASSING" },
+          { "value": "2", "label": "REAL-SOCKET E2E" },
+          { "value": "9", "label": "PROTOCOL COMMANDS" },
+          { "value": "210K", "label": "PBKDF2 ITERATIONS" }
+        ]
+      },
       "details": [
-        "Layered architecture (network → service → dao → model + util) with downward-only dependencies as the rule; one small leak — network imports a dao exception type — that an archunit rule would catch.",
-        "Custom line-based UTF-8 wire protocol over raw TCP — verbs (REGISTER/LOGIN/OPEN/DEPOSIT/WITHDRAW/TRANSFER/BALANCE/HISTORY) with `|`-separated fields, OK/ERROR responses, max 4096 chars per line.",
-        "Account-level locking in the service layer for concurrent safety; sealed Command interface for exhaustive dispatch; Observer pattern wires AccountService → TransactionLogger after every balance-changing op."
+        "Documented network → service → dao → model/util layering with downward dependencies as the rule and one acknowledged exception: ClientHandler imports the DAO-owned DataAccessException type.",
+        "Custom line-based UTF-8 protocol over raw TCP supports nine commands — REGISTER, LOGIN, LOGOUT, OPEN, DEPOSIT, WITHDRAW, TRANSFER, BALANCE, and HISTORY — with `|`-separated fields, OK/ERROR responses, and a 4096-character line cap.",
+        "Fresh verification under JDK 21 passes all 85 tests, including two real-server/real-socket integration tests plus service-level concurrency coverage."
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/Java-Banking-System"
         }
       ],
       "sections": [
@@ -1397,26 +1711,26 @@
         {
           "kind": "paragraph",
           "label": "02 — ARCHITECTURE",
-          "body": "Five packages, downward-only dependencies as the rule: network (TCP server, client, sealed-Command dispatch), service (business rules, account-level locking, money policy), dao (JDBC, PreparedStatement, row mapping), model (immutable records + enums), util (DB singleton, hashing, observer). The architecture.md document spells out the layer rules. There's one self-noted leak — network imports a DataAccessException from dao — exactly the kind of drift you'd catch with an archunit rule if this grew bigger."
+          "body": "Five packages follow a documented downward dependency rule: network (TCP server, client, sealed-command dispatch), service (business rules, account-level locking, money policy), dao (JDBC, prepared statements, row mapping), model (immutable records and enums), and util (database connection, hashing, observer). One boundary exception is documented honestly: ClientHandler imports the DAO-owned DataAccessException type."
         },
         {
           "kind": "metrics",
           "items": [
             {
-              "v": "Java 21 LTS",
-              "k": "FLOOR"
+              "v": "85 / 85",
+              "k": "TESTS PASSING"
             },
             {
-              "v": "Sealed Cmd",
-              "k": "DISPATCH"
+              "v": "2",
+              "k": "SOCKET E2E TESTS"
             },
             {
-              "v": "Account-level",
-              "k": "LOCK SCOPE"
+              "v": "9",
+              "k": "PROTOCOL COMMANDS"
             },
             {
-              "v": "Singleton/DAO/Observer",
-              "k": "PATTERNS"
+              "v": "210K",
+              "k": "PBKDF2 ITERATIONS"
             }
           ]
         },
@@ -1428,7 +1742,7 @@
         {
           "kind": "paragraph",
           "label": "04 — STATUS",
-          "body": "Solo build, intentionally portfolio-scoped: not for production. JUnit 5 + Mockito test suite covers the layers."
+          "body": "Complete educational portfolio build. A fresh JDK 21 run passes all 85 tests, including two real-server/real-socket integration tests. It remains intentionally single-server and console-only: raw TCP has no TLS, sessions live for one connection, SQLite is single-writer, and the application has no browser frontend."
         }
       ],
       "featured": false
@@ -1436,10 +1750,10 @@
     {
       "slug": "jvm-tuning-benchmark",
       "name": "JVM TUNING BENCHMARK",
-      "kind": "personal · performance scaffold",
+      "kind": "personal · performance engineering",
       "year": "2026",
       "role": "Solo",
-      "timeline": "personal · scaffold + M0–M8 runs",
+      "timeline": "personal · M0–M6 + M8 single runs",
       "status": "in-progress",
       "stack": [
         "JAVA 21+",
@@ -1453,20 +1767,36 @@
         "GRAFANA",
         "GATLING 3.10"
       ],
-      "summary": "A URL-shortener service wired for systematic JVM-tuning experiments — multi-profile caching (Caffeine L1 + Redis L2), HikariCP, Flyway migrations, Gatling load, Prometheus + Grafana. Ran the M0–M8 milestones end-to-end: redirect p99 went from 2892 ms → 13 ms.",
+      "summary": "An instrumented Spring Boot URL shortener used to compare heap, caching, pool, virtual-thread, and collector configurations under Gatling redirect load. Archived single runs take global p99 from 2,892 ms at M0 to 13 ms at M2, with warmup included.",
       "img": "linear-gradient(135deg,#260a1a 0%,#3f1024 45%,#6e1d3a 100%)",
       "accent": "radial-gradient(ellipse at 30% 35%, rgba(255,120,180,.30), transparent 55%)",
+      "technicalCover": {
+        "type": "benchmark",
+        "label": "BENCHMARK RESULTS",
+        "signal": "LOWER IS BETTER",
+        "kicker": "GATLING · GLOBAL REDIRECT P99",
+        "title": "2,892 → 13 MS",
+        "subtitle": "M0 baseline to M2 Caffeine L1; each archived run contains 25,000 requests, zero failures, one repetition, and warmup in the global percentile.",
+        "chartLabel": "Gatling global redirect p99 latency: M0 2892 milliseconds, M1 154 milliseconds, M2 13 milliseconds.",
+        "caption": "Single-run Gatling global percentiles from April 17, 2026; warmup is included and the chart intentionally stops before the target load changes.",
+        "series": [
+          { "label": "M0", "value": 2892, "display": "2,892 ms", "note": "512 MB · default G1 · cache configured off" },
+          { "label": "M1", "value": 154, "display": "154 ms", "note": "1 GB · explicit G1 · link_hits index" },
+          { "label": "M2", "value": 13, "display": "13 ms", "note": "M1 configuration + Caffeine L1" }
+        ],
+        "stats": [
+          { "value": "25,000", "label": "REQUESTS / RUN" },
+          { "value": "0", "label": "FAILED / RUN" },
+          { "value": "1", "label": "REPETITION / MILESTONE" },
+          { "value": "M2 / 16 GB", "label": "APPLE HOST" }
+        ]
+      },
       "details": [
-        "Eight tuning milestones executed (M0 baseline → M1 index+heap+G1 → M2 Caffeine → M3 Redis → M4 pool → M5 GC tuning → M6 virtual threads → M8 generational ZGC). M7 (WebFlux) skipped, M9 (alloc rewrite) deferred. Documented in tuning-journal.md with raw Gatling results.",
-        "Three-layer caching: optional Caffeine L1 (10k, 5min TTL), optional Redis L2 (10min TTL), Postgres source of truth. Every /{slug} response sets X-Cache-Source ∈ {L1, L2, DB, MISS} for traceable cache analysis. The original M3 Redis run was a broken-L2 serialization run; after fixing it, L2 still offered no meaningful benefit on the cache-hot 10k working set.",
-        "Per-milestone Spring profiles + JVM args in scripts/run-app.sh — switching milestones never requires a rebuild. Observability: Prometheus 5s scrape, three pre-provisioned Grafana dashboards, X-Correlation-Id and X-Response-Time-Ms on every response."
+        "Eight configurations were exercised: M0 through M6 and M8. M7 WebFlux was skipped and M9 allocation work was deferred. Only redirect-steady has archived results, with one repetition per milestone instead of the three specified by the design.",
+        "The redirect path checks optional Caffeine L1, optional Redis L2, and PostgreSQL, then reports X-Cache-Source. The original M3 run used broken Redis serialization; one fixed rerun was captured, which is not enough to establish repeatable L2 benefit or lack of benefit.",
+        "Profiles and JVM arguments are switchable without rebuilding, with Prometheus, Grafana, correlation IDs, GC logs, and partial JFR evidence. Archived run metadata is mis-stamped as baseline, and the M8 JFR artifact is empty, so milestone attribution relies on the journal plus timestamped artifacts."
       ],
-      "links": [
-        {
-          "k": "SOURCE",
-          "v": "github"
-        }
-      ],
+      "links": [],
       "sections": [
         {
           "kind": "paragraph",
@@ -1476,196 +1806,38 @@
         {
           "kind": "paragraph",
           "label": "02 — THE EXPERIMENT DESIGN",
-          "body": "M0 is the captured baseline profile: no link-hit index, no Redis L2, 512MB heap, with the app's boot-default L1 behavior documented in the journal. Each subsequent milestone adds one variable: M1 turns on the (slug, time) index via Flyway V2, M2 formalizes Caffeine tuning, M3 adds Redis, M4 tunes Hikari + prep-stmt caching, M5 bumps heap + targets a 50ms G1 pause, M6 swaps to virtual threads, M8 swaps to generational ZGC. Profiles are additive deltas so the comparison stays clean."
+          "body": "The sequence explores a 512 MB baseline, a larger heap plus explicit G1 and an index at M1, Caffeine L1 at M2, Redis L2 at M3, pool changes at M4, further GC flags at M5, virtual threads at M6, and generational ZGC at M8. This is an engineering exploration rather than a controlled one-variable study: some milestones change several settings, the target load changes after M3, and only one repetition was archived."
         },
         {
           "kind": "metrics",
           "items": [
             {
-              "v": "2892 → 13 ms",
-              "k": "p99 M0→M2"
+              "v": "2,892 → 13 ms",
+              "k": "GLOBAL P99 M0→M2"
             },
             {
-              "v": "−95% / −92%",
-              "k": "M1 / M2 WIN"
+              "v": "25,000",
+              "k": "REQUESTS / RUN"
             },
             {
-              "v": "+238%",
-              "k": "M3 BROKEN-L2 RUN"
+              "v": "0",
+              "k": "FAILED / RUN"
             },
             {
-              "v": "~6,700 RPS",
-              "k": "LAPTOP CEILING"
+              "v": "1",
+              "k": "REPETITION / MILESTONE"
             }
           ]
         },
         {
           "kind": "paragraph",
           "label": "03 — INTERESTING RESULTS",
-          "body": "M1's big win was mostly heap+GC, not the index — the redirect path doesn't actually touch link_hits. The first M3 result exposed a broken-L2 serialization path; after that fix, Redis L2 still did not help because the 10k-slug working set fits in Caffeine and L2 misses only add network RTT. M6 (virtual threads) and M8 (generational ZGC) were no-ops on this workload — cache-hot, low-allocation, requests complete in µs so carrier threads never park and ZGC's pause advantage isn't exercised. All of those are valuable negative results to have in writing."
+          "body": "M1 changed heap, explicit collector settings, and an index together, so its gain cannot be assigned to one cause; the redirect path does not use link_hits. The original M3 result exposed broken Redis serialization, while one fixed rerun reached 2 ms p99 but cannot establish a repeatable L2 effect. At the later 1,500 target, M6 virtual threads recorded 15 ms and M8 generational ZGC recorded 13 ms versus M5 at 13 ms—no improvement on this cache-hot workload in the available single runs."
         },
         {
           "kind": "paragraph",
           "label": "04 — STATUS",
-          "body": "Solo. Runs done on Apple M2 / 16 GB / OpenJDK 23 / Postgres 15.6 / Redis 7.2 / Gatling 3.10.5. M7 (WebFlux) skipped as out-of-scope; M9 (allocation-hot-path rewrite) deferred pending JFR analysis. Design doc, journal, and ceiling-sweep results all in repo."
-        }
-      ],
-      "featured": false
-    },
-    {
-      "slug": "multi-source-etl",
-      "name": "MULTI-SOURCE ETL — BRAZILIAN E-COMMERCE",
-      "kind": "personal · data engineering",
-      "year": "2026",
-      "role": "Solo",
-      "timeline": "personal project",
-      "status": "in-progress",
-      "stack": [
-        "PYTHON 3.10–3.12",
-        "PANDAS",
-        "PYARROW",
-        "PANDERA",
-        "SQLALCHEMY",
-        "POSTGRESQL",
-        "DOCKER COMPOSE",
-        "PYTEST",
-        "GITHUB ACTIONS",
-        "POWER BI"
-      ],
-      "summary": "Medallion-architecture (Bronze/Silver/Gold) ETL integrating three sources — Olist Brazilian e-commerce (99k orders / 113k line items), Open-Meteo historical weather (20 cities, ERA5), Frankfurter FX (USD/BRL) — into Parquet Gold outputs and a Postgres warehouse. The 4-page / 27-DAX Power BI dashboard is documented/spec'd, with the .pbix still pending.",
-      "img": "linear-gradient(135deg,#0a261d 0%,#103f2c 45%,#1d6e4d 100%)",
-      "accent": "radial-gradient(ellipse at 30% 35%, rgba(120,255,200,.30), transparent 55%)",
-      "details": [
-        "Bronze preserves raw snapshots — Parquet for the DB-sourced tables, JSON for the API-sourced ones (weather, FX). Silver enforces pandera schema contracts with quarantine routing for invalid rows. Gold materialises 4 Parquet facts and 5 dimensions; 3 facts are warehouse-loaded in Postgres today.",
-        "Three independent integration patterns: Kaggle CSV bulk load, Open-Meteo time-series API per city, Frankfurter FX daily series — joined back to fact_sales by order date and shipping city for currency-normalised + weather-aware analysis.",
-        "98-test pytest suite running in a Python 3.10/3.11/3.12 matrix on GitHub Actions; one-command Docker Compose pipeline run; 4-page Power BI dashboard with 27 DAX measures is specified in docs, but the .pbix export is still pending."
-      ],
-      "links": [
-        {
-          "k": "SOURCE",
-          "v": "github"
-        }
-      ],
-      "sections": [
-        {
-          "kind": "paragraph",
-          "label": "01 — WHAT IT DOES",
-          "body": "Builds a unified analytics warehouse that can answer cross-source questions: which Brazilian states drive the most order revenue, does adverse weather correlate with delivery failures, how does USD/BRL volatility move USD-normalised reporting, which sellers ship on time. The warehouse outputs are Postgres + Parquet; the Power BI dashboard is specified but not exported as a finished .pbix yet."
-        },
-        {
-          "kind": "paragraph",
-          "label": "02 — HOW IT WORKS",
-          "body": "Bronze layer lands raw snapshots of every source — Parquet for DB-sourced tables, JSON for API responses (weather, FX). Silver casts types, dedupes, and runs pandera schema contracts; rejects route to data/silver/quarantine/ rather than failing the whole batch. Gold materialises 4 Parquet facts and 5 dimensions, with 3 facts loaded into the warehouse today. Pipeline runs end-to-end via Make targets / docker compose, with 98 tests covering the transforms."
-        },
-        {
-          "kind": "metrics",
-          "items": [
-            {
-              "v": "99,441 / 112,650",
-              "k": "ORDERS / LINES"
-            },
-            {
-              "v": "4 / 5",
-              "k": "GOLD FACTS / DIMS"
-            },
-            {
-              "v": "3",
-              "k": "WAREHOUSE FACTS"
-            },
-            {
-              "v": "98",
-              "k": "TEST COUNT"
-            }
-          ]
-        },
-        {
-          "kind": "paragraph",
-          "label": "03 — WHY MEDALLION",
-          "body": "The schema-contract layer (Silver) is what makes this not-a-toy: invalid rows get isolated to a quarantine path with full provenance, so the pipeline never silently fails or corrupts the analytics layer. Bronze gives me the raw landing zone for replay. Gold's star schema is shaped specifically for the dashboard's question set, not as a generic dump — that's the part most portfolio ETLs skip."
-        },
-        {
-          "kind": "paragraph",
-          "label": "04 — STATUS",
-          "body": "Solo build. Pipeline runs end-to-end; the Power BI dashboard is designed/spec'd, not built/exported as a .pbix yet. Not a deployed service — it's a portfolio piece showing the medallion + multi-source pattern with realistic data volumes."
-        }
-      ],
-      "featured": false
-    },
-    {
-      "slug": "notemind",
-      "name": "NOTEMIND",
-      "kind": "personal · ios app",
-      "year": "2026",
-      "role": "Solo",
-      "timeline": "personal · iOS Simulator only",
-      "status": "in-progress",
-      "stack": [
-        "EXPO 55 (BARE)",
-        "RN 0.83",
-        "TYPESCRIPT (STRICT)",
-        "OP-SQLITE",
-        "MMKV",
-        "TANSTACK QUERY v5",
-        "ZUSTAND",
-        "SUPABASE (POSTGRES/RLS/AUTH/EDGE)",
-        "GEMINI 2.5 FLASH (SSE)",
-        "SENTRY + POSTHOG"
-      ],
-      "summary": "An offline-first iOS notes app with a streaming weekly AI summary. Writes hit local SQLite first and sync to Supabase in the background; the summary streams over SSE from a Deno edge function calling Gemini.",
-      "img": "linear-gradient(135deg,#0a261a 0%,#103f24 45%,#1d6e3a 100%)",
-      "accent": "radial-gradient(ellipse at 30% 35%, rgba(120,255,170,.30), transparent 55%)",
-      "details": [
-        "Offline-first mutations: every write is an optimistic update against op-sqlite; the network call runs in the background; failures retry up to 3 times then persist for replay when connectivity returns. Client-generated UUIDs so the optimistic row and the server row share a single id — no local→remote remapping, no duplicate-create races.",
-        "Streaming summary: a Deno edge function calls Gemini with generateContentStream + responseSchema, relays tokens to the client over SSE; the final 'done' frame carries the structured JSON (themes/mood/highlights). Per-user daily token quota enforced in Postgres.",
-        "SecureStore with MMKV fallback: on unsigned simulator builds, iOS rejects Keychain writes because the app declares entitlements (Apple Sign In) it can't satisfy. The write is caught and persisted to MMKV so the Supabase session survives reloads in dev — production never hits the fallback."
-      ],
-      "links": [
-        {
-          "k": "SOURCE",
-          "v": "github"
-        }
-      ],
-      "sections": [
-        {
-          "kind": "paragraph",
-          "label": "01 — WHAT IT DOES",
-          "body": "Take notes offline; tap Summary at the end of the week and get a streaming AI recap of what you wrote — themes, mood, highlights — that links back to source notes. Email-OTP sign-in via Supabase, sessions persist across launches. First word of the streamed summary lands in ~1–3s."
-        },
-        {
-          "kind": "paragraph",
-          "label": "02 — HOW IT WORKS",
-          "body": "Mobile is Expo SDK 55 in bare workflow on RN 0.83. State is TanStack Query v5 with an MMKV persister + Zustand for auth. Local store is op-sqlite for notes, MMKV for KV. Backend is Supabase: Postgres with RLS policies, Auth, plus a Deno Edge Function that owns the Gemini streaming flow. Observability: Sentry for errors, PostHog for events."
-        },
-        {
-          "kind": "metrics",
-          "items": [
-            {
-              "v": "Offline-first",
-              "k": "WRITE PATH"
-            },
-            {
-              "v": "client UUIDs",
-              "k": "ID GENERATION"
-            },
-            {
-              "v": "SSE",
-              "k": "SUMMARY TRANSPORT"
-            },
-            {
-              "v": "iOS sim only",
-              "k": "DEPLOY SURFACE"
-            }
-          ]
-        },
-        {
-          "kind": "paragraph",
-          "label": "03 — INTERESTING PROBLEMS",
-          "body": "The two non-obvious decisions are the client-side UUID and the SecureStore fallback. The UUID one removes a whole class of optimistic-update bugs (duplicate-create races) at zero runtime cost. The fallback is the kind of dev-loop fix that rarely makes it into clean architecture diagrams but matters every day you're not on a signed build — write the failure path explicitly, isolate it to dev, document why."
-        },
-        {
-          "kind": "paragraph",
-          "label": "04 — STATUS",
-          "body": "End-to-end working on the iOS simulator: sign-in, offline note CRUD with background sync, streaming weekly summary. Not yet deployed to a physical device or TestFlight — entitlement work + a real Apple Developer account would be the next step."
+          "body": "In-progress performance experiment. Runs were captured on Apple M2 / 16 GB with OpenJDK 23.0.2, PostgreSQL 15.6, Redis 7.2, and Gatling 3.10.5. Results are single-run global percentiles with warmup included; only redirect-steady is archived, M7 was skipped, M9 is deferred, provenance metadata needs repair, and the M8 JFR file is empty."
         }
       ],
       "featured": false
@@ -1680,7 +1852,7 @@
       "status": "in-progress",
       "stack": [
         "POWER BI",
-        "DAX (~135 MEASURES)",
+        "DAX (~94 MEASURES)",
         "POWER QUERY (M)",
         "PYTHON",
         "PANDAS",
@@ -1692,15 +1864,10 @@
       "accent": "radial-gradient(ellipse at 30% 35%, rgba(220,180,80,.30), transparent 55%)",
       "details": [
         "Five report pages are planned/spec'd: Production Overview (statewide trend, peak years, YoY change), Well Performance (fleet decline scatter, operator bars), Well Detail (drill-through with production curve and decline projection), Operator Comparison (formation-broken cumulative BOE), Forecast & Economics (WTI break-even).",
-        "~135 DAX measures across 14 measure files and a Python ETL (pandas) feeding a SQLite + Parquet backing store organized in raw / bronze / silver / cleaned layers — the layer separation makes recompute and audit cheap.",
+        "~94 DAX measures across 14 measure files and a Python ETL (pandas) feeding a SQLite + Parquet backing store organized in raw / bronze / silver / cleaned layers — the layer separation makes recompute and audit cheap.",
         "Row-Level Security design for four roles is specified, but model enforcement still needs validation once the .pbix exists."
       ],
-      "links": [
-        {
-          "k": "SOURCE",
-          "v": "github"
-        }
-      ],
+      "links": [],
       "sections": [
         {
           "kind": "paragraph",
@@ -1710,7 +1877,7 @@
         {
           "kind": "paragraph",
           "label": "02 — HOW IT WORKS",
-          "body": "Python preps the data: pulls/cleans North Dakota production history into Parquet + a SQLite source.db across raw/bronze/silver/cleaned layers. The intended Power BI model imports cleaned data, wraps it in a star-ish model, and uses Power Query for loading transforms. The DAX layer (~135 measures across 14 files) is where the analytics work lives — YTD totals, decline rates, half-life, cumulative shares, etc."
+          "body": "Python preps the data: pulls/cleans North Dakota production history into Parquet + a SQLite source.db across raw/bronze/silver/cleaned layers. The intended Power BI model imports cleaned data, wraps it in a star-ish model, and uses Power Query for loading transforms. The DAX layer (~94 measures across 14 files) is where the analytics work lives — YTD totals, decline rates, half-life, cumulative shares, etc."
         },
         {
           "kind": "metrics",
@@ -1720,7 +1887,7 @@
               "k": "DATA RANGE"
             },
             {
-              "v": "~135",
+              "v": "~94",
               "k": "DAX MEASURES"
             },
             {
@@ -1770,12 +1937,7 @@
         "Reviewer dashboard with search across candidate, transcript, summary, and job title, plus filters on processing status and reviewer status. Detail page surfaces transcript, summary, extracted signals (JSON), reviewer notes, and a retry-failed-processing action.",
         "Whisper for STT + an LLM for extraction — both have a local mock fallback so the pipeline runs end-to-end without an API key during dev."
       ],
-      "links": [
-        {
-          "k": "SOURCE",
-          "v": "github"
-        }
-      ],
+      "links": [],
       "sections": [
         {
           "kind": "paragraph",
@@ -1843,8 +2005,9 @@
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/web_builder_llm"
         }
       ],
       "sections": [
@@ -1893,85 +2056,6 @@
       "featured": false
     },
     {
-      "slug": "ai-powered-note-taking-app",
-      "name": "AI-POWERED NOTE-TAKING APP",
-      "kind": "personal · full-stack ai app",
-      "year": "2026",
-      "role": "Solo",
-      "timeline": "personal project · phases 0-9",
-      "status": "in-progress",
-      "stack": [
-        "REACT 19",
-        "VITE",
-        "TYPESCRIPT",
-        "TIPTAP",
-        "EXPRESS",
-        "MONGOOSE",
-        "FASTAPI",
-        "QDRANT",
-        "LOCALSTACK",
-        "TERRAFORM",
-        "TURBOREPO"
-      ],
-      "summary": "A full-stack AI notes monorepo with rich-text editing, auth, note/folder/tag organization, semantic search, summarization, OCR upload plumbing, local AWS emulation, and a hardened dev stack.",
-      "img": "assets/project-screenshots/ai-powered-note-taking-app.png",
-      "details": [
-        "Turborepo workspace with web, api, ai, lambda-ocr, shared contracts, and UI packages.",
-        "Auth uses JWT access tokens, httpOnly refresh cookies, CSRF protection, Argon2 password hashes, and refresh-session rotation.",
-        "Notes use Tiptap/ProseMirror JSON with autosave, optimistic updates, version history, conflict handling, semantic search, and AI summary flows."
-      ],
-      "links": [
-        {
-          "k": "SOURCE",
-          "v": "github"
-        }
-      ],
-      "sections": [
-        {
-          "kind": "paragraph",
-          "label": "01 — WHAT IT DOES",
-          "body": "The app is a production-shaped notes system: sign up, create folders/tags/notes, write rich text in a Tiptap editor, autosave drafts, inspect version history, summarize notes, and search semantically. The repo also includes OCR upload infrastructure and a local AWS-style development environment."
-        },
-        {
-          "kind": "paragraph",
-          "label": "02 — HOW IT WORKS",
-          "body": "The stack is split into a pnpm/Turborepo monorepo: React/Vite web client, Express/TypeScript API, Python AI service, Python OCR Lambda, shared Zod/OpenAPI contracts, and a UI package. Local development runs MongoDB, Qdrant, LocalStack, the API, the AI service, and the web app through Docker Compose."
-        },
-        {
-          "kind": "metrics",
-          "items": [
-            {
-              "v": "5",
-              "k": "WORKSPACES"
-            },
-            {
-              "v": "JWT+CSRF",
-              "k": "AUTH MODEL"
-            },
-            {
-              "v": "Tiptap",
-              "k": "EDITOR"
-            },
-            {
-              "v": "LocalStack",
-              "k": "AWS EMULATION"
-            }
-          ]
-        },
-        {
-          "kind": "paragraph",
-          "label": "03 — ENGINEERING FOCUS",
-          "body": "The interesting part is not just the editor. The project emphasizes contracts and failure behavior: OpenAPI-generated client types, Zod validation shared across layers, autosave conflict resolution, request metrics, payload limits, Sentry hooks, and local cloud resources provisioned through Terraform."
-        },
-        {
-          "kind": "paragraph",
-          "label": "04 — STATUS",
-          "body": "Proceeding / in progress. Phases 0-9 are documented locally, with real-AWS deployment deferred. The project is suitable for portfolio listing because the architecture, stack, and shipped phases are documented in the repo."
-        }
-      ],
-      "featured": false
-    },
-    {
       "slug": "enterprise-ticket-management-system",
       "name": "ENTERPRISE TICKET MANAGEMENT SYSTEM",
       "kind": "personal · full-stack",
@@ -2000,8 +2084,9 @@
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/enterprise-ticket-management-system"
         }
       ],
       "sections": [
@@ -2055,70 +2140,102 @@
       "kind": "personal · systems testing",
       "year": "2026",
       "role": "Solo",
-      "timeline": "personal project",
-      "status": "in-progress",
+      "timeline": "implementation complete · MARS verification pending",
+      "status": "verification-pending",
       "stack": [
         "MIPS ASSEMBLY",
-        "MARS 4.5",
+        "MARS 4.5 TARGET",
         "PYTHON 3",
         "BASH",
         "DETERMINISTIC TEST HARNESS"
       ],
-      "summary": "A low-level diagnostics project implementing MIPS assembly routines and validating them with a deterministic pass/fail harness in MARS 4.5.",
+      "summary": "A low-level MIPS diagnostics project with six assembly routines and a deterministic 28-case harness; current results are provisional from a custom Python stand-in interpreter, with real MARS 4.5 execution still pending.",
       "img": "linear-gradient(135deg,#111111 0%,#1f2630 45%,#405263 100%)",
       "accent": "radial-gradient(ellipse at 32% 35%, rgba(180,210,230,.25), transparent 55%)",
+      "technicalCover": {
+        "type": "flow",
+        "label": "TEST EVIDENCE",
+        "signal": "PROVISIONAL · NOT MARS",
+        "kicker": "MIPS32 SYSTEMS LAB",
+        "title": "MIPS SYSTEMS DIAGNOSTICS",
+        "subtitle": "Six leaf routines and a 28-case assembly harness produce byte-exact provisional evidence; the authoritative MARS 4.5 gate remains blocked on the missing simulator jar.",
+        "flowLabel": "Build and verification paths",
+        "caption": "Repository-grounded test path. Passing evidence comes from the custom fallback and remains explicitly provisional until MARS 4.5 runs.",
+        "nodes": [
+          { "title": "6 LEAF ROUTINES", "detail": "Bitwise, arithmetic, matrix, array, checksum, and string work." },
+          { "title": "28-CASE HARNESS", "detail": "Assembly-owned cases and counters." },
+          { "title": "ATOMIC BUNDLE", "detail": "Fixed-order Python source bundler." },
+          { "title": "all_tests.asm", "detail": "Generated target assembly." },
+          { "title": "FALLBACK: 28 / 0", "detail": "Byte-exact but provisional Python result." },
+          { "title": "MARS 4.5: PENDING", "detail": "Authoritative jar is not present." }
+        ],
+        "terminal": {
+          "title": "provisional.test.evidence",
+          "lines": [
+            "$ python3 tools/mips_check.py build/all_tests.asm | tail -n 8",
+            "[PASS] checksum_empty",
+            "[PASS] checksum_single",
+            "[PASS] checksum_duplicate_pairs",
+            "[PASS] string_length_empty",
+            "[PASS] string_length_hello",
+            "[PASS] string_length_with_spaces",
+            "28 passed, 0 failed"
+          ]
+        },
+        "stats": [
+          { "value": "6", "label": "LEAF ROUTINES" },
+          { "value": "28 / 0", "label": "PROVISIONAL RESULT" },
+          { "value": "BYTE-EXACT", "label": "OUTPUT CONTRACT" },
+          { "value": "27 / 1", "label": "MUTATION DETECTED" }
+        ]
+      },
       "details": [
         "Implements bit swapping, triple-range arithmetic, 3x3 determinant, min/max scan, XOR checksum, and null-terminated string length routines.",
-        "A Python/Bash test runner concatenates routines with tests, runs MARS in command-line mode, and validates exact pass/fail output.",
-        "Documentation covers calling convention, register mapping, debug notes, test plan, and sample output."
+        "An assembly harness owns the 28 cases and counters; Python bundles the sources and provides the provisional fallback interpreter, while Bash orchestrates the still-pending MARS path.",
+        "The fallback produces a byte-exact 28/0 match against the tracked 32-line output contract, and an injected expected-value mutation produces 27/1. This validates a failure path, not independent conformance with MIPS semantics."
       ],
-      "links": [
-        {
-          "k": "SOURCE",
-          "v": "github"
-        }
-      ],
+      "links": [],
       "sections": [
         {
           "kind": "paragraph",
           "label": "01 — WHAT IT DOES",
-          "body": "The project implements small MIPS assembly routines and verifies them with a deterministic harness. The intended signal is low-level debugging discipline: registers, memory layout, bitwise operations, function contracts, and predictable tests."
+          "body": "The project tests six MIPS leaf routines with a deterministic assembly harness. The intended signal is low-level debugging discipline: registers, memory layout, bitwise operations, function contracts, and boundary-focused tests. Current execution evidence is provisional pending MARS 4.5."
         },
         {
           "kind": "paragraph",
           "label": "02 — HOW IT WORKS",
-          "body": "Each routine lives in its own assembly file. A build script creates one combined test assembly file, runs it through MARS 4.5, and checks that stdout reports the exact expected summary. The harness includes edge cases for bit positions, duplicate values, empty arrays, and strings."
+          "body": "Each routine lives in its own assembly file. A build script creates one combined test assembly file for an intended MARS 4.5 run, while the repository's current executable checks use a custom Python stand-in interpreter. The harness includes edge cases for bit positions, duplicate values, empty arrays, and strings."
         },
         {
           "kind": "metrics",
           "items": [
             {
-              "v": "6",
-              "k": "ROUTINES"
+              "v": "28 / 0",
+              "k": "PROVISIONAL RESULT"
             },
             {
-              "v": "28",
-              "k": "TEST CASES"
+              "v": "27 / 1",
+              "k": "MUTATION DETECTED"
             },
             {
-              "v": "MARS 4.5",
-              "k": "SIMULATOR"
+              "v": "Byte-exact",
+              "k": "OUTPUT CONTRACT"
             },
             {
-              "v": "0 failed",
-              "k": "TARGET"
+              "v": "Jar missing",
+              "k": "MARS 4.5 GATE"
             }
           ]
         },
         {
           "kind": "paragraph",
           "label": "03 — BOUNDARIES",
-          "body": "The README is explicit about scope: MARS 4.5 only, no SPIM/QtSPIM support, no floating point, no dynamic allocation, and no overflow detection. That clarity makes it easier to evaluate the work without overclaiming embedded-platform experience."
+          "body": "The repository is explicit that its current Python stand-in results are provisional and not MARS. A real MARS 4.5 run remains pending because the required jar is not present; floating point, dynamic allocation, overflow detection, and other simulators are outside scope."
         },
         {
           "kind": "paragraph",
           "label": "04 — STATUS",
-          "body": "Proceeding / in progress from the unfinished folder. The repo has enough implementation notes, runnable test instructions, and expected output to justify listing it."
+          "body": "Implementation complete; target-runtime verification pending. The six routines, 28-case harness, deterministic bundle, byte-exact fallback result, and mutation check are present, but authoritative MARS 4.5 execution remains blocked until the simulator jar is supplied. The reserved real-MARS output file is still empty."
         }
       ],
       "featured": false
@@ -2129,8 +2246,8 @@
       "kind": "personal · c++ cli",
       "year": "2026",
       "role": "Solo",
-      "timeline": "personal project",
-      "status": "in-progress",
+      "timeline": "documented scope complete · local main",
+      "status": "complete",
       "stack": [
         "C++20",
         "CMAKE",
@@ -2139,17 +2256,47 @@
         "CSV"
       ],
       "summary": "A C++20 command-line matrix utility for CSV validation, add/subtract/multiply/transpose operations, 2x2 and 3x3 determinants, output writing, and exact-result comparison.",
+      "sourceLabel": "GITHUB SNAPSHOT",
       "img": "linear-gradient(135deg,#201a12 0%,#3a2e1c 45%,#735b34 100%)",
       "accent": "radial-gradient(ellipse at 30% 35%, rgba(235,190,110,.28), transparent 55%)",
+      "technicalCover": {
+        "type": "terminal",
+        "label": "CLI PROOF",
+        "signal": "C++20 · CSV · EXACT COMPARE",
+        "kicker": "REPRESENTATIVE VERIFIED SESSION",
+        "title": "MATRIXOPS CLI",
+        "subtitle": "C++20 matrix operations with CSV validation, deterministic output files, and exact-result comparison.",
+        "caption": "Repository-grounded terminal session; file-producing operations are intentionally silent, so output is inspected with a separate shell command.",
+        "terminal": {
+          "title": "matrixops.session",
+          "lines": [
+            "$ build/matrixops add --a data/sample_a.csv \\",
+            "  --b data/sample_b.csv --out result.csv",
+            "",
+            "$ cat result.csv",
+            "11,22",
+            "33,44",
+            "$ build/matrixops compare --actual result.csv --expected expected/sample_add_expected.csv",
+            "PASS: actual output matches expected output."
+          ]
+        },
+        "stats": [
+          { "value": "7", "label": "CLI COMMANDS" },
+          { "value": "33 / 33", "label": "UNIT CASES" },
+          { "value": "25 / 25", "label": "FUNCTIONAL CASES" },
+          { "value": "ASAN CLEAN", "label": "LINUX SIGN-OFF" }
+        ]
+      },
       "details": [
         "CLI supports add, subtract, multiply, transpose, determinant, validate, compare, and help commands.",
-        "CMake build with CTest unit tests plus Python functional tests against generated outputs.",
-        "Known limits are documented: simple numeric CSV only, no quoted fields, determinants limited to 2x2/3x3, and exact double comparison."
+        "Fresh local verification passes all 33 unit cases under Apple Clang; the committed Linux release sign-off records 25/25 functional cases and clean AddressSanitizer runs.",
+        "Known limits are documented: simple numeric CSV only, no quoted fields, determinants limited to 2x2/3x3, and exact double comparison. The local main branch is five commits ahead of the linked public repository."
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "PUBLIC SNAPSHOT · 5 COMMITS BEHIND",
+          "href": "https://github.com/ASDFGHJKLZXC123/matrixops-cli"
         }
       ],
       "sections": [
@@ -2167,20 +2314,20 @@
           "kind": "metrics",
           "items": [
             {
-              "v": "C++20",
-              "k": "LANGUAGE"
-            },
-            {
               "v": "7",
-              "k": "COMMANDS"
+              "k": "CLI COMMANDS"
             },
             {
-              "v": "CTest",
-              "k": "UNIT TESTS"
+              "v": "33 / 33",
+              "k": "UNIT CASES"
             },
             {
-              "v": "Python",
-              "k": "FUNCTIONAL TESTS"
+              "v": "25 / 25",
+              "k": "FUNCTIONAL CASES"
+            },
+            {
+              "v": "ASAN clean",
+              "k": "LINUX SIGN-OFF"
             }
           ]
         },
@@ -2192,7 +2339,7 @@
         {
           "kind": "paragraph",
           "label": "04 — STATUS",
-          "body": "Proceeding / in progress from the unfinished folder. The README has enough detail for a portfolio entry, including features, tooling baseline, usage examples, tests, and limitations."
+          "body": "Finished for its documented scope. A fresh Apple Clang build passes 33/33 unit cases; the committed GCC 11.4/Linux sign-off records 25/25 functional cases and clean AddressSanitizer runs. The public GitHub branch is currently five commits behind this locally verified state."
         }
       ],
       "featured": false
@@ -2220,14 +2367,15 @@
       "img": "linear-gradient(135deg,#0d1526 0%,#142845 45%,#245b78 100%)",
       "accent": "radial-gradient(ellipse at 34% 34%, rgba(95,205,255,.28), transparent 55%)",
       "details": [
-        "React Native / Expo app with chat, bench, and model-management surfaces planned around a custom native bridge.",
+        "React Native / Expo chat is implemented and streams real on-device inference; bench and model-management screens remain placeholder stubs.",
         "Platform-neutral C++ core exposes a public C API and links to a pinned llama.cpp submodule.",
         "Build docs describe streaming event flow, deterministic inference checks, memory lifecycle testing, and privacy boundaries."
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/pocketlm"
         }
       ],
       "sections": [
@@ -2270,160 +2418,7 @@
         {
           "kind": "paragraph",
           "label": "04 — STATUS",
-          "body": "Proceeding / in progress. There is no top-level README yet, but the local build document contains enough concrete scope, architecture, repository layout, stack, and success criteria to list it responsibly."
-        }
-      ],
-      "featured": false
-    },
-    {
-      "slug": "saguna-consulting-ai-system",
-      "name": "SAGUNA CONSULTING AI SYSTEM",
-      "kind": "capstone · full-stack ai sales ops",
-      "year": "2026",
-      "role": "Solo / capstone build",
-      "timeline": "IN4MATX 191A capstone",
-      "status": "in-progress",
-      "stack": [
-        "FASTAPI",
-        "SUPABASE",
-        "VITE",
-        "REACT",
-        "PYTHON ETL",
-        "GMAIL API",
-        "VERCEL",
-        "PYTEST"
-      ],
-      "summary": "A capstone system for ranking funded startups, managing outreach, and generating AI-assisted sales messages from YC, TechCrunch, enrichment, and scoring pipelines.",
-      "img": "assets/project-screenshots/saguna-consulting-ai-system.png",
-      "details": [
-        "FastAPI backend handles startups, Gmail, outreach, AI services, Supabase access, and Vercel API entrypoint compatibility.",
-        "Vite frontend provides the multi-page operator UI.",
-        "ETL pipelines ingest YC and TechCrunch data, enrich companies, score ideal customer profile fit, and write runtime outputs under ignored data paths."
-      ],
-      "links": [
-        {
-          "k": "SOURCE",
-          "v": "github"
-        }
-      ],
-      "sections": [
-        {
-          "kind": "paragraph",
-          "label": "01 — WHAT IT DOES",
-          "body": "The system helps a consulting workflow find funded startups, score them against an ideal customer profile, manage outreach, integrate Gmail, and generate AI-assisted sales messages."
-        },
-        {
-          "kind": "paragraph",
-          "label": "02 — HOW IT WORKS",
-          "body": "The canonical FastAPI app lives in backend.index:app, with compatibility shims for Vercel. The frontend is a Vite multi-page React app. ETL modules ingest YC and TechCrunch sources, run enrichment/scoring, and persist schema-backed data through Supabase."
-        },
-        {
-          "kind": "metrics",
-          "items": [
-            {
-              "v": "YC + TC",
-              "k": "DATA SOURCES"
-            },
-            {
-              "v": "FastAPI",
-              "k": "BACKEND"
-            },
-            {
-              "v": "Gmail",
-              "k": "OUTREACH"
-            },
-            {
-              "v": "Vercel",
-              "k": "DEPLOY TARGET"
-            }
-          ]
-        },
-        {
-          "kind": "paragraph",
-          "label": "03 — ICP MODEL",
-          "body": "The README documents scoring criteria: high-fit startups have at least $250k in total funding, are not launched or still in progress, and were founded within the last year. Medium and low tiers relax those thresholds and product-stage signals."
-        },
-        {
-          "kind": "paragraph",
-          "label": "04 — STATUS",
-          "body": "Proceeding / in progress. This is the canonical full-stack Saguna repo; the older Saguna_Consult folder is listed separately as a prototype/predecessor so the portfolio distinguishes the two."
-        }
-      ],
-      "featured": false
-    },
-    {
-      "slug": "saguna-consult-pipeline-prototype",
-      "name": "SAGUNA CONSULT PIPELINE PROTOTYPE",
-      "kind": "personal · data + outreach prototype",
-      "year": "2026",
-      "role": "Solo",
-      "timeline": "prototype / predecessor build",
-      "status": "in-progress",
-      "stack": [
-        "PYTHON",
-        "POSTGRESQL",
-        "SQLITE",
-        "SUPABASE",
-        "GMAIL API",
-        "MICROSOFT GRAPH",
-        "VITE",
-        "REACT",
-        "HEROUI"
-      ],
-      "summary": "An earlier Saguna prototype made of focused pipeline modules for startup ingestion, normalization, LLM-ready payloads, contact enrichment, Gmail outreach, and frontend-serving database refreshes.",
-      "img": "assets/project-screenshots/saguna-consult-pipeline-prototype.png",
-      "details": [
-        "Pipeline modules ingest YC and TechCrunch data, normalize companies, prepare LLM payloads, enrich contacts, and materialize app-facing tables.",
-        "Outreach modules include Gmail draft/send flows, a Gmail-style inbox prototype, and Microsoft email API experiments.",
-        "A standalone React/HeroUI rebuild explores dashboard UI while keeping backend and pipeline integration separate."
-      ],
-      "links": [
-        {
-          "k": "SOURCE",
-          "v": "github"
-        }
-      ],
-      "sections": [
-        {
-          "kind": "paragraph",
-          "label": "01 — WHAT IT DOES",
-          "body": "This folder is the earlier modular version of the Saguna work. It focuses on startup data ingestion, company normalization, LLM-ready payload construction, contact enrichment, outreach workflows, and frontend-facing database materialization."
-        },
-        {
-          "kind": "paragraph",
-          "label": "02 — HOW IT WORKS",
-          "body": "The prototype is split into small Python modules: YC and TechCrunch ingestion, unified company normalization, LLM payload building, deterministic contact extraction, app table refresh, Gmail outreach, and Microsoft email experiments. The rebuild folder contains a standalone React/HeroUI dashboard rebuild."
-        },
-        {
-          "kind": "metrics",
-          "items": [
-            {
-              "v": "YC + TC",
-              "k": "INGEST"
-            },
-            {
-              "v": "SQLite/Postgres",
-              "k": "STORAGE"
-            },
-            {
-              "v": "Gmail",
-              "k": "OUTREACH"
-            },
-            {
-              "v": "React",
-              "k": "UI REBUILD"
-            }
-          ]
-        },
-        {
-          "kind": "paragraph",
-          "label": "03 — MODULE SHAPE",
-          "body": "The repo documents each stage independently: contact enrichment explains source pages and extracted candidates, unified normalization records source provenance, LLM-ready payloads preserve field-level evidence, and the app refresh step materializes lead/ranking/dashboard tables for the frontend."
-        },
-        {
-          "kind": "paragraph",
-          "label": "04 — STATUS",
-          "body": "Proceeding / in progress. This is listed as a prototype/predecessor because it has enough local documentation and code to describe, while the separate Saguna Consulting AI System entry represents the more canonical full-stack version."
+          "body": "In progress. The native inference core, custom bridge, and chat surface are implemented; bench and model-management screens remain placeholder stubs, and the latest bridge changes still require full device-level verification."
         }
       ],
       "featured": false
@@ -2434,7 +2429,7 @@
       "kind": "personal · ml dashboard",
       "year": "2026",
       "role": "Solo",
-      "timeline": "phase 3 frontend in progress",
+      "timeline": "phases 1–5 complete · phase 6 polish",
       "status": "in-progress",
       "stack": [
         "REACT 19",
@@ -2450,14 +2445,20 @@
       "summary": "A React dashboard that sends text to a Python AWS Lambda container and returns sentiment, emotion probabilities, and keyword extraction.",
       "img": "assets/project-screenshots/sentiment-analyzer-dashboard.png",
       "details": [
-        "Frontend is React 19 + TypeScript + Vite with planned GitHub Pages deployment.",
+        "Frontend is a deployed React 19 + TypeScript + Vite dashboard with 8+ components, client-side history, and GitHub Pages hosting.",
         "Backend Lambda container runs Cardiff RoBERTa sentiment, j-hartmann DistilRoBERTa emotion, and YAKE keywords.",
-        "CI/CD uses GitHub Actions with OIDC-based AWS authentication and a Lambda Function URL for the HTTPS API."
+        "CI/CD uses GitHub Actions with OIDC-based AWS authentication and a Lambda Function URL for the HTTPS API; Vitest and Playwright cover the frontend."
       ],
       "links": [
         {
           "k": "SOURCE",
-          "v": "github"
+          "v": "github",
+          "href": "https://github.com/ASDFGHJKLZXC123/Sentiment-Analyzer"
+        },
+        {
+          "k": "DEMO",
+          "v": "live",
+          "href": "https://asdfghjklzxc123.github.io/Sentiment-Analyzer/"
         }
       ],
       "sections": [
@@ -2500,7 +2501,7 @@
         {
           "kind": "paragraph",
           "label": "04 — STATUS",
-          "body": "Proceeding / in progress. Backend Lambda is deployed and Phase 2 is complete; frontend work is the current next step. The README has enough stack, architecture, model, setup, and roadmap detail for a portfolio entry."
+          "body": "Live and deployed: Phases 1–5 are complete, including the Lambda backend, React 19 dashboard, GitHub Pages deployment, live backend integration, and CI/CD. Phase 6 polish and closeout remain in progress."
         }
       ],
       "featured": false
@@ -2512,7 +2513,6 @@
       "year": "2026",
       "role": "Solo",
       "timeline": "personal project",
-      "status": "in-progress",
       "stack": [
         "ASP.NET CORE",
         "C#",
@@ -2533,8 +2533,9 @@
       ],
       "links": [
         {
-          "k": "SOURCE",
-          "v": "github"
+          "k": "GITHUB",
+          "v": "REPOSITORY",
+          "href": "https://github.com/ASDFGHJKLZXC123/Simple-Task-Management-System"
         }
       ],
       "sections": [
@@ -2577,82 +2578,7 @@
         {
           "kind": "paragraph",
           "label": "04 — STATUS",
-          "body": "Proceeding / in progress. Core functionality is implemented but the README notes that broader validation and end-to-end testing still need refinement."
-        }
-      ],
-      "featured": false
-    },
-    {
-      "slug": "carematch-ai",
-      "name": "CAREMATCH AI",
-      "kind": "personal · healthcare ai prototype",
-      "year": "2026",
-      "role": "Solo",
-      "timeline": "personal prototype",
-      "status": "in-progress",
-      "stack": [
-        "REACT",
-        "VITE",
-        "EXPRESS",
-        "ZOD",
-        "LUCIDE REACT",
-        "OPENAI SDK",
-        "MULTI-PROVIDER LLM ADAPTERS"
-      ],
-      "summary": "A mobile-first healthcare routing prototype that turns free-text symptoms into editable clinical summaries, safety-aware guidance, provider matches, and a booking flow.",
-      "img": "assets/project-screenshots/carematch-ai.png",
-      "details": [
-        "Frontend collects symptom text, shows a staged AI-summary flow, renders editable clinical cards, and walks through provider matching and booking.",
-        "Express backend exposes health and symptom-summary endpoints with strict schema validation and multi-provider LLM adapters.",
-        "Safety layer avoids diagnosis language, flags urgent terms, pauses matching for urgent guidance, and falls back to deterministic mock data when providers fail."
-      ],
-      "links": [
-        {
-          "k": "SOURCE",
-          "v": "github"
-        }
-      ],
-      "sections": [
-        {
-          "kind": "paragraph",
-          "label": "01 — WHAT IT DOES",
-          "body": "A patient describes symptoms in plain language. The app organizes the intake into review cards, asks a safety-oriented clarifying question, recommends a starting care direction, shows matched providers, and walks the user through selecting an appointment slot."
-        },
-        {
-          "kind": "paragraph",
-          "label": "02 — HOW IT WORKS",
-          "body": "The backend normalizes LLM output into a schema-validated payload. It can call OpenAI, xAI/Grok, Claude, Gemini, DeepSeek, Qwen, or a mock fallback. The frontend keeps the user in the loop by making generated clinical cards editable before matching."
-        },
-        {
-          "kind": "metrics",
-          "items": [
-            {
-              "v": "7",
-              "k": "LLM MODES"
-            },
-            {
-              "v": "Zod",
-              "k": "VALIDATION"
-            },
-            {
-              "v": "mock",
-              "k": "FALLBACK"
-            },
-            {
-              "v": "booking",
-              "k": "FLOW END"
-            }
-          ]
-        },
-        {
-          "kind": "paragraph",
-          "label": "03 — SAFETY BOUNDARY",
-          "body": "The project is careful not to present itself as a diagnosis tool. It uses clinician-review language, keeps summaries editable, flags urgent safety terms, and pauses provider matching when emergency guidance is more appropriate."
-        },
-        {
-          "kind": "paragraph",
-          "label": "04 — STATUS",
-          "body": "Proceeding / in progress. The README is detailed enough for portfolio use and clearly lists current limitations: mock provider data, simulated booking, simulated insurance/location/availability matching, and no production compliance work yet."
+          "body": "Finished, feature-complete portfolio build. The repository documents reproducible restore, build, test, and run workflows, user-scoped data, unit tests, and SQLite integration tests; broader product features remain outside scope."
         }
       ],
       "featured": false

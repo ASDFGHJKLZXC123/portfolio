@@ -22,7 +22,7 @@
         "GITHUB ACTIONS"
       ],
       "summary": "A Postgres-backed job queue and signed-webhook platform built around idempotent creation, row-level locking, retries, dead-letter recovery, and an operator dashboard.",
-      "img": "assets/project-screenshots/reliableflow.png",
+      "img": "assets/project-screenshots/reliableflow.webp",
       "media": {
         "layout": "landscape",
         "width": 1280,
@@ -167,7 +167,7 @@
         "FILE SYSTEM ACCESS API"
       ],
       "summary": "A local-first Chrome extension that summarizes and extracts supported webpages, saves searchable notes, and can mirror them to disk, with provider fallback across Gemini, OpenAI, and Anthropic.",
-      "img": "assets/project-screenshots/ai-assistant-across-websites.png",
+      "img": "assets/project-screenshots/ai-assistant-across-websites.webp",
       "media": {
         "layout": "landscape",
         "width": 1440,
@@ -323,7 +323,7 @@
         "label": "MOBILE APPLICATION",
         "alt": "AIHL mobile service-booking interface.",
         "caption": "Customer booking workflow for selecting provider availability and creating a service booking.",
-        "src": "assets/project-screenshots/aihl-secure-booking.png"
+        "src": "assets/project-screenshots/aihl-secure-booking.webp"
       },
       "technicalCover": {
         "type": "flow",
@@ -488,7 +488,7 @@
         "AZURE APP SERVICE + STATIC WEB APPS"
       ],
       "summary": "A simplified Sentry/Datadog-style monitoring platform — ingests application error logs, runs alert rules over rolling windows, and serves a dashboard.",
-      "img": "assets/project-screenshots/error-monitoring.png",
+      "img": "assets/project-screenshots/error-monitoring.webp",
       "media": {
         "layout": "landscape",
         "width": 1440,
@@ -634,7 +634,7 @@
         "COINGECKO API"
       ],
       "summary": "An ETL pipeline that pulls crypto market snapshots from CoinGecko, lands raw JSON in a partitioned data-lake layout, validates with a rules engine, and loads structured rows into a SQLite warehouse. CLI + tiny web/HTTP API.",
-      "img": "assets/project-screenshots/crypto-data-pipeline.png",
+      "img": "assets/project-screenshots/crypto-data-pipeline.webp",
       "media": {
         "layout": "landscape",
         "width": 1440,
@@ -782,7 +782,7 @@
       ],
       "summary": "A full-stack hiring workflow with a shipped React 19 + TypeScript SPA for resume ingestion, async structured extraction, candidate review, role workspaces, shortlisting, comparison, and funnel analytics.",
       "featured": false,
-      "img": "assets/project-screenshots/ai-candidate-dashboard.png",
+      "img": "assets/project-screenshots/ai-candidate-dashboard.webp",
       "details": [
         "Async resume processing: PDF/text upload triggers a Celery job that extracts skills, years of experience, education, summary, and a match score against a job description.",
         "Reviewer workflow: search, status/tag/score filtering, pagination, candidate detail with evidence snippets, notes, tags, and a six-state lifecycle (Applied → Screened → Interview → Offer → Hired, with Rejected as a terminal path).",
@@ -852,7 +852,7 @@
       ],
       "summary": "A pragmatic Superhuman/Grammarly-adjacent inbox assistant — Gmail OAuth sync, LLM-backed thread summaries, draft reply generation with tone controls, and follow-up reminders.",
       "featured": false,
-      "img": "assets/project-screenshots/ai-inbox-copilot.png",
+      "img": "assets/project-screenshots/ai-inbox-copilot.webp",
       "details": [
         "Gmail OAuth sign-in via Auth.js v5; sync merges INBOX + SENT thread IDs so outbound replies land in the local thread model.",
         "Thread summarization, draft generation with tone/clarifying-question modes, and natural-language draft revision — backed by a Claude → Gemini → heuristic-template provider chain, so a missing key in one provider falls through gracefully.",
@@ -930,7 +930,7 @@
       ],
       "summary": "A local-first Electron reading workspace for PDF study: import documents, extract/search text, OCR scanned pages, annotate sections, assemble retrieval-grounded study context, generate study outputs, review saved answers, and export PDFs.",
       "featured": false,
-      "img": "assets/project-screenshots/ai-reading-assistant.png",
+      "img": "assets/project-screenshots/ai-reading-assistant.webp",
       "details": [
         "PDF workflow: app-owned library storage, SHA-256 dedupe, last-page restore, spread/single-page reader modes, embedded-text extraction, SQLite FTS5 search, OCR fallback, and local thumbnails.",
         "Study workflow: manual sections, highlights, page notes, retrieval context with citations, provider settings for OpenAI/Anthropic/Gemini, multi-step generation, saved outputs, review queue, pinned snippets, progress aggregates, and PDF export.",
@@ -1003,7 +1003,7 @@
       ],
       "summary": "A multi-tenant client operations portal: org-scoped auth, role-based tickets, comments, SLA tracking, dashboards, weekly reports, simulated notifications, attachment metadata, Docker Compose, and CI.",
       "featured": false,
-      "img": "assets/project-screenshots/clientflow.png",
+      "img": "assets/project-screenshots/clientflow.webp",
       "details": [
         "Role model covers PLATFORM_ADMIN, COMPANY_MANAGER, STAFF, and CLIENT_USER with organization isolation across tickets, rosters, dashboards, comments, notifications, reports, and attachments.",
         "Ticket workflow includes assignment, status transitions through a state machine, client-visible versus internal comments, SLA due-soon/overdue/paused/resolved tracking, and dashboard/workload/activity APIs.",
@@ -1082,7 +1082,7 @@
       ],
       "summary": "A Next.js commerce operations platform with a public storefront and admin dashboard: products, cart, coupons, Stripe test checkout, webhook-driven orders, inventory, CMS/blog, SEO drafts, CSV import/export, and operational alerts.",
       "featured": false,
-      "img": "assets/project-screenshots/commerceops.png",
+      "img": "assets/project-screenshots/commerceops.webp",
       "details": [
         "Checkout re-prices the cart from the database, stores money as integer cents, applies exact coupon discounts, and creates orders from Stripe webhooks rather than trusting the success redirect.",
         "Inventory decrement uses a guarded Prisma update with quantity checks so concurrent checkout cannot oversell; webhook processing is raw-body signature verified and idempotent.",
@@ -1158,7 +1158,7 @@
       ],
       "summary": "A reproducible biomedical image-analysis pipeline prototype for PneumoniaMNIST: ingest, validate, train, evaluate, track lineage in SQLite, and inspect dataset/model QA through a Streamlit dashboard.",
       "featured": false,
-      "img": "assets/project-screenshots/clinical-imaging-pipeline.png",
+      "img": "assets/project-screenshots/clinical-imaging-pipeline.webp",
       "details": [
         "Pipeline stages cover database init, MedMNIST ingest, SQL-only validation checks, deterministic PyTorch baseline training, scikit-learn evaluation, and sidecar artifacts for metrics, ROC/PR curves, and confusion matrices.",
         "SQLite lineage ties every model artifact, prediction, and QA check back to a pipeline run so the dashboard can explain where each result came from.",
@@ -1233,7 +1233,7 @@
       ],
       "summary": "A PostgreSQL-backed job queue backend with FastAPI APIs, worker leases, retry scheduling, dead-letter handling, webhook delivery, worker heartbeats, queue stats, and metrics endpoints.",
       "featured": false,
-      "img": "assets/project-screenshots/distributed-job-queue-webhooks.png",
+      "img": "assets/project-screenshots/distributed-job-queue-webhooks.webp",
       "details": [
         "Public job APIs create, list, cancel, retry, and inspect queued work; internal worker APIs claim jobs, renew leases, complete work, fail jobs, and register heartbeats.",
         "Workers claim runnable pending jobs or expired running jobs with PostgreSQL locking, priority order, lease tokens, visible-until deadlines, and deterministic retry/backoff rules.",
@@ -1310,7 +1310,7 @@
         "AXIOS"
       ],
       "summary": "A B2B financial-services platform: Laravel 13 REST API + Livewire admin portal + a React Native mobile client. Auth, accounts, transactions, statement PDFs, scheduled reports, third-party sync with HMAC-verified webhooks.",
-      "img": "assets/project-screenshots/aihl-b2b-platform.png",
+      "img": "assets/project-screenshots/aihl-b2b-platform.webp",
       "details": [
         "Backend serves two audiences: mobile clients via versioned JSON API (/api/v1/...) authenticated with JWT, and internal staff via a Livewire admin panel using Laravel session auth.",
         "Mobile (RN 0.76 / Expo SDK 52) handles JWT storage in react-native-keychain, silent token refresh via Axios interceptors, paginated transaction lists, and asynchronous PDF statement download.",
@@ -1388,7 +1388,7 @@
         "KOTLIN + SWIFT"
       ],
       "summary": "A cross-device encrypted clipboard-sync system spanning a Go daemon and CLI, WebSocket relay, browser extension, native Kotlin Android and Swift iOS clients, and Windows packaging.",
-      "img": "assets/project-screenshots/clipsync.png",
+      "img": "assets/project-screenshots/clipsync.webp",
       "details": [
         "Daemon polls the system clipboard at a configurable interval (default 200 ms) and emits structured JSON log lines on every change.",
         "The repository implements desktop clipboard support for macOS, Linux, and Windows, plus native Android and iOS apps, a browser extension, and a Windows installer; the latest mobile and protocol changes still require compilation and live verification.",
@@ -1460,7 +1460,7 @@
         "DOCKER COMPOSE"
       ],
       "summary": "A React + Express geospatial dashboard for exploring urban signals on an interactive Mapbox/Deck.gl map. It combines air-quality, weather, and transit-style layers with sidebar controls, charts, backend proxy routes, and WebSocket updates.",
-      "img": "assets/project-screenshots/citypulse.png",
+      "img": "assets/project-screenshots/citypulse.webp",
       "details": [
         "Client: React 18 + Vite with Redux Toolkit state, Mapbox rendering, Deck.gl layers, sidebar controls, location autocomplete, Recharts summaries, and Jest/React Testing Library coverage.",
         "Server: Express proxy routes for /api/weather, /api/air-quality, and /api/transit, cache middleware, WebSocket live-update channel, OpenAQ v3 coordinate-based station requests, and fallback fixtures on upstream or request failures.",
@@ -1532,7 +1532,7 @@
         "JDBC"
       ],
       "summary": "A schema-guarded PySpark 3.5.3 batch ETL for Parquet, CSV, and JSON. It cleans and deduplicates a fixed event schema, stores Snappy Parquet by event_date, and builds three Spark SQL analytics tables with a Parquet sink or an optional externally configured JDBC path.",
-      "img": "assets/project-screenshots/spark-pipeline.png",
+      "img": "assets/project-screenshots/spark-pipeline.webp",
       "media": {
         "layout": "landscape",
         "width": 1440,
@@ -1540,7 +1540,7 @@
         "label": "NYC TLC RUNNER",
         "alt": "Local Streamlit runner for configuring and launching the separate NYC TLC Spark workflow.",
         "caption": "Supporting interface: a real local Streamlit configuration and log viewer for the separate NYC TLC workflow.",
-        "src": "assets/project-screenshots/spark-pipeline.png"
+        "src": "assets/project-screenshots/spark-pipeline.webp"
       },
       "technicalCover": {
         "type": "flow",
@@ -1931,7 +1931,7 @@
         "SQLITE / POSTGRES"
       ],
       "summary": "An audio review tool for hiring: upload candidate interview audio, process asynchronously through Whisper + an LLM extractor, and review transcript + summary + extracted signals in a searchable dashboard.",
-      "img": "assets/project-screenshots/pre-interview-audio.png",
+      "img": "assets/project-screenshots/pre-interview-audio.webp",
       "details": [
         "Async pipeline with explicit state machine — uploaded → transcribing → summarizing → completed/failed — start/end timestamps + error messages stored on every transition. Celery retries up to 3 times.",
         "Reviewer dashboard with search across candidate, transcript, summary, and job title, plus filters on processing status and reviewer status. Detail page surfaces transcript, summary, extracted signals (JSON), reviewer notes, and a retry-failed-processing action.",
@@ -1997,7 +1997,7 @@
         "VANILLA JS / HTML / CSS"
       ],
       "summary": "A small Java web app that generates or modifies websites from a prompt via Gemini. The LLM returns a JSON file manifest; the app writes those files to disk and previews them in-browser.",
-      "img": "assets/project-screenshots/web-builder-llm.png",
+      "img": "assets/project-screenshots/web-builder-llm.webp",
       "details": [
         "Two workflows: 'New Website' from scratch and 'Modify Existing' — load a folder, send a follow-up request, get back an updated file manifest, write it to the same folder.",
         "JSON-shaped LLM contract: response is {title, summary, features[], files[{path, content}]} plus optional imageRequests + binary/base64/mimeType for image assets. Backend supplies sensible defaults when fields are missing — lenient by design, not a strict schema reject.",
@@ -2076,7 +2076,7 @@
         "DOCKER COMPOSE"
       ],
       "summary": "A role-based enterprise service-ticket platform for creating, assigning, tracking, commenting on, and auditing support tickets across requester, agent, manager, and admin workflows.",
-      "img": "assets/project-screenshots/enterprise-ticket-management-system.png",
+      "img": "assets/project-screenshots/enterprise-ticket-management-system.webp",
       "details": [
         "Spring Boot backend with JWT auth, role permissions, PostgreSQL persistence, Flyway migrations, Swagger/OpenAPI, and Testcontainers-ready tests.",
         "React + TypeScript + Vite frontend with Material UI, React Router, and Axios.",
@@ -2443,7 +2443,7 @@
         "PLAYWRIGHT"
       ],
       "summary": "A React dashboard that sends text to a Python AWS Lambda container and returns sentiment, emotion probabilities, and keyword extraction.",
-      "img": "assets/project-screenshots/sentiment-analyzer-dashboard.png",
+      "img": "assets/project-screenshots/sentiment-analyzer-dashboard.webp",
       "details": [
         "Frontend is a deployed React 19 + TypeScript + Vite dashboard with 8+ components, client-side history, and GitHub Pages hosting.",
         "Backend Lambda container runs Cardiff RoBERTa sentiment, j-hartmann DistilRoBERTa emotion, and YAKE keywords.",
@@ -2525,7 +2525,7 @@
         "STATIC SPA"
       ],
       "summary": "A full-stack ASP.NET Core task manager with JWT auth, user-scoped tasks/categories, filtering, pagination, soft deletes, activity logs, validation, Swagger, and application-layer tests.",
-      "img": "assets/project-screenshots/task-management-system-dotnet.png",
+      "img": "assets/project-screenshots/task-management-system-dotnet.webp",
       "details": [
         "Solution is split into Domain, Application, Infrastructure, Api, and Tests projects.",
         "Backend uses EF Core migrations, repository interfaces, a Result pattern, global exception middleware, JWT token generation, and FluentValidation.",

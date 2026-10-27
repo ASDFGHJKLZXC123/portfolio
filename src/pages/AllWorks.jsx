@@ -77,7 +77,8 @@ function WorkCard({ project, index }) {
           }} />
           {!project.technicalCover && <div style={{
             position: 'absolute', bottom: 10, left: 12,
-            fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.45)',
+            padding: '4px 8px', borderRadius: 999, background: 'rgba(10,10,10,0.72)',
+            fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.8)',
           }}>
             — {project.kind.toUpperCase()}
           </div>}

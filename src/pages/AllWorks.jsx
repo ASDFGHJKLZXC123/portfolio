@@ -1,10 +1,11 @@
-// all-works.jsx — full archive of every project, same editorial dark style.
+// all-works.jsx — full archive of every project, editorial dark style (shared via components/editorial).
 // Project data is loaded from projects.json. The fallback below is for offline preview only.
 
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { projectImageBackground } from '../lib/project-image';
 import { externalLinkProps, isUsableHref, projectSlug, projectSourceHref } from '../lib/project-links';
+import { EdPage, EdFooter, PageHeading, Reveal, StatusPill, pad2, useDarkMode } from '../components/editorial';
 
 const PROJECTS_FALLBACK = [
   { name: 'INFORM.UCI',   kind: 'sponsor capstone',     stack: 'REACT / NODE / POSTGRES',    year: '2026',
@@ -49,167 +50,50 @@ const PROJECTS_FALLBACK = [
     accent: 'radial-gradient(ellipse at 30% 60%, rgba(220,80,140,.35), transparent 55%)' },
 ];
 
-const FONT = { sans: '"Inter Tight", Helvetica, Arial, sans-serif', mono: '"JetBrains Mono", ui-monospace, monospace', letter: '-0.02em' };
-
-const slugify = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-const isInProgress = (project) => project.status === 'in-progress';
-
-function StatusPill({ project, onImage = false }) {
-  if (!isInProgress(project)) return null;
-  return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap',
-      padding: onImage ? '4px 8px' : '5px 9px',
-      borderRadius: 999,
-      border: onImage ? '1px solid rgba(255,255,255,0.32)' : '1px solid var(--border)',
-      background: onImage ? 'rgba(255,255,255,0.14)' : 'var(--hover)',
-      color: onImage ? 'rgba(255,255,255,0.9)' : 'var(--fg)',
-      fontFamily: 'var(--mono)', fontSize: onImage ? 8 : 9,
-      lineHeight: 1, letterSpacing: '0.16em',
-    }}>
-      IN PROGRESS
-    </span>
-  );
-}
-
-function useReveal() {
-  const ref = React.useRef(null);
-  const [shown, setShown] = React.useState(false);
-  React.useEffect(() => {
-    if (!ref.current) return;
-    const io = new IntersectionObserver((entries) => {
-      for (const e of entries) if (e.isIntersecting) { setShown(true); io.disconnect(); return; }
-    }, { threshold: 0.1 });
-    io.observe(ref.current);
-    return () => io.disconnect();
-  }, []);
-  return [ref, shown];
-}
-function Reveal({ children, delay = 0 }) {
-  const [ref, shown] = useReveal();
-  return <div ref={ref} style={{
-    transform: shown ? 'translateY(0)' : 'translateY(16px)',
-    opacity: shown ? 1 : 0,
-    transition: `transform .8s cubic-bezier(.2,.7,.3,1) ${delay}ms, opacity .8s ease ${delay}ms`,
-  }}>{children}</div>;
-}
-
-function TopBar({ dark, setDark }) {
-  const themeBtn = (on) => ({
-    border: 'none', padding: '5px 12px', borderRadius: 999, cursor: 'pointer',
-    background: on ? 'var(--fg)' : 'transparent',
-    color: on ? 'var(--bg)' : 'var(--muted)',
-    fontSize: 9, letterSpacing: '0.18em', fontFamily: 'inherit', fontWeight: 600,
-    transition: 'background .2s, color .2s',
-  });
-  return (
-    <div style={{
-      position: 'sticky', top: 0, zIndex: 40,
-      backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)',
-      background: 'var(--bg-blur)', borderBottom: '1px solid var(--border)',
-    }}>
-      <div style={{
-        display: 'grid', gridTemplateColumns: '1fr auto 1fr',
-        alignItems: 'center', padding: '16px 40px', fontSize: 11,
-        letterSpacing: '0.12em', fontFamily: 'var(--mono)',
-      }}>
-        <Link to="/" style={{ justifySelf: 'start', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10, color: 'var(--fg)' }}>
-          <span style={{ color: 'var(--muted)' }}>←</span>
-          <span>Richard's Portfolio Page</span>
-          <span style={{ color: 'var(--muted)' }}>/FULL-STACK</span>
-        </Link>
-        <div style={{ display: 'inline-flex', border: '1px solid var(--border)', borderRadius: 999, padding: 2 }}>
-          <button onClick={() => setDark(true)} style={themeBtn(dark)}>DARK</button>
-          <button onClick={() => setDark(false)} style={themeBtn(!dark)}>LIGHT</button>
-        </div>
-        <div />
-      </div>
-    </div>
-  );
-}
-
-function WorkCard({ project, index }) {
-  const n = String(index + 1).padStart(2, '0');
+function WorkRow({ project, index }) {
   const detailSlug = projectSlug(project);
   const sourceHref = projectSourceHref(project);
   const hasSource = isUsableHref(sourceHref);
+  const stack = Array.isArray(project.stack) ? project.stack.join(' · ') : project.stack;
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '60px 1fr', gap: 32, padding: '40px 0', borderTop: '1px solid var(--border)' }}>
-      <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.2em', color: 'var(--muted)', paddingTop: 4 }}>
-        / {n}
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 32, alignItems: 'start' }}>
-        <Link to={`/project/${detailSlug}`} style={{
-          height: 280, position: 'relative', overflow: 'hidden',
-          background: 'var(--tile-bg)', border: '1px solid var(--border)',
-          cursor: 'pointer', textDecoration: 'none', display: 'block',
-        }}
-          onMouseEnter={(e) => { const im = e.currentTarget.querySelector('[data-img]'); if (im) { im.style.transform = 'scale(1.04)'; im.style.filter = 'brightness(1.1)'; } }}
-          onMouseLeave={(e) => { const im = e.currentTarget.querySelector('[data-img]'); if (im) { im.style.transform = 'scale(1)'; im.style.filter = 'brightness(1)'; } }}
-        >
-          <div data-img style={{
-            position: 'absolute', inset: 0, background: projectImageBackground(project.img),
-            transition: 'transform .6s cubic-bezier(.2,.7,.3,1), filter .4s',
-          }} />
-          {project.accent && <div style={{ position: 'absolute', inset: 0, background: project.accent, mixBlendMode: 'screen', pointerEvents: 'none' }} />}
-          <div style={{ position: 'absolute', top: 12, left: 12, zIndex: 2 }}>
-            <StatusPill project={project} onImage />
-          </div>
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: 'repeating-linear-gradient(0deg, transparent 0 2px, rgba(255,255,255,0.012) 2px 3px)', pointerEvents: 'none',
-          }} />
-          <div style={{
-            position: 'absolute', bottom: 10, left: 12,
-            fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.45)',
-          }}>
-            — {project.kind.toUpperCase()}
-          </div>
-        </Link>
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.14em', color: 'var(--muted)', marginBottom: 16 }}>
-            <span>{project.role}</span>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-              <StatusPill project={project} />
-              <span>{project.year}</span>
-            </span>
-          </div>
-          <Link to={`/project/${detailSlug}`} style={{
-            fontFamily: 'var(--sans)', fontSize: 'clamp(24px, 2.4vw, 32px)',
-            letterSpacing: 'var(--letter)', color: 'var(--fg)', fontWeight: 400,
-            lineHeight: 1.1, marginBottom: 16, display: 'block',
-            textDecoration: 'none', transition: 'opacity .2s',
-          }}
-            onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.7'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
+    <article className="ed-work-row">
+      <div className="ed-work-row-index">/ {pad2(index + 1)}</div>
+      <Link to={`/project/${detailSlug}`} className="ed-card-media" aria-label={`${project.name} case study`}>
+        <div className="ed-card-img" style={{ background: projectImageBackground(project.img) }} />
+        {project.accent && <div style={{ position: 'absolute', inset: 0, background: project.accent, mixBlendMode: 'screen', pointerEvents: 'none' }} />}
+        <div className="ed-card-shade" aria-hidden="true" />
+        <div style={{ position: 'absolute', top: 14, left: 14, zIndex: 2 }}>
+          <StatusPill project={project} onImage />
+        </div>
+        <span className="ed-card-cta" aria-hidden="true">VIEW CASE STUDY <b>↗</b></span>
+      </Link>
+      <div className="ed-work-row-body">
+        <div className="ed-work-row-meta">
+          <span>{project.role}</span>
+          <span>{project.year}</span>
+        </div>
+        <Link to={`/project/${detailSlug}`} className="ed-work-row-title">{project.name}</Link>
+        {project.kind && <div className="ed-work-row-kind">— {project.kind.toUpperCase()}</div>}
+        <p className="ed-work-row-summary">{project.summary}</p>
+        <div className="ed-card-stack"><span>Stack: </span>{stack}</div>
+        <div className="ed-card-links">
+          <Link to={`/project/${detailSlug}`} className="ed-link ed-link--strong">CASE STUDY →</Link>
+          <a
+            href={hasSource ? sourceHref : '#'}
+            {...externalLinkProps(sourceHref)}
+            onClick={(e) => { if (!hasSource) e.preventDefault(); }}
+            className="ed-link"
           >
-            {project.name}
-          </Link>
-          <div style={{ fontFamily: 'var(--sans)', fontSize: 15, lineHeight: 1.55, color: 'var(--muted)', letterSpacing: 'var(--letter)', fontWeight: 300, marginBottom: 24 }}>
-            {project.summary}
-          </div>
-          <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.18em', color: 'var(--fg)', marginBottom: 20, padding: '6px 10px', display: 'inline-block', border: '1px solid var(--border)', borderRadius: 999 }}>
-            {Array.isArray(project.stack) ? project.stack.join(' / ') : project.stack}
-          </div>
-          <div style={{ display: 'flex', gap: 16, fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.18em' }}>
-            <a
-              href={hasSource ? sourceHref : '#'}
-              {...externalLinkProps(sourceHref)}
-              onClick={(e) => { if (!hasSource) e.preventDefault(); }}
-              style={{ color: 'var(--fg)', textDecoration: 'underline', textUnderlineOffset: 4 }}
-            >
-              SOURCE →
-            </a>
-            <Link to={`/project/${detailSlug}`} style={{ color: 'var(--fg)', textDecoration: 'underline', textUnderlineOffset: 4 }}>CASE STUDY →</Link>
-          </div>
+            SOURCE →
+          </a>
         </div>
       </div>
-    </div>
+    </article>
   );
 }
 
 export default function AllWorks() {
-  const [dark, setDark] = React.useState(true);
+  const [dark, setDark] = useDarkMode();
   const [PROJECTS, setProjects] = React.useState([]);
 
   React.useEffect(() => {
@@ -219,70 +103,32 @@ export default function AllWorks() {
       .catch(() => {});
   }, []);
 
+  React.useEffect(() => { window.scrollTo(0, 0); }, []);
+
   const projectsList = PROJECTS.length ? PROJECTS : PROJECTS_FALLBACK;
 
-  const vars = {
-    '--bg': dark ? '#0a0a0a' : '#f5f4ef',
-    '--bg-blur': dark ? 'rgba(10,10,10,0.72)' : 'rgba(245,244,239,0.72)',
-    '--fg': dark ? '#f2f1ec' : '#131312',
-    '--muted': dark ? 'rgba(242,241,236,0.5)' : 'rgba(19,19,18,0.55)',
-    '--border': dark ? 'rgba(242,241,236,0.12)' : 'rgba(19,19,18,0.12)',
-    '--tile-bg': dark ? '#0e0e0e' : '#e9e8e3',
-    '--hover': dark ? 'rgba(242,241,236,0.06)' : 'rgba(19,19,18,0.04)',
-    '--sans': FONT.sans, '--mono': FONT.mono, '--letter': FONT.letter,
-  };
   return (
-    <div style={{ ...vars, background: 'var(--bg)', color: 'var(--fg)', minHeight: '100vh', fontFamily: 'var(--sans)' }}>
-      <TopBar dark={dark} setDark={setDark} />
+    <EdPage dark={dark} setDark={setDark} back={{ to: '/', label: 'PORTFOLIO' }} crumb="ALL WORKS">
+      <PageHeading
+        eyebrow={`/ ALL WORKS — ${projectsList.length} PROJECTS · 2023 — 2026`}
+        lines={['Everything I\'ve built —', { text: 'shipped, half-shipped, or learned from.', muted: true }]}
+      />
 
-      <div style={{ padding: '80px 40px 40px', maxWidth: 1100 }}>
-        <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.24em', color: 'var(--muted)', marginBottom: 24 }}>
-          / ALL WORKS — {projectsList.length} PROJECTS · 2023 — 2026
-        </div>
-        <h1 style={{
-          margin: 0, fontFamily: 'var(--sans)', fontWeight: 400,
-          fontSize: 'clamp(40px, 4.5vw, 64px)', lineHeight: 1.05,
-          letterSpacing: 'var(--letter)', color: 'var(--fg)',
-        }}>
-          Everything I've built —<br />
-          <span style={{ color: 'var(--muted)' }}>shipped, half-shipped, or learned from.</span>
-        </h1>
-      </div>
-
-      <div style={{ padding: '40px 40px 80px' }}>
+      <section className="ed-page-section">
         {projectsList.map((p, i) => (
-          <Reveal key={p.name} delay={i * 40}>
-            <WorkCard project={p} index={i} />
+          <Reveal key={p.name} delay={Math.min(i, 3) * 60}>
+            <WorkRow project={p} index={i} />
           </Reveal>
         ))}
-        <div style={{ borderTop: '1px solid var(--border)' }} />
 
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: 60 }}>
-          <Link to="/" style={{
-            display: 'inline-flex', alignItems: 'center', gap: 12,
-            padding: '16px 28px', textDecoration: 'none',
-            border: '1px solid var(--border)', borderRadius: 999,
-            fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.18em',
-            color: 'var(--fg)', transition: 'background .2s',
-          }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--hover)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-          >
-            <span style={{ fontFamily: 'var(--mono)' }}>←</span>
-            <span>BACK TO PORTFOLIO</span>
+        <div className="ed-more">
+          <Link to="/" className="ed-btn ed-btn--wide">
+            <span aria-hidden="true">←</span>BACK TO PORTFOLIO
           </Link>
         </div>
-      </div>
+      </section>
 
-      <div style={{
-        padding: '32px 40px 40px', display: 'flex',
-        justifyContent: 'space-between', alignItems: 'center',
-        borderTop: '1px solid var(--border)',
-        fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.14em', color: 'var(--muted)',
-      }}>
-        <span>© 2026 / Richard</span>
-        <span>LAST SYNC · 04.26</span>
-      </div>
-    </div>
+      <EdFooter left="© 2026 / Richard" right="LAST SYNC · 04.26" />
+    </EdPage>
   );
 }

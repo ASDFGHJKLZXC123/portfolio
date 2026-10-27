@@ -10,6 +10,9 @@ import {
 } from '../components/tweaks-panel';
 import { projectImageBackground } from '../lib/project-image';
 import { externalLinkProps, isUsableHref, projectSlug, projectSourceHref } from '../lib/project-links';
+import {
+  Reveal, useReveal, ScrollProgress, ThemeToggle, StatusPill, themeVars, pad2, readStoredDark, storeDark,
+} from '../components/editorial';
 
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "dark": true,
@@ -120,72 +123,13 @@ const EDUCATION = {
   coursework: ['Operating Systems', 'Algorithms', 'Full-Stack Web Development', 'Human-Computer Interaction'],
 };
 
-const slugify = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-const isInProgress = (project) => project.status === 'in-progress';
-const pad2 = (n) => String(n).padStart(2, '0');
-
-function StatusPill({ project, onImage = false }) {
-  if (!isInProgress(project)) return null;
-  return (
-    <span className={`ed-pill${onImage ? ' ed-pill--img' : ''}`}>IN PROGRESS</span>
-  );
-}
-
 const FONTS = {
   neue:  { sans: '"Inter Tight", Helvetica, Arial, sans-serif', mono: '"JetBrains Mono", ui-monospace, monospace', letter: '-0.02em' },
   serif: { sans: '"Fraunces", "Times New Roman", serif',         mono: '"JetBrains Mono", ui-monospace, monospace', letter: '-0.015em' },
   mono:  { sans: '"JetBrains Mono", ui-monospace, monospace',    mono: '"JetBrains Mono", ui-monospace, monospace', letter: '-0.01em' },
 };
 
-function useReveal() {
-  const ref = React.useRef(null);
-  const [shown, setShown] = React.useState(false);
-  React.useEffect(() => {
-    if (!ref.current) return;
-    const io = new IntersectionObserver((entries) => {
-      for (const e of entries) if (e.isIntersecting) { setShown(true); io.disconnect(); return; }
-    }, { threshold: 0.12 });
-    io.observe(ref.current);
-    return () => io.disconnect();
-  }, []);
-  return [ref, shown];
-}
-
-function Reveal({ children, delay = 0, style, className }) {
-  const [ref, shown] = useReveal();
-  return (
-    <div ref={ref} className={`ed-reveal${shown ? ' is-in' : ''}${className ? ` ${className}` : ''}`}
-      style={{ transitionDelay: `${delay}ms`, ...style }}>
-      {children}
-    </div>
-  );
-}
-
-function useScrollProgress() {
-  const [p, setP] = React.useState(0);
-  React.useEffect(() => {
-    let raf = 0;
-    const onScroll = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        const max = document.documentElement.scrollHeight - window.innerHeight;
-        setP(max > 0 ? window.scrollY / max : 0);
-      });
-    };
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
-    };
-  }, []);
-  return p;
-}
-
 function TopBar({ dark, setDark, active, sections }) {
-  const progress = useScrollProgress();
   return (
     <header className="ed-topbar">
       <div className="ed-topbar-inner">
@@ -202,13 +146,10 @@ function TopBar({ dark, setDark, active, sections }) {
 
         <div className="ed-topbar-right">
           <span className="ed-status ed-hide-md"><span className="ed-dot" />Available Summer 2026</span>
-          <div className="ed-theme" role="group" aria-label="Theme">
-            <button type="button" onClick={() => setDark(true)} aria-pressed={dark} className={dark ? 'is-on' : undefined}>DARK</button>
-            <button type="button" onClick={() => setDark(false)} aria-pressed={!dark} className={!dark ? 'is-on' : undefined}>LIGHT</button>
-          </div>
+          <ThemeToggle dark={dark} setDark={setDark} />
         </div>
       </div>
-      <div className="ed-progress" style={{ transform: `scaleX(${progress})` }} aria-hidden="true" />
+      <ScrollProgress />
     </header>
   );
 }
@@ -481,7 +422,8 @@ function Footer() {
 }
 
 export default function Portfolio() {
-  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const [t, setTweak] = useTweaks(React.useMemo(() => ({ ...TWEAK_DEFAULTS, dark: readStoredDark(TWEAK_DEFAULTS.dark) }), []));
+  const setDark = (v) => { setTweak('dark', v); storeDark(v); };
   const [active, setActive] = React.useState('work');
   const [PROJECTS, setProjects] = React.useState(PROJECTS_FALLBACK);
   const fonts = FONTS[t.font] || FONTS.neue;
@@ -521,21 +463,7 @@ export default function Portfolio() {
     return () => io.disconnect();
   }, [sections.map((s) => s.id).join(',')]);
 
-  const vars = {
-    '--bg': dark ? '#0a0a0a' : '#f5f4ef',
-    '--bg-blur': dark ? 'rgba(10,10,10,0.72)' : 'rgba(245,244,239,0.72)',
-    '--fg': dark ? '#f2f1ec' : '#131312',
-    '--muted': dark ? 'rgba(242,241,236,0.5)' : 'rgba(19,19,18,0.55)',
-    '--faint': dark ? 'rgba(242,241,236,0.28)' : 'rgba(19,19,18,0.3)',
-    '--border': dark ? 'rgba(242,241,236,0.12)' : 'rgba(19,19,18,0.12)',
-    '--tile-bg': dark ? '#0e0e0e' : '#e9e8e3',
-    '--hover': dark ? 'rgba(242,241,236,0.06)' : 'rgba(19,19,18,0.04)',
-    '--light': dark ? 'rgba(242,241,236,0.07)' : 'rgba(255,255,255,0.7)',
-    '--grain': dark ? 0.06 : 0.04,
-    '--accent': t.accent,
-    '--em': dark ? t.accent : 'rgba(19,19,18,0.78)',
-    '--sans': fonts.sans, '--mono': fonts.mono, '--letter': fonts.letter,
-  };
+  const vars = themeVars(dark, { accent: t.accent, font: fonts });
 
   let sectionIdx = 0;
   const nextIdx = () => ++sectionIdx;
@@ -543,7 +471,7 @@ export default function Portfolio() {
   return (
     <div className="ed-root" style={{ ...vars, background: 'var(--bg)', color: 'var(--fg)', minHeight: '100vh', fontFamily: 'var(--sans)' }}>
       <div className="ed-grain" aria-hidden="true" />
-      <TopBar dark={dark} setDark={(v) => setTweak('dark', v)} active={active} sections={sections} />
+      <TopBar dark={dark} setDark={setDark} active={active} sections={sections} />
 
       <Hero />
       <Marquee />
@@ -601,7 +529,7 @@ export default function Portfolio() {
 
       <TweaksPanel title="style">
         <TweakSection label="Theme" />
-        <TweakToggle label="Dark mode" value={t.dark} onChange={(v) => setTweak('dark', v)} />
+        <TweakToggle label="Dark mode" value={t.dark} onChange={setDark} />
         <TweakColor  label="Accent"    value={t.accent} onChange={(v) => setTweak('accent', v)} />
 
         <TweakSection label="Typography" />

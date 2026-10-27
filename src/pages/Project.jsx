@@ -1,31 +1,12 @@
-// project.jsx — detail page for a single project. Reads slug from URL.
+// project.jsx — detail page for a single project. Reads slug from URL. Editorial dark style.
 
 import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { projectImageBackground } from '../lib/project-image';
 import { externalLinkProps, isUsableHref, projectLinkHref } from '../lib/project-links';
+import { EdPage, EdFooter, NotFound, Reveal, StatusPill, isInProgress, pad2, useDarkMode } from '../components/editorial';
 
-const slugify = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-const isInProgress = (project) => project.status === 'in-progress';
 const projectStatusLabel = (project) => isInProgress(project) ? 'IN PROGRESS' : 'COMPLETE';
-
-function StatusPill({ project, onImage = false }) {
-  if (!isInProgress(project)) return null;
-  return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap',
-      padding: onImage ? '4px 8px' : '5px 9px',
-      borderRadius: 999,
-      border: onImage ? '1px solid rgba(255,255,255,0.32)' : '1px solid var(--border)',
-      background: onImage ? 'rgba(255,255,255,0.14)' : 'var(--hover)',
-      color: onImage ? 'rgba(255,255,255,0.9)' : 'var(--fg)',
-      fontFamily: 'var(--mono)', fontSize: onImage ? 8 : 9,
-      lineHeight: 1, letterSpacing: '0.16em',
-    }}>
-      IN PROGRESS
-    </span>
-  );
-}
 
 // Per-project rich content. Loaded from projects.json. The fallback below is for offline preview only.
 const PROJECTS_FALLBACK = {
@@ -187,149 +168,45 @@ const PROJECTS_FALLBACK = {
   },
 };
 
-const FONT = { sans: '"Inter Tight", Helvetica, Arial, sans-serif', mono: '"JetBrains Mono", ui-monospace, monospace', letter: '-0.02em' };
-
-function useReveal() {
-  const ref = React.useRef(null);
-  const [shown, setShown] = React.useState(false);
-  React.useEffect(() => {
-    if (!ref.current) return;
-    const io = new IntersectionObserver((entries) => {
-      for (const e of entries) if (e.isIntersecting) { setShown(true); io.disconnect(); return; }
-    }, { threshold: 0.1 });
-    io.observe(ref.current);
-    return () => io.disconnect();
-  }, []);
-  return [ref, shown];
-}
-function Reveal({ children, delay = 0 }) {
-  const [ref, shown] = useReveal();
-  return <div ref={ref} style={{
-    transform: shown ? 'translateY(0)' : 'translateY(16px)',
-    opacity: shown ? 1 : 0,
-    transition: `transform .8s cubic-bezier(.2,.7,.3,1) ${delay}ms, opacity .8s ease ${delay}ms`,
-  }}>{children}</div>;
-}
-
-function TopBar({ dark, setDark, projectName }) {
-  const themeBtn = (on) => ({
-    border: 'none', padding: '5px 12px', borderRadius: 999, cursor: 'pointer',
-    background: on ? 'var(--fg)' : 'transparent',
-    color: on ? 'var(--bg)' : 'var(--muted)',
-    fontSize: 9, letterSpacing: '0.18em', fontFamily: 'inherit', fontWeight: 600,
-    transition: 'background .2s, color .2s',
-  });
-  return (
-    <div style={{
-      position: 'sticky', top: 0, zIndex: 40,
-      backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)',
-      background: 'var(--bg-blur)', borderBottom: '1px solid var(--border)',
-    }}>
-      <div style={{
-        display: 'grid', gridTemplateColumns: '1fr auto 1fr',
-        alignItems: 'center', padding: '16px 40px', fontSize: 11,
-        letterSpacing: '0.12em', fontFamily: 'var(--mono)',
-      }}>
-        <div style={{ justifySelf: 'start', display: 'flex', alignItems: 'center', gap: 14 }}>
-          <Link to="/all-works" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10, color: 'var(--fg)' }}>
-            <span style={{ color: 'var(--muted)' }}>←</span>
-            <span>ALL WORKS</span>
-          </Link>
-          <span style={{ color: 'var(--muted)' }}>/</span>
-          <span style={{ color: 'var(--muted)' }}>{projectName || '—'}</span>
-        </div>
-        <div style={{ display: 'inline-flex', border: '1px solid var(--border)', borderRadius: 999, padding: 2 }}>
-          <button onClick={() => setDark(true)} style={themeBtn(dark)}>DARK</button>
-          <button onClick={() => setDark(false)} style={themeBtn(!dark)}>LIGHT</button>
-        </div>
-        <Link to="/#contact" style={{ justifySelf: 'end', display: 'flex', alignItems: 'center', gap: 8, color: 'var(--fg)', textDecoration: 'none' }}>
-          <span style={{ width: 6, height: 6, borderRadius: 3, background: 'var(--fg)', boxShadow: '0 0 8px var(--fg)' }} />
-          <span>INITIATE DIALOGUE</span>
-        </Link>
-      </div>
-    </div>
-  );
-}
-
 function Hero({ p }) {
+  const meta = [
+    { k: 'ROLE', v: p.role },
+    { k: 'TIMELINE', v: p.timeline },
+    { k: 'STACK', v: Array.isArray(p.stack) ? p.stack.join(' · ') : p.stack },
+    { k: 'STATUS', v: projectStatusLabel(p) },
+  ];
   return (
-    <div style={{ padding: '60px 40px 0' }}>
-      <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.24em', color: 'var(--muted)', marginBottom: 24 }}>
+    <div className="ed-page-hero">
+      <div className="ed-eyebrow ed-rise">
         / {p.kind.toUpperCase()} · {p.year}
+        <StatusPill project={p} />
       </div>
-      {isInProgress(p) && (
-        <div style={{ marginBottom: 18 }}>
-          <StatusPill project={p} />
-        </div>
-      )}
-      <h1 style={{
-        margin: 0, fontFamily: 'var(--sans)', fontWeight: 400,
-        fontSize: 'clamp(48px, 6vw, 92px)', lineHeight: 1, letterSpacing: 'var(--letter)', color: 'var(--fg)',
-      }}>{p.name}</h1>
-      <div style={{
-        marginTop: 24, fontFamily: 'var(--sans)', fontSize: 'clamp(18px, 1.6vw, 22px)',
-        color: 'var(--muted)', maxWidth: 720, lineHeight: 1.5, fontWeight: 300, letterSpacing: 'var(--letter)',
-      }}>
-        {p.summary}
-      </div>
-
-      <div style={{
-        marginTop: 56, display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-        border: '1px solid var(--border)',
-      }}>
-        {[
-          { k: 'ROLE', v: p.role },
-          { k: 'TIMELINE', v: p.timeline },
-          { k: 'STACK', v: Array.isArray(p.stack) ? p.stack.join(' / ') : p.stack },
-          { k: 'STATUS', v: projectStatusLabel(p) },
-        ].map((m, i, arr) => (
-          <div key={m.k} style={{
-            padding: '24px 28px',
-            borderRight: i < arr.length - 1 ? '1px solid var(--border)' : 'none',
-            display: 'flex', flexDirection: 'column', gap: 10,
-          }}>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.24em', color: 'var(--muted)' }}>
-              / {m.k}
-            </div>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: 12, letterSpacing: '0.06em', color: 'var(--fg)', lineHeight: 1.4 }}>
-              {m.v}
-            </div>
+      <h1 className="ed-h1 ed-h1--project">
+        <span className="ed-line"><span style={{ animationDelay: '80ms' }}>{p.name}</span></span>
+      </h1>
+      <p className="ed-lead ed-lead--lg ed-rise" style={{ animationDelay: '220ms' }}>{p.summary}</p>
+      <dl className="ed-meta-strip ed-rise" style={{ animationDelay: '320ms' }}>
+        {meta.map((m) => (
+          <div key={m.k}>
+            <dt>{m.k}</dt>
+            <dd>{m.v}</dd>
           </div>
         ))}
-      </div>
+      </dl>
     </div>
   );
 }
 
 function HeroTile({ p }) {
   return (
-    <div style={{
-      margin: '60px 40px 0', height: 'clamp(320px, 48vh, 560px)',
-      position: 'relative', overflow: 'hidden',
-      background: 'var(--tile-bg)', border: '1px solid var(--border)',
-    }}>
-      <div style={{ position: 'absolute', inset: 0, background: projectImageBackground(p.img) }} />
+    <div className="ed-project-visual ed-rise" style={{ animationDelay: '420ms' }}>
+      <div className="ed-project-visual-img" style={{ background: projectImageBackground(p.img) }} />
       {p.accent && <div style={{ position: 'absolute', inset: 0, background: p.accent, mixBlendMode: 'screen' }} />}
-      <div style={{
-        position: 'absolute', inset: 0,
-        background: 'repeating-linear-gradient(0deg, transparent 0 2px, rgba(255,255,255,0.012) 2px 3px)',
-      }} />
-      <div style={{
-        position: 'absolute', top: 16, left: 18,
-        fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.24em', color: 'rgba(255,255,255,0.55)',
-      }}>
-        — PROJECT VISUAL
-      </div>
-      <div style={{ position: 'absolute', top: 16, right: 18 }}>
+      <div className="ed-project-visual-tag" style={{ top: 16, left: 18 }}>— PROJECT VISUAL</div>
+      <div style={{ position: 'absolute', top: 14, right: 16 }}>
         <StatusPill project={p} onImage />
       </div>
-      <div style={{
-        position: 'absolute', bottom: 16, right: 18,
-        fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.24em', color: 'rgba(255,255,255,0.55)',
-      }}>
-        {p.name} / 01
-      </div>
+      <div className="ed-project-visual-tag" style={{ bottom: 16, right: 18 }}>{p.name} / 01</div>
     </div>
   );
 }
@@ -337,17 +214,9 @@ function HeroTile({ p }) {
 function Paragraph({ section }) {
   return (
     <Reveal>
-      <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr', gap: 32, padding: '40px 0', borderTop: '1px solid var(--border)' }}>
-        <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.2em', color: 'var(--muted)', paddingTop: 6 }}>
-          / {section.label}
-        </div>
-        <div style={{
-          fontFamily: 'var(--sans)', fontSize: 'clamp(18px, 1.5vw, 22px)',
-          lineHeight: 1.55, color: 'var(--fg)', fontWeight: 300, letterSpacing: 'var(--letter)',
-          maxWidth: 780, textWrap: 'pretty',
-        }}>
-          {section.body}
-        </div>
+      <div className="ed-story-row">
+        <div className="ed-story-label">/ {section.label}</div>
+        <p className="ed-story-body">{section.body}</p>
       </div>
     </Reveal>
   );
@@ -356,27 +225,13 @@ function Paragraph({ section }) {
 function Metrics({ section }) {
   return (
     <Reveal>
-      <div style={{ padding: '40px 0', borderTop: '1px solid var(--border)' }}>
-        <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.2em', color: 'var(--muted)', marginBottom: 24 }}>
-          / METRICS
-        </div>
-        <div style={{
-          display: 'grid', gridTemplateColumns: `repeat(${section.items.length}, 1fr)`,
-          border: '1px solid var(--border)',
-        }}>
-          {section.items.map((m, i, arr) => (
-            <div key={m.k} style={{
-              padding: '32px 24px',
-              borderRight: i < arr.length - 1 ? '1px solid var(--border)' : 'none',
-            }}>
-              <div style={{
-                fontFamily: 'var(--sans)', fontSize: 'clamp(28px, 3vw, 44px)',
-                fontWeight: 400, letterSpacing: 'var(--letter)', color: 'var(--fg)', lineHeight: 1,
-              }}>{m.v}</div>
-              <div style={{
-                marginTop: 14, fontFamily: 'var(--mono)', fontSize: 9,
-                letterSpacing: '0.24em', color: 'var(--muted)',
-              }}>{m.k}</div>
+      <div className="ed-story-row ed-story-row--metrics">
+        <div className="ed-story-label">/ METRICS</div>
+        <div className="ed-metrics" style={{ '--cols': section.items.length }}>
+          {section.items.map((m) => (
+            <div key={m.k}>
+              <div className="ed-metric-v">{m.v}</div>
+              <div className="ed-metric-k">{m.k}</div>
             </div>
           ))}
         </div>
@@ -392,39 +247,22 @@ function NextProject({ current, projects }) {
   const nextSlug = slugs[(idx + 1) % slugs.length];
   const next = projects[nextSlug];
   return (
-    <Link to={`/project/${nextSlug}`} style={{
-      display: 'block', margin: '80px 40px 0',
-      padding: '48px 0', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)',
-      textDecoration: 'none', color: 'inherit',
-    }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 24 }}>
-        <span style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.24em', color: 'var(--muted)' }}>
-          / NEXT PROJECT
-        </span>
-        <span style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.24em', color: 'var(--muted)' }}>
-          {String(((idx + 1) % slugs.length) + 1).padStart(2, '0')} / {slugs.length}
-        </span>
+    <Link to={`/project/${nextSlug}`} className="ed-next">
+      <div className="ed-next-meta">
+        <span>/ NEXT PROJECT</span>
+        <span>{pad2(((idx + 1) % slugs.length) + 1)} / {pad2(slugs.length)}</span>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: 24 }}>
-        <div style={{
-          fontFamily: 'var(--sans)', fontSize: 'clamp(40px, 5vw, 72px)',
-          fontWeight: 400, letterSpacing: 'var(--letter)', color: 'var(--fg)', lineHeight: 1,
-        }}>
-          {next.name}
-        </div>
-        <div style={{ fontFamily: 'var(--mono)', fontSize: 14, letterSpacing: '0.18em', color: 'var(--fg)' }}>
-          → READ
-        </div>
+      <div className="ed-next-main">
+        <div className="ed-next-title">{next.name}</div>
+        <span className="ed-contact-arrow ed-next-arrow" aria-hidden="true">→</span>
       </div>
-      <div style={{ marginTop: 16, fontFamily: 'var(--sans)', fontSize: 16, color: 'var(--muted)', maxWidth: 600, lineHeight: 1.5, fontWeight: 300 }}>
-        {next.summary}
-      </div>
+      <div className="ed-next-summary">{next.summary}</div>
     </Link>
   );
 }
 
 export default function Project() {
-  const [dark, setDark] = React.useState(true);
+  const [dark, setDark] = useDarkMode();
   const [PROJECTS, setProjects] = React.useState(PROJECTS_FALLBACK);
   const { slug } = useParams();
 
@@ -444,83 +282,56 @@ export default function Project() {
   React.useEffect(() => { window.scrollTo(0, 0); }, [slug]);
 
   const p = PROJECTS[slug];
-
-  const vars = {
-    '--bg': dark ? '#0a0a0a' : '#f5f4ef',
-    '--bg-blur': dark ? 'rgba(10,10,10,0.72)' : 'rgba(245,244,239,0.72)',
-    '--fg': dark ? '#f2f1ec' : '#131312',
-    '--muted': dark ? 'rgba(242,241,236,0.5)' : 'rgba(19,19,18,0.55)',
-    '--border': dark ? 'rgba(242,241,236,0.12)' : 'rgba(19,19,18,0.12)',
-    '--tile-bg': dark ? '#0e0e0e' : '#e9e8e3',
-    '--hover': dark ? 'rgba(242,241,236,0.06)' : 'rgba(19,19,18,0.04)',
-    '--sans': FONT.sans, '--mono': FONT.mono, '--letter': FONT.letter,
-  };
+  const back = { to: '/all-works', label: 'ALL WORKS' };
 
   if (!p) {
     return (
-      <div style={{ ...vars, background: 'var(--bg)', color: 'var(--fg)', minHeight: '100vh', fontFamily: 'var(--sans)' }}>
-        <TopBar dark={dark} setDark={setDark} projectName="NOT FOUND" />
-        <div style={{ padding: '120px 40px', maxWidth: 700 }}>
-          <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.24em', color: 'var(--muted)', marginBottom: 16 }}>/ 404</div>
-          <h1 style={{ fontWeight: 400, fontSize: 48, letterSpacing: 'var(--letter)', margin: 0 }}>Project not found.</h1>
-          <Link to="/all-works" style={{ display: 'inline-block', marginTop: 32, fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.18em', color: 'var(--fg)', textDecoration: 'underline', textUnderlineOffset: 4 }}>← BACK TO ALL WORKS</Link>
-        </div>
-      </div>
+      <EdPage dark={dark} setDark={setDark} back={back} crumb="NOT FOUND">
+        <NotFound title="Project not found." back={{ to: '/all-works', label: 'BACK TO ALL WORKS' }} />
+      </EdPage>
     );
   }
 
   return (
-    <div style={{ ...vars, background: 'var(--bg)', color: 'var(--fg)', minHeight: '100vh', fontFamily: 'var(--sans)' }}>
-      <TopBar dark={dark} setDark={setDark} projectName={p.name} />
+    <EdPage dark={dark} setDark={setDark} back={back} crumb={p.name}>
+      {/* key remounts the hero so its entrance animation replays when moving between projects */}
+      <div key={slug}>
+        <Hero p={p} />
+        <HeroTile p={p} />
+      </div>
 
-      <Hero p={p} />
-      <HeroTile p={p} />
-
-      <div style={{ padding: '40px 40px 0' }}>
+      <section className="ed-page-section ed-story">
         {p.sections.map((s, i) => (
           s.kind === 'metrics'
-            ? <Metrics key={i} section={s} />
-            : <Paragraph key={i} section={s} />
+            ? <Metrics key={`${slug}-${i}`} section={s} />
+            : <Paragraph key={`${slug}-${i}`} section={s} />
         ))}
-        <div style={{ borderTop: '1px solid var(--border)' }} />
-      </div>
+      </section>
 
-      <div style={{ padding: '60px 40px 0' }}>
-        <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.2em', color: 'var(--muted)', marginBottom: 16 }}>
-          / LINKS
-        </div>
-        <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-          {(p.links || []).map(l => {
-            const href = projectLinkHref(p, l);
-            const hasHref = isUsableHref(href);
-            return (
-            <a key={l.k} href={hasHref ? href : '#'} {...externalLinkProps(href)} style={{
-              padding: '12px 20px', textDecoration: 'none',
-              border: '1px solid var(--border)', borderRadius: 999,
-              fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.18em', color: 'var(--fg)',
-              transition: 'background .2s',
-            }}
-              onClick={(e) => { if (!hasHref) e.preventDefault(); }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--hover)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-            >
-              {l.k} <span style={{ color: 'var(--muted)', marginLeft: 8 }}>{l.v} →</span>
-            </a>
-            );
-          })}
-        </div>
-      </div>
+      {(p.links || []).length > 0 && (
+        <section className="ed-page-section ed-project-links">
+          <div className="ed-story-label">/ LINKS</div>
+          <div className="ed-cta-row" style={{ marginTop: 0 }}>
+            {p.links.map((l) => {
+              const href = projectLinkHref(p, l);
+              const hasHref = isUsableHref(href);
+              return (
+                <a key={l.k} href={hasHref ? href : '#'} {...externalLinkProps(href)} className="ed-btn"
+                  onClick={(e) => { if (!hasHref) e.preventDefault(); }}
+                >
+                  {l.k} <span className="ed-btn-sub">{l.v} →</span>
+                </a>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
-      <NextProject current={slug} projects={PROJECTS} />
+      <section className="ed-page-section">
+        <NextProject current={slug} projects={PROJECTS} />
+      </section>
 
-      <div style={{
-        padding: '32px 40px 40px', display: 'flex',
-        justifyContent: 'space-between', alignItems: 'center',
-        fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.14em', color: 'var(--muted)',
-      }}>
-        <span>© 2026 / Richard</span>
-        <span>{p.name} · {p.year}</span>
-      </div>
-    </div>
+      <EdFooter left="© 2026 / Richard" right={`${p.name} · ${p.year}`} />
+    </EdPage>
   );
 }

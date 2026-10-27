@@ -1,6 +1,6 @@
-// portfolio.jsx — Richard's portfolio, terminal / hacker style
+// portfolio.jsx — Richard's portfolio, editorial dark style
 // Sections: hero · selected engineering work · about · skills · education · contact
-// Sticky shell-prompt nav, typed hero, window-chrome panels, scroll-reveal on sections.
+// Sticky top nav w/ scroll progress, masked hero type, lead project + grid, scroll-reveal on sections.
 
 import React from 'react';
 import { Link } from 'react-router-dom';
@@ -13,8 +13,8 @@ import { externalLinkProps, isUsableHref, projectSlug, projectSourceHref } from 
 
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "dark": true,
-  "accent": "#39ff88",
-  "font": "mono",
+  "accent": "#d9d9d4",
+  "font": "neue",
   "showAbout": true,
   "showSkills": true,
   "showEducation": true,
@@ -123,25 +123,19 @@ const EDUCATION = {
 const slugify = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const isInProgress = (project) => project.status === 'in-progress';
 const pad2 = (n) => String(n).padStart(2, '0');
-const hex = (n) => `0x${pad2(n)}`;
 
 function StatusPill({ project, onImage = false }) {
   if (!isInProgress(project)) return null;
   return (
-    <span className={`geek-pill${onImage ? ' geek-pill--img' : ''}`}>
-      <span className="geek-pill-dot" />IN PROGRESS
-    </span>
+    <span className={`ed-pill${onImage ? ' ed-pill--img' : ''}`}>IN PROGRESS</span>
   );
 }
 
 const FONTS = {
   neue:  { sans: '"Inter Tight", Helvetica, Arial, sans-serif', mono: '"JetBrains Mono", ui-monospace, monospace', letter: '-0.02em' },
   serif: { sans: '"Fraunces", "Times New Roman", serif',         mono: '"JetBrains Mono", ui-monospace, monospace', letter: '-0.015em' },
-  mono:  { sans: '"JetBrains Mono", ui-monospace, monospace',    mono: '"JetBrains Mono", ui-monospace, monospace', letter: '-0.03em' },
+  mono:  { sans: '"JetBrains Mono", ui-monospace, monospace',    mono: '"JetBrains Mono", ui-monospace, monospace', letter: '-0.01em' },
 };
-
-const prefersReducedMotion = () =>
-  typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 function useReveal() {
   const ref = React.useRef(null);
@@ -157,228 +151,201 @@ function useReveal() {
   return [ref, shown];
 }
 
-function Reveal({ children, delay = 0, style }) {
+function Reveal({ children, delay = 0, style, className }) {
   const [ref, shown] = useReveal();
   return (
-    <div ref={ref} style={{
-      transform: shown ? 'translateY(0)' : 'translateY(16px)',
-      opacity: shown ? 1 : 0,
-      filter: shown ? 'none' : 'blur(2px)',
-      transition: `transform .7s cubic-bezier(.2,.7,.3,1) ${delay}ms, opacity .7s steps(6) ${delay}ms, filter .7s ${delay}ms`,
-      ...style,
-    }}>{children}</div>
-  );
-}
-
-// Types `text` out one character at a time; renders instantly under reduced motion.
-function useTyped(text, speed = 32, startDelay = 300) {
-  const [n, setN] = React.useState(() => (prefersReducedMotion() ? text.length : 0));
-  React.useEffect(() => {
-    if (prefersReducedMotion()) { setN(text.length); return; }
-    setN(0);
-    let i = 0;
-    let id;
-    const start = setTimeout(() => {
-      id = setInterval(() => {
-        i += 1;
-        setN(i);
-        if (i >= text.length) clearInterval(id);
-      }, speed);
-    }, startDelay);
-    return () => { clearTimeout(start); clearInterval(id); };
-  }, [text, speed, startDelay]);
-  return n;
-}
-
-function useClock() {
-  const [now, setNow] = React.useState(() => new Date());
-  React.useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(id);
-  }, []);
-  return now.toLocaleTimeString('en-US', { hour12: false });
-}
-
-function Caret({ small = false }) {
-  return <span aria-hidden="true" className={`geek-caret${small ? ' geek-caret--sm' : ''}`} />;
-}
-
-function WindowBar({ title, right }) {
-  return (
-    <div className="geek-winbar">
-      <span className="geek-dots" aria-hidden="true"><i /><i /><i /></span>
-      <span className="geek-winbar-title">{title}</span>
-      <span className="geek-winbar-right">{right}</span>
+    <div ref={ref} className={`ed-reveal${shown ? ' is-in' : ''}${className ? ` ${className}` : ''}`}
+      style={{ transitionDelay: `${delay}ms`, ...style }}>
+      {children}
     </div>
   );
 }
 
+function useScrollProgress() {
+  const [p, setP] = React.useState(0);
+  React.useEffect(() => {
+    let raf = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const max = document.documentElement.scrollHeight - window.innerHeight;
+        setP(max > 0 ? window.scrollY / max : 0);
+      });
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, []);
+  return p;
+}
+
 function TopBar({ dark, setDark, active, sections }) {
-  const time = useClock();
+  const progress = useScrollProgress();
   return (
-    <header className="geek-topbar">
-      <div className="geek-topbar-inner">
-        <a href="#top" className="geek-prompt geek-hide-md" aria-label="Back to top">
-          <span style={{ color: 'var(--accent)' }}>richard@uci</span>
-          <span style={{ color: 'var(--dim)' }}>:</span>
-          <span style={{ color: 'var(--cyan)' }}>~/portfolio</span>
-          <span style={{ color: 'var(--dim)' }}>$</span>
-          <Caret small />
+    <header className="ed-topbar">
+      <div className="ed-topbar-inner">
+        <a href="#top" className="ed-brand">
+          <span className="ed-brand-name">Richard Zhang</span>
+          <span className="ed-brand-role ed-hide-md">Full-Stack Engineer</span>
         </a>
 
-        <nav className="geek-nav" aria-label="Sections">
-          {sections.map((s, i) => (
-            <a key={s.id} href={`#${s.id}`} className={active === s.id ? 'is-active' : undefined}>
-              <span className="geek-nav-idx">{pad2(i + 1)}</span>{s.label}
-            </a>
+        <nav className="ed-nav" aria-label="Sections">
+          {sections.map((s) => (
+            <a key={s.id} href={`#${s.id}`} className={active === s.id ? 'is-active' : undefined}>{s.label}</a>
           ))}
-          <span className="geek-nav-sep" aria-hidden="true" />
-          <div className="geek-theme" role="group" aria-label="Theme">
-            <span aria-hidden="true">[</span>
-            <button type="button" onClick={() => setDark(true)} aria-pressed={dark} className={dark ? 'is-on' : undefined}>DARK</button>
-            <span aria-hidden="true">|</span>
-            <button type="button" onClick={() => setDark(false)} aria-pressed={!dark} className={!dark ? 'is-on' : undefined}>LIGHT</button>
-            <span aria-hidden="true">]</span>
-          </div>
         </nav>
 
-        <div className="geek-clock geek-hide-md" aria-hidden="true">
-          <span className="geek-led" />SYS.ONLINE<span style={{ color: 'var(--dim)' }}>·</span>{time}
+        <div className="ed-topbar-right">
+          <span className="ed-status ed-hide-md"><span className="ed-dot" />Available Summer 2026</span>
+          <div className="ed-theme" role="group" aria-label="Theme">
+            <button type="button" onClick={() => setDark(true)} aria-pressed={dark} className={dark ? 'is-on' : undefined}>DARK</button>
+            <button type="button" onClick={() => setDark(false)} aria-pressed={!dark} className={!dark ? 'is-on' : undefined}>LIGHT</button>
+          </div>
         </div>
       </div>
+      <div className="ed-progress" style={{ transform: `scaleX(${progress})` }} aria-hidden="true" />
     </header>
   );
 }
 
-function SectionHead({ index, path, title, subtitle }) {
+function SectionHead({ index, title, subtitle }) {
+  const [ref, shown] = useReveal();
   return (
-    <div className="geek-sechead">
-      <div className="geek-sechead-meta">
-        <span style={{ color: 'var(--accent)' }}>[{hex(index)}]</span>
-        <span style={{ color: 'var(--dim)' }}>$ cd</span>
-        <span style={{ color: 'var(--cyan)' }}>~/{path}</span>
-        <span className="geek-sechead-rule" aria-hidden="true" />
-        <span className="geek-sechead-sub"># {subtitle}</span>
-      </div>
-      <h2 className="geek-h2">
-        <span aria-hidden="true" className="geek-h2-prompt">&gt;</span>{title}
-      </h2>
+    <div ref={ref} className={`ed-sechead${shown ? ' is-in' : ''}`}>
+      <span className="ed-sechead-rule" aria-hidden="true" />
+      <div className="ed-sechead-index">/ {pad2(index)}</div>
+      <h2 className="ed-h2"><span className="ed-mask"><span>{title}</span></span></h2>
+      <div className="ed-sechead-sub">{subtitle}</div>
     </div>
   );
 }
 
-const HERO_TITLE = 'Full-Stack Engineer Building Reliable Web Systems';
+// Spotlight that trails the cursor inside the hero; static under reduced motion / touch.
+function useSpotlight() {
+  const ref = React.useRef(null);
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el || window.matchMedia?.('(pointer: coarse), (prefers-reduced-motion: reduce)').matches) return;
+    const onMove = (e) => {
+      const r = el.getBoundingClientRect();
+      el.style.setProperty('--mx', `${e.clientX - r.left}px`);
+      el.style.setProperty('--my', `${e.clientY - r.top}px`);
+    };
+    el.addEventListener('pointermove', onMove);
+    return () => el.removeEventListener('pointermove', onMove);
+  }, []);
+  return ref;
+}
 
 function Hero() {
-  const typed = useTyped(HERO_TITLE);
-  const done = typed >= HERO_TITLE.length;
-  const sysinfo = [
-    ['USER', 'Richard Zhang'],
-    ['ROLE', 'Software Engineer (Full-Stack)'],
-    ['EDU', 'B.S. Informatics · UC Irvine'],
+  const ref = useSpotlight();
+  const meta = [
     ['BASED', 'Irvine, CA'],
-    ['STACK', 'TypeScript · Python · Go · SQL'],
+    ['EDUCATION', 'B.S. Informatics · UC Irvine'],
+    ['FOCUS', 'Backend · Full-Stack · Infra'],
     ['STATUS', 'Available Summer 2026'],
   ];
   return (
-    <div id="top" className="geek-hero">
-      <div className="geek-window">
-        <WindowBar title="richard@uci: ~/portfolio — zsh" right="80×24" />
-        <div className="geek-window-body geek-hero-body">
-          <div className="geek-cmd"><span className="geek-ps1">$</span> whoami</div>
-          <div className="geek-eyebrow">
-            <span className="geek-led" />
-            Software Engineer (Full-Stack) · Available Summer 2026
-          </div>
-          <h1 className="geek-h1" aria-label={HERO_TITLE}>
-            <span aria-hidden="true">{HERO_TITLE.slice(0, typed)}</span>
-            {!done && <Caret />}
-            <span aria-hidden="true" style={{ color: 'transparent' }}>{HERO_TITLE.slice(typed)}</span>
-            {done && <Caret />}
-          </h1>
-          <div className="geek-cmd" style={{ marginTop: 32 }}><span className="geek-ps1">$</span> cat ./intro.txt</div>
-          <p className="geek-lead">
+    <div id="top" ref={ref} className="ed-hero">
+      <div className="ed-hero-light" aria-hidden="true" />
+      <div className="ed-eyebrow ed-rise" style={{ animationDelay: '0ms' }}>
+        <span className="ed-dot" />
+        Software Engineer (Full-Stack) · Available Summer 2026
+      </div>
+
+      <h1 className="ed-h1" aria-label="Full-Stack Engineer Building Reliable Web Systems">
+        <span className="ed-line" aria-hidden="true"><span style={{ animationDelay: '80ms' }}>Full-Stack Engineer</span></span>
+        <span className="ed-line" aria-hidden="true"><span style={{ animationDelay: '180ms' }}>Building <em>Reliable</em></span></span>
+        <span className="ed-line" aria-hidden="true"><span style={{ animationDelay: '280ms' }}>Web Systems</span></span>
+      </h1>
+
+      <div className="ed-hero-foot">
+        <div className="ed-rise" style={{ animationDelay: '420ms' }}>
+          <p className="ed-lead">
             Recent Informatics graduate from UC Irvine. I design and ship
             end-to-end web systems, from APIs and data models to interfaces
             that make complex workflows clear and usable.
           </p>
-          <div className="geek-cta-row">
-            <a href="#work" className="geek-btn geek-btn--primary">[ SEE THE WORK ]</a>
-            <a href="#" className="geek-btn">[ VIEW RESUME ]</a>
+          <div className="ed-cta-row">
+            <a href="#work" className="ed-btn ed-btn--primary">SEE THE WORK <span aria-hidden="true">↓</span></a>
+            <a href="#" className="ed-btn">VIEW RESUME <span aria-hidden="true">↗</span></a>
           </div>
         </div>
+        <dl className="ed-hero-meta ed-rise" style={{ animationDelay: '520ms' }}>
+          {meta.map(([k, v]) => (
+            <div key={k}>
+              <dt>{k}</dt>
+              <dd>{v}</dd>
+            </div>
+          ))}
+        </dl>
       </div>
 
-      <aside className="geek-window geek-sysinfo" aria-label="Summary">
-        <WindowBar title="sysinfo" right="pid 2026" />
-        <div className="geek-window-body">
-          <div className="geek-cmd"><span className="geek-ps1">$</span> neofetch --short</div>
-          <div className="geek-sysinfo-head">
-            <span style={{ color: 'var(--accent)' }}>richard</span><span style={{ color: 'var(--dim)' }}>@</span><span style={{ color: 'var(--cyan)' }}>uci</span>
-            <div className="geek-sysinfo-rule" aria-hidden="true">────────────────────</div>
-          </div>
-          <dl className="geek-kv">
-            {sysinfo.map(([k, v]) => (
-              <React.Fragment key={k}>
-                <dt>{k}</dt>
-                <dd>{v}</dd>
-              </React.Fragment>
-            ))}
-          </dl>
-          <div className="geek-swatches" aria-hidden="true">
-            {['var(--accent)', 'var(--cyan)', 'var(--amber)', 'var(--magenta)', 'var(--fg)', 'var(--dim)'].map((c) => (
-              <i key={c} style={{ background: c }} />
-            ))}
-          </div>
-        </div>
-      </aside>
+      <a href="#work" className="ed-scroll ed-hide-md" aria-label="Scroll to work">
+        <span>SCROLL</span><span className="ed-scroll-line" aria-hidden="true" />
+      </a>
     </div>
   );
 }
 
-const splitStack = (stack) => (
-  Array.isArray(stack) ? stack : String(stack || '').split('/').map((s) => s.trim()).filter(Boolean)
-);
+function Marquee() {
+  const items = SKILLS.flatMap((g) => g.items);
+  const row = (hidden) => (
+    <div className="ed-marquee-row" aria-hidden={hidden || undefined}>
+      {items.map((it) => (
+        <span key={it}>{it}<i aria-hidden="true">✦</i></span>
+      ))}
+    </div>
+  );
+  return (
+    <div className="ed-marquee" aria-label="Technologies">
+      <div className="ed-marquee-track">{row(false)}{row(true)}</div>
+    </div>
+  );
+}
 
-function ProjectTile({ project, index }) {
-  const stack = splitStack(project.stack).slice(0, 3);
+function ProjectTile({ project, index, total, large = false }) {
+  const stack = Array.isArray(project.stack) ? project.stack.slice(0, 3).join(' · ') : project.stack;
   const sourceHref = projectSourceHref(project);
   const hasSource = isUsableHref(sourceHref);
   const detailSlug = projectSlug(project);
   return (
-    <article className="geek-card">
-      <WindowBar title={`${detailSlug}.png`} right={`#${pad2(index + 1)}`} />
-      <div className="geek-card-media">
-        <div className="geek-card-img" style={{ background: projectImageBackground(project.img) }} />
+    <article className={`ed-card${large ? ' ed-card--large' : ''}`}>
+      <Link to={`/project/${detailSlug}`} className="ed-card-media" aria-label={`${project.name} case study`}>
+        <div className="ed-card-img" style={{ background: projectImageBackground(project.img) }} />
         {project.accent && (
           <div style={{ position: 'absolute', inset: 0, background: project.accent, mixBlendMode: 'screen', pointerEvents: 'none' }} />
         )}
-        <div className="geek-card-scan" aria-hidden="true" />
-        <div style={{ position: 'absolute', top: 10, left: 12, zIndex: 2 }}>
+        <div className="ed-card-shade" aria-hidden="true" />
+        <div style={{ position: 'absolute', top: 14, left: 14, zIndex: 2 }}>
           <StatusPill project={project} onImage />
         </div>
-      </div>
+        <span className="ed-card-cta" aria-hidden="true">VIEW CASE STUDY <b>↗</b></span>
+      </Link>
 
-      <div className="geek-card-body">
-        <h3 className="geek-card-title">
-          <span aria-hidden="true" style={{ color: 'var(--accent)' }}>./</span>{project.name}
-        </h3>
-        <div className="geek-chips">
-          <span className="geek-chips-label">Stack:</span>
-          {stack.map((s) => <span key={s} className="geek-chip">{s}</span>)}
+      <div className="ed-card-body">
+        <div className="ed-card-index">
+          <span>{pad2(index + 1)}</span>
+          <span className="ed-card-index-rule" aria-hidden="true" />
+          <span>{pad2(total)}</span>
         </div>
-        <p className="geek-card-summary">
+        <h3 className="ed-card-title">{project.name}</h3>
+        <div className="ed-card-stack"><span>Stack: </span>{stack}</div>
+        <p className={`ed-card-summary${large ? '' : ' is-clamped'}`}>
           <span style={{ color: 'var(--fg)' }}>Summary: </span>{project.summary}
         </p>
-        <div className="geek-card-links">
-          <Link to={`/project/${detailSlug}`} className="geek-link geek-link--accent">
-            VIEW CASE STUDY →
-          </Link>
+        <div className="ed-card-links">
+          <Link to={`/project/${detailSlug}`} className="ed-link ed-link--strong">VIEW CASE STUDY →</Link>
           <a
             href={hasSource ? sourceHref : '#'}
             {...externalLinkProps(sourceHref)}
             onClick={(e) => { if (!hasSource) e.preventDefault(); }}
-            className="geek-link"
+            className="ed-link"
           >
             SOURCE →
           </a>
@@ -390,78 +357,51 @@ function ProjectTile({ project, index }) {
 
 function About() {
   return (
-    <div className="geek-about">
-      <div className="geek-about-side">
-        <div className="geek-portrait">
-          <div className="geek-portrait-grid" aria-hidden="true" />
-          <div className="geek-portrait-cross" aria-hidden="true" />
-          <span className="geek-corner tl" aria-hidden="true" />
-          <span className="geek-corner tr" aria-hidden="true" />
-          <span className="geek-corner bl" aria-hidden="true" />
-          <span className="geek-corner br" aria-hidden="true" />
-          <div className="geek-portrait-tag" aria-hidden="true">IMG_0001.RAW</div>
-          <div className="geek-portrait-caption">Richard Zhang · 2026</div>
+    <div className="ed-about">
+      <div className="ed-about-side">
+        <div className="ed-portrait">
+          <div className="ed-portrait-glow" aria-hidden="true" />
+          <div className="ed-portrait-caption">Richard Zhang · 2026</div>
         </div>
       </div>
       <div>
-        <div className="geek-window">
-          <WindowBar title="about.md" right="utf-8" />
-          <div className="geek-window-body">
-            <p className="geek-body-text" style={{ margin: 0 }}>
-              I’m a recent Informatics graduate from UC Irvine with a Computer
-              Science and systems foundation. My work sits between backend
-              engineering and product-facing software: APIs, data models, and
-              interfaces that make complex workflows usable. I’m looking for
-              entry-level roles where I can build reliable web systems and grow
-              across backend, full-stack, and infrastructure work.
-            </p>
-            <dl className="geek-kv geek-kv--boxed">
-              <dt>BASED</dt>
-              <dd>Irvine, CA · Open to relocation and remote work</dd>
-              <dt>SEEKING</dt>
-              <dd>Entry-level backend, full-stack, or infrastructure software roles</dd>
-            </dl>
+        <p className="ed-about-lead">
+          I’m a recent Informatics graduate from UC Irvine with a Computer
+          Science and systems foundation. My work sits between backend
+          engineering and product-facing software: APIs, data models, and
+          interfaces that make complex workflows usable. I’m looking for
+          entry-level roles where I can build reliable web systems and grow
+          across backend, full-stack, and infrastructure work.
+        </p>
+        <dl className="ed-rows">
+          <div>
+            <dt>BASED</dt>
+            <dd>Irvine, CA · Open to relocation and remote work</dd>
           </div>
-        </div>
+          <div>
+            <dt>SEEKING</dt>
+            <dd>Entry-level backend, full-stack, or infrastructure software roles</dd>
+          </div>
+        </dl>
       </div>
     </div>
   );
 }
 
 function Skills() {
-  // Rendered as a source file: one logical line per row with a line-number gutter.
-  const lines = [
-    { code: <><span className="tok-kw">export const</span> <span className="tok-var">stack</span> = {'{'}</> },
-    ...SKILLS.map((group, gi) => ({
-      code: (
-        <span className="geek-code-indent">
-          <span className="tok-key">"{group.group}"</span>: [
-          {group.items.map((item, i) => (
-            <React.Fragment key={item}>
-              <span className="tok-str">'{item}'</span>{i < group.items.length - 1 ? ', ' : ''}
-            </React.Fragment>
-          ))}
-          ]{gi < SKILLS.length - 1 ? ',' : ''}
-        </span>
-      ),
-    })),
-    { code: <>{'}'};</> },
-  ];
   return (
-    <div className="geek-window">
-      <WindowBar title="stack.ts" right="TypeScript · LF" />
-      <div className="geek-code" role="list" aria-label="Technical stack">
-        {lines.map((l, i) => (
-          <div key={i} className="geek-code-line" role="listitem">
-            <span className="geek-code-ln" aria-hidden="true">{i + 1}</span>
-            <span className="geek-code-src">{l.code}</span>
+    <div className="ed-skills">
+      {SKILLS.map((group, gi) => (
+        <div key={group.group} className="ed-skill-col">
+          <div className="ed-skill-head">
+            <span>{pad2(gi + 1)} / {group.group.toUpperCase()}</span>
+            <span>({group.items.length})</span>
           </div>
-        ))}
-        <div className="geek-code-line">
-          <span className="geek-code-ln" aria-hidden="true">{lines.length + 1}</span>
-          <span className="geek-code-src"><Caret small /></span>
+          <ul>
+            {group.items.map((item) => <li key={item}>{item}</li>)}
+          </ul>
         </div>
-      </div>
+      ))}
     </div>
   );
 }
@@ -469,68 +409,60 @@ function Skills() {
 function Education() {
   return (
     <div className="education-layout">
-      <div className="geek-window">
-        <WindowBar title="education.yml" right="yaml" />
-        <div className="geek-window-body">
-          <h3 id="education-degree" className="geek-h3">
-            {EDUCATION.school} <span aria-hidden="true" style={{ color: 'var(--accent)' }}>·</span> {EDUCATION.degree}
-          </h3>
-          <p aria-label={`${EDUCATION.dept}, ${EDUCATION.dates}`} className="geek-yaml">
-            <span><span className="tok-key">dept</span>: {EDUCATION.dept}</span>
-            <span><span className="tok-key">dates</span>: <span className="tok-str">{EDUCATION.dates}</span></span>
-          </p>
-          <p className="geek-body-text geek-note">
-            <span aria-hidden="true" className="geek-note-mark"># </span>{EDUCATION.note}
-          </p>
-        </div>
+      <div>
+        <div className="ed-edu-dates" aria-hidden="true">{EDUCATION.dates}</div>
+        <h3 id="education-degree" className="ed-h3">
+          {EDUCATION.school} <span aria-hidden="true">·</span> {EDUCATION.degree}
+        </h3>
+        <p aria-label={`${EDUCATION.dept}, ${EDUCATION.dates}`} className="ed-edu-dept">
+          <span>{EDUCATION.dept}</span>
+          <span aria-hidden="true"> · </span>
+          <span>{EDUCATION.dates}</span>
+        </p>
+        <p className="ed-edu-note">{EDUCATION.note}</p>
       </div>
       <div>
-        <h4 id="education-coursework" className="geek-h4">
-          <span aria-hidden="true" style={{ color: 'var(--accent)' }}>$ ls ./</span>Coursework
+        <h4 id="education-coursework" className="ed-h4">
+          <span aria-hidden="true">/ </span>Coursework
         </h4>
-        <ul className="education-course-list" aria-labelledby="education-coursework">
-          {EDUCATION.coursework.map((course) => (
-            <li key={course}><span aria-hidden="true" className="geek-check">[✓]</span>{course}</li>
+        <ol className="ed-course-list" aria-labelledby="education-coursework">
+          {EDUCATION.coursework.map((course, i) => (
+            <li key={course}><span aria-hidden="true">{pad2(i + 1)}</span>{course}</li>
           ))}
-        </ul>
+        </ol>
       </div>
     </div>
   );
 }
 
 function Contact() {
-  const links = [
-    { k: 'EMAIL',    cmd: 'mail',  v: 'yonghuz1@uci.edu', href: 'mailto:yonghuz1@uci.edu' },
-    { k: 'GITHUB',   cmd: 'open',  v: 'github.com/ASDFGHJKLZXC123', href: 'https://github.com/ASDFGHJKLZXC123' },
-    { k: 'LINKEDIN', cmd: 'open',  v: 'linkedin.com/in/richard-zhang-7ba1802b3', href: 'https://linkedin.com/in/richard-zhang-7ba1802b3' },
-  ];
   return (
-    <div style={{ padding: '20px 0 0' }}>
-      <div className="geek-h1 geek-contact-title">
-        Let’s connect about software engineering roles<Caret />
+    <div className="ed-contact">
+      <div className="ed-contact-title">
+        Let’s connect about software engineering roles
       </div>
-      <div className="geek-lead" style={{ marginTop: 24, maxWidth: 560 }}>
+      <div className="ed-lead" style={{ marginTop: 28, maxWidth: 560 }}>
         Email is the best way to reach me. I’m open to entry-level backend,
         full-stack, and infrastructure-oriented software engineering roles.
       </div>
 
-      <div className="geek-contact-grid">
-        {links.map((c) => (
+      <div className="ed-contact-list">
+        {[
+          { k: 'EMAIL',    v: 'yonghuz1@uci.edu', href: 'mailto:yonghuz1@uci.edu' },
+          { k: 'GITHUB',   v: 'github.com/ASDFGHJKLZXC123', href: 'https://github.com/ASDFGHJKLZXC123' },
+          { k: 'LINKEDIN', v: 'linkedin.com/in/richard-zhang-7ba1802b3', href: 'https://linkedin.com/in/richard-zhang-7ba1802b3' },
+        ].map((c) => (
           <a
             key={c.k}
             href={c.href}
             target={c.href.startsWith('https://') ? '_blank' : undefined}
             rel={c.href.startsWith('https://') ? 'noreferrer' : undefined}
             onClick={(e) => { if (c.href === '#') e.preventDefault(); }}
-            className="geek-contact-cell"
+            className="ed-contact-row"
           >
-            <span className="geek-contact-k">
-              <span>[{c.k}]</span>
-              <span aria-hidden="true" className="geek-contact-arrow">↗</span>
-            </span>
-            <span className="geek-contact-v">
-              <span aria-hidden="true" className="geek-contact-cmd">$ {c.cmd} </span>{c.v}
-            </span>
+            <span className="ed-contact-k">{c.k}</span>
+            <span className="ed-contact-v">{c.v}</span>
+            <span className="ed-contact-arrow" aria-hidden="true">↗</span>
           </a>
         ))}
       </div>
@@ -540,13 +472,10 @@ function Contact() {
 
 function Footer() {
   return (
-    <footer className="geek-statusline">
-      <span className="geek-statusline-mode">-- NORMAL --</span>
-      <span className="geek-statusline-main">© 2026 / Richard · BUILT IN REACT + TOO MUCH COFFEE</span>
-      <span className="geek-statusline-right">
-        <span className="geek-hide-sm">utf-8 · jsx</span>
-        <span>LAST SYNC · 04.26</span>
-      </span>
+    <footer className="ed-footer">
+      <span>© 2026 / Richard · BUILT IN REACT + TOO MUCH COFFEE</span>
+      <a href="#top" className="ed-link">BACK TO TOP ↑</a>
+      <span>LAST SYNC · 04.26</span>
     </footer>
   );
 }
@@ -555,7 +484,7 @@ export default function Portfolio() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
   const [active, setActive] = React.useState('work');
   const [PROJECTS, setProjects] = React.useState(PROJECTS_FALLBACK);
-  const fonts = FONTS[t.font] || FONTS.mono;
+  const fonts = FONTS[t.font] || FONTS.neue;
   const dark = t.dark;
 
   React.useEffect(() => {
@@ -571,6 +500,7 @@ export default function Portfolio() {
     .slice(0, t.projectCount);
   const shownSlugs = new Set(featured.map((p) => projectSlug(p)));
   const extra = PROJECTS.filter((p) => !shownSlugs.has(projectSlug(p)));
+  const [lead, ...rest] = featured;
 
   const sections = [
     { id: 'work',      label: 'WORK',      show: true },
@@ -592,23 +522,18 @@ export default function Portfolio() {
   }, [sections.map((s) => s.id).join(',')]);
 
   const vars = {
-    '--bg': dark ? '#050807' : '#eef1ea',
-    '--bg-blur': dark ? 'rgba(5,8,7,0.8)' : 'rgba(238,241,234,0.82)',
-    '--panel': dark ? 'rgba(10,17,13,0.82)' : 'rgba(250,252,248,0.88)',
-    '--panel-bar': dark ? 'rgba(18,28,22,0.9)' : 'rgba(226,232,222,0.95)',
-    '--fg': dark ? '#e4efe7' : '#0d1a12',
-    '--muted': dark ? 'rgba(196,224,206,0.6)' : 'rgba(13,26,18,0.64)',
-    '--dim': dark ? 'rgba(196,224,206,0.34)' : 'rgba(13,26,18,0.4)',
-    '--border': dark ? 'rgba(120,255,170,0.13)' : 'rgba(13,26,18,0.14)',
-    '--tile-bg': dark ? '#070c09' : '#e2e8de',
-    '--accent': dark ? t.accent : `color-mix(in srgb, ${t.accent} 45%, #00361b)`,
-    '--accent-ink': dark ? '#03110a' : '#f2fff6',
-    '--cyan': dark ? '#67e8f9' : '#0e7490',
-    '--amber': dark ? '#fbbf24' : '#a16207',
-    '--magenta': dark ? '#f472b6' : '#be185d',
-    '--grid': dark ? 'rgba(120,255,170,0.05)' : 'rgba(13,26,18,0.055)',
-    '--scan': dark ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.018)',
-    '--glow': dark ? '0 0 18px color-mix(in srgb, var(--accent) 45%, transparent)' : 'none',
+    '--bg': dark ? '#0a0a0a' : '#f5f4ef',
+    '--bg-blur': dark ? 'rgba(10,10,10,0.72)' : 'rgba(245,244,239,0.72)',
+    '--fg': dark ? '#f2f1ec' : '#131312',
+    '--muted': dark ? 'rgba(242,241,236,0.5)' : 'rgba(19,19,18,0.55)',
+    '--faint': dark ? 'rgba(242,241,236,0.28)' : 'rgba(19,19,18,0.3)',
+    '--border': dark ? 'rgba(242,241,236,0.12)' : 'rgba(19,19,18,0.12)',
+    '--tile-bg': dark ? '#0e0e0e' : '#e9e8e3',
+    '--hover': dark ? 'rgba(242,241,236,0.06)' : 'rgba(19,19,18,0.04)',
+    '--light': dark ? 'rgba(242,241,236,0.07)' : 'rgba(255,255,255,0.7)',
+    '--grain': dark ? 0.06 : 0.04,
+    '--accent': t.accent,
+    '--em': dark ? t.accent : 'rgba(19,19,18,0.78)',
     '--sans': fonts.sans, '--mono': fonts.mono, '--letter': fonts.letter,
   };
 
@@ -616,60 +541,61 @@ export default function Portfolio() {
   const nextIdx = () => ++sectionIdx;
 
   return (
-    <div className="geek-root" style={{ ...vars, background: 'var(--bg)', color: 'var(--fg)', minHeight: '100vh', fontFamily: 'var(--sans)' }}>
-      <div className="geek-bg" aria-hidden="true" />
-      <div className="geek-scanlines" aria-hidden="true" />
-
+    <div className="ed-root" style={{ ...vars, background: 'var(--bg)', color: 'var(--fg)', minHeight: '100vh', fontFamily: 'var(--sans)' }}>
+      <div className="ed-grain" aria-hidden="true" />
       <TopBar dark={dark} setDark={(v) => setTweak('dark', v)} active={active} sections={sections} />
 
-      <main className="geek-main">
-        <Hero />
+      <Hero />
+      <Marquee />
 
-        <section id="work" className="geek-section" style={{ paddingTop: 40 }}>
-          <Reveal><SectionHead index={nextIdx()} path="work" title="Selected Engineering Work" subtitle="Systems-focused projects with emphasis on reliability, data, and APIs" /></Reveal>
-          <div className="geek-work-grid">
-            {featured.map((p, i) => (
-              <Reveal key={p.name} delay={i * 80}>
-                <ProjectTile project={p} index={i} />
+      <section id="work" className="ed-section">
+        <SectionHead index={nextIdx()} title="Selected Engineering Work" subtitle="Systems-focused projects with emphasis on reliability, data, and APIs" />
+        {lead && (
+          <Reveal><ProjectTile project={lead} index={0} total={featured.length} large /></Reveal>
+        )}
+        {rest.length > 0 && (
+          <div className="ed-work-grid">
+            {rest.map((p, i) => (
+              <Reveal key={p.name} delay={i * 90}>
+                <ProjectTile project={p} index={i + 1} total={featured.length} />
               </Reveal>
             ))}
           </div>
-          {extra.length > 0 && (
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 56 }}>
-              <Link to="/all-works" className="geek-btn geek-btn--wide">
-                <span aria-hidden="true" className="geek-hide-sm" style={{ color: 'var(--accent)' }}>$ ls -a ./projects</span>
-                <span>VIEW ALL PROJECTS →</span>
-              </Link>
-            </div>
-          )}
+        )}
+        {extra.length > 0 && (
+          <div className="ed-more">
+            <Link to="/all-works" className="ed-btn ed-btn--wide">
+              <span>VIEW ALL PROJECTS →</span>
+            </Link>
+          </div>
+        )}
+      </section>
+
+      {t.showAbout && (
+        <section id="about" className="ed-section">
+          <SectionHead index={nextIdx()} title="About" subtitle="Background and focus" />
+          <Reveal delay={100}><About /></Reveal>
         </section>
+      )}
 
-        {t.showAbout && (
-          <section id="about" className="geek-section">
-            <Reveal><SectionHead index={nextIdx()} path="about" title="About" subtitle="Background and focus" /></Reveal>
-            <Reveal delay={100}><About /></Reveal>
-          </section>
-        )}
-
-        {t.showSkills && (
-          <section id="skills" className="geek-section">
-            <Reveal><SectionHead index={nextIdx()} path="stack" title="Technical Stack" subtitle="Tools and practices behind my selected work" /></Reveal>
-            <Reveal delay={100}><Skills /></Reveal>
-          </section>
-        )}
-
-        {t.showEducation && (
-          <section id="education" className="geek-section">
-            <Reveal><SectionHead index={nextIdx()} path="education" title="Education" subtitle="Academic background" /></Reveal>
-            <Reveal delay={100}><Education /></Reveal>
-          </section>
-        )}
-
-        <section id="contact" className="geek-section" style={{ paddingTop: 140 }}>
-          <Reveal><SectionHead index={nextIdx()} path="contact" title="Contact" subtitle="Hiring contact" /></Reveal>
-          <Reveal delay={100}><Contact /></Reveal>
+      {t.showSkills && (
+        <section id="skills" className="ed-section">
+          <SectionHead index={nextIdx()} title="Technical Stack" subtitle="Tools and practices behind my selected work" />
+          <Reveal delay={100}><Skills /></Reveal>
         </section>
-      </main>
+      )}
+
+      {t.showEducation && (
+        <section id="education" className="ed-section">
+          <SectionHead index={nextIdx()} title="Education" subtitle="Academic background" />
+          <Reveal delay={100}><Education /></Reveal>
+        </section>
+      )}
+
+      <section id="contact" className="ed-section ed-section--contact">
+        <SectionHead index={nextIdx()} title="Contact" subtitle="Hiring contact" />
+        <Reveal delay={100}><Contact /></Reveal>
+      </section>
 
       <Footer />
 
@@ -680,7 +606,7 @@ export default function Portfolio() {
 
         <TweakSection label="Typography" />
         <TweakRadio label="Typeface" value={t.font}
-          options={[{ value: 'mono', label: 'mono' }, { value: 'neue', label: 'neue' }, { value: 'serif', label: 'serif' }]}
+          options={[{ value: 'neue', label: 'neue' }, { value: 'serif', label: 'serif' }, { value: 'mono', label: 'mono' }]}
           onChange={(v) => setTweak('font', v)} />
 
         <TweakSection label="Sections" />

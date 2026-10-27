@@ -268,8 +268,6 @@ export default function Project() {
   const [dark, setDark] = useTheme();
   const { slug } = useParams();
 
-  React.useEffect(() => { window.scrollTo(0, 0); }, [slug]);
-
   const p = findProject(slug);
   const publicProjects = curatedProjects(projects);
   const nextProjectsList = publicProjects.some((project) => project.slug === slug) ? publicProjects : projects;

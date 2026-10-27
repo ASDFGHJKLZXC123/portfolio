@@ -6,7 +6,7 @@
       "kind": "personal · backend systems",
       "year": "2026",
       "role": "Solo",
-      "timeline": "9-capstone build · portfolio-ready",
+      "timeline": "Jun 2026",
       "featured": true,
       "featuredRank": 1,
       "stack": [
@@ -156,7 +156,7 @@
       "kind": "personal · chrome extension",
       "year": "2026",
       "role": "Solo",
-      "timeline": "personal project · v0.1",
+      "timeline": "Mar – Jun 2026",
       "featured": true,
       "featuredRank": 2,
       "stack": [
@@ -301,7 +301,7 @@
       "kind": "personal · full-stack",
       "year": "2026",
       "role": "Solo",
-      "timeline": "personal · 10 build stages",
+      "timeline": "Apr 2026",
       "stack": [
         "LARAVEL 13",
         "PHP 8.3",
@@ -476,7 +476,7 @@
       "kind": "personal · monitoring platform",
       "year": "2026",
       "role": "Solo",
-      "timeline": "personal project",
+      "timeline": "Apr 2026",
       "stack": [
         "ASP.NET CORE 10",
         "C#",
@@ -624,7 +624,7 @@
       "kind": "personal · data engineering",
       "year": "2026",
       "role": "Solo",
-      "timeline": "personal project",
+      "timeline": "Mar 2026",
       "stack": [
         "PYTHON",
         "REQUESTS",
@@ -770,7 +770,7 @@
       "kind": "personal · full-stack",
       "year": "2026",
       "role": "Solo",
-      "timeline": "personal project",
+      "timeline": "Feb – Jun 2026",
       "stack": [
         "DJANGO + DRF",
         "CELERY + REDIS",
@@ -839,7 +839,7 @@
       "kind": "personal · web app",
       "year": "2026",
       "role": "Solo",
-      "timeline": "personal · MVP",
+      "timeline": "Mar – May 2026",
       "status": "in-progress",
       "stack": [
         "NEXT 16 (APP ROUTER)",
@@ -915,7 +915,7 @@
       "kind": "personal · desktop learning tool",
       "year": "2026",
       "role": "Solo",
-      "timeline": "M0-M11 capstone build",
+      "timeline": "Jun – Aug 2026",
       "stack": [
         "ELECTRON 32",
         "REACT 18",
@@ -987,7 +987,7 @@
       "kind": "personal · client operations portal",
       "year": "2026",
       "role": "Solo",
-      "timeline": "9-capstone build",
+      "timeline": "Jun – Jul 2026",
       "stack": [
         "JAVA 21",
         "SPRING BOOT",
@@ -1066,7 +1066,7 @@
       "kind": "personal · commerce operations",
       "year": "2026",
       "role": "Solo",
-      "timeline": "production-style portfolio build",
+      "timeline": "Jun 2026",
       "stack": [
         "NEXT.JS 14 APP ROUTER",
         "TYPESCRIPT",
@@ -1145,7 +1145,7 @@
       "kind": "personal · biomedical data pipeline",
       "year": "2026",
       "role": "Solo",
-      "timeline": "M0-M4 prototype",
+      "timeline": "May 2026",
       "stack": [
         "PYTHON 3.13",
         "PYTORCH",
@@ -1221,7 +1221,7 @@
       "kind": "personal · backend systems",
       "year": "2026",
       "role": "Solo",
-      "timeline": "local-first v1",
+      "timeline": "Apr 2026",
       "stack": [
         "PYTHON 3.13",
         "FASTAPI",
@@ -1296,7 +1296,7 @@
       "kind": "personal · full-stack",
       "year": "2026",
       "role": "Solo",
-      "timeline": "personal project",
+      "timeline": "Apr – Jun 2026",
       "stack": [
         "LARAVEL 13",
         "PHP 8.3",
@@ -1374,7 +1374,7 @@
       "kind": "personal · systems",
       "year": "2026",
       "role": "Solo",
-      "timeline": "personal project",
+      "timeline": "May – Oct 2026",
       "status": "in-progress",
       "stack": [
         "GO 1.22+",
@@ -1446,7 +1446,7 @@
       "kind": "personal · geospatial dashboard",
       "year": "2026",
       "role": "Solo",
-      "timeline": "personal project",
+      "timeline": "Apr – Jun 2026",
       "stack": [
         "REACT 18",
         "VITE",
@@ -1641,7 +1641,7 @@
       "kind": "personal · core java backend",
       "year": "2026",
       "role": "Solo",
-      "timeline": "personal project",
+      "timeline": "Apr – Jul 2026",
       "status": "complete",
       "stack": [
         "JAVA 21",
@@ -1848,7 +1848,7 @@
       "kind": "personal · BI / data engineering",
       "year": "2026",
       "role": "Solo",
-      "timeline": "personal · 15 development stages",
+      "timeline": "Apr – Jul 2026",
       "status": "in-progress",
       "stack": [
         "POWER BI",
@@ -1919,7 +1919,7 @@
       "kind": "personal · full-stack",
       "year": "2026",
       "role": "Solo",
-      "timeline": "personal · MVP",
+      "timeline": "Feb 2026",
       "stack": [
         "REACT + TS + VITE",
         "AXIOS",
@@ -1989,7 +1989,7 @@
       "kind": "personal · llm tool",
       "year": "2026",
       "role": "Solo",
-      "timeline": "personal project",
+      "timeline": "Apr – Jul 2026",
       "stack": [
         "JAVA 17",
         "SPRING BOOT",
@@ -2061,7 +2061,7 @@
       "kind": "personal · full-stack",
       "year": "2026",
       "role": "Solo",
-      "timeline": "personal project",
+      "timeline": "May – Oct 2026",
       "status": "in-progress",
       "stack": [
         "JAVA 21",
@@ -2246,7 +2246,7 @@
       "kind": "personal · c++ cli",
       "year": "2026",
       "role": "Solo",
-      "timeline": "documented scope complete · local main",
+      "timeline": "May 2026",
       "status": "complete",
       "stack": [
         "C++20",
@@ -2350,7 +2350,7 @@
       "kind": "personal · mobile ai systems",
       "year": "2026",
       "role": "Solo",
-      "timeline": "personal project · iOS architecture demo",
+      "timeline": "Apr – Oct 2026",
       "status": "in-progress",
       "stack": [
         "REACT NATIVE 0.83",
@@ -2429,7 +2429,7 @@
       "kind": "personal · ml dashboard",
       "year": "2026",
       "role": "Solo",
-      "timeline": "phases 1–5 complete · phase 6 polish",
+      "timeline": "May 2026",
       "status": "in-progress",
       "stack": [
         "REACT 19",
@@ -2512,7 +2512,7 @@
       "kind": "personal · full-stack",
       "year": "2026",
       "role": "Solo",
-      "timeline": "personal project",
+      "timeline": "Apr – Jul 2026",
       "stack": [
         "ASP.NET CORE",
         "C#",

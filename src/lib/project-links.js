@@ -26,6 +26,14 @@ export function projectSourceHref(project) {
   return [project?.source, project?.github, sourceLinkFromLinks(project)].find(isUsableHref) || '';
 }
 
+export function projectDemoHref(project) {
+  const fromLinks = (project?.links || []).find((link) => {
+    const key = String(link?.k || '').toUpperCase();
+    return isUsableHref(link?.href) && (key === 'DEMO' || key === 'LIVE' || key === 'LIVE DEMO');
+  })?.href || '';
+  return [project?.demo, project?.live, fromLinks].find(isUsableHref) || '';
+}
+
 export function projectLinkHref(project, link) {
   if (isUsableHref(link?.href)) return link.href;
   const key = String(link?.k || '').toUpperCase();

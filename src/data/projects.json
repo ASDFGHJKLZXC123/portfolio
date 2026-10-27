@@ -120,7 +120,7 @@
         {
           "kind": "paragraph",
           "label": "03 — ENGINEERING FOCUS",
-          "body": "The project is strongest as a reliability and systems-design story: transaction boundaries, idempotent job creation, retry policy, dead-letter replay, audit events, migration discipline, and honest documentation of what is proven versus what remains mocked or deferred."
+          "body": "I focused on reliability over feature count: explicit transaction boundaries, idempotent job creation, a retry policy that ends in dead-letter replay, audit events, and disciplined migrations. I also documented which behaviors are proven and which are still mocked or deferred."
         },
         {
           "kind": "tradeoffs",
@@ -405,7 +405,7 @@
         {
           "kind": "paragraph",
           "label": "02 — HOW IT WORKS",
-          "body": "Laravel 13 API with Sanctum for token auth and role-based controllers; SQLite by default with a MySQL .env profile; Stripe SDK behind a PAYMENT_DRIVER switch (fake by default, stripe when configured) so the integration is decoupled from the booking core. Mobile is RN 0.81 / Expo SDK 54 with expo-secure-store for credentials. The repo is structured so each of the 10 build stages is a discrete, reviewable slice — useful for showing the development arc, not just the end state."
+          "body": "Laravel 13 API with Sanctum for token auth and role-based controllers; SQLite by default with a MySQL .env profile; Stripe SDK behind a PAYMENT_DRIVER switch (fake by default, stripe when configured) so the integration is decoupled from the booking core. Mobile is RN 0.81 / Expo SDK 54 with expo-secure-store for credentials. I built it in 10 stages and kept each one a discrete, reviewable slice in the repo, so the history shows how the system grew, not just the end state."
         },
         {
           "kind": "code",
@@ -1051,7 +1051,7 @@
         {
           "kind": "paragraph",
           "label": "03 — ENGINEERING FOCUS",
-          "body": "The strongest part is the permissions and lifecycle discipline: every feature has to respect organization boundaries and role differences. SLA status, report generation, comments, notification visibility, and attachment metadata all exercise that boundary instead of treating the app as generic CRUD."
+          "body": "I treated permissions and the ticket lifecycle as the core of the app rather than an add-on: every feature has to respect organization boundaries and the differences between the four roles. SLA status, report generation, comments, notification visibility, and attachment metadata all go through that boundary, so the app behaves like a multi-tenant system instead of generic CRUD."
         },
         {
           "kind": "paragraph",
@@ -1130,7 +1130,7 @@
         {
           "kind": "paragraph",
           "label": "03 — ENGINEERING FOCUS",
-          "body": "The useful proof is not that it has a cart. It is that money, inventory, and webhooks are treated as correctness problems: database re-pricing, integer cents, idempotent webhook events, unique session IDs, and guarded inventory decrement all have source evidence and automated tests."
+          "body": "Having a cart isn't the interesting part. I treated money, inventory, and webhooks as correctness problems: checkout re-prices the cart from the database, amounts are stored as integer cents, webhook events are processed idempotently, checkout session IDs are unique, and inventory decrements are guarded against overselling, each covered by automated tests."
         },
         {
           "kind": "paragraph",

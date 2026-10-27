@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { projectImageBackground } from '../lib/project-image';
 import { externalLinkProps, isUsableHref, projectSlug, projectSourceHref } from '../lib/project-links';
 import { curatedProjects } from '../lib/portfolio-curation';
+import { projects } from '../lib/projects';
 import { useTheme } from '../lib/use-theme';
 import TechnicalCover from '../components/TechnicalCover';
 
@@ -185,7 +186,6 @@ function WorkCard({ project, index }) {
 
 export default function AllWorks() {
   const [dark, setDark] = useTheme();
-  const [PROJECTS, setProjects] = React.useState(null);
   const [showArchive, setShowArchive] = React.useState(false);
 
   React.useEffect(() => {
@@ -196,22 +196,12 @@ export default function AllWorks() {
     );
   }, []);
 
-  React.useEffect(() => {
-    fetch(`${import.meta.env.BASE_URL}data/projects.json`)
-      .then((r) => r.ok ? r.json() : null)
-      .then((data) => setProjects(Array.isArray(data?.projects) ? data.projects : []))
-      .catch(() => setProjects([]));
-  }, []);
-
-  const isLoading = PROJECTS === null;
-  const projectsList = PROJECTS || [];
-  const hasProjects = projectsList.length > 0;
-  const curated = curatedProjects(projectsList);
-  const selectedProjects = curated.length ? curated : projectsList.slice(0, 5);
+  const curated = curatedProjects(projects);
+  const selectedProjects = curated.length ? curated : projects.slice(0, 5);
   const selectedSlugs = new Set(selectedProjects.map((project) => projectSlug(project)));
-  const archivedProjects = projectsList.filter((project) => !selectedSlugs.has(projectSlug(project)));
+  const archivedProjects = projects.filter((project) => !selectedSlugs.has(projectSlug(project)));
   const visibleProjects = showArchive ? [...selectedProjects, ...archivedProjects] : selectedProjects;
-  const years = projectsList.map((project) => Number(project.year)).filter(Number.isFinite);
+  const years = projects.map((project) => Number(project.year)).filter(Number.isFinite);
   const earliestYear = years.length ? Math.min(...years) : null;
   const latestYear = years.length ? Math.max(...years) : null;
   const yearLabel = earliestYear === latestYear ? String(latestYear || '') : `${earliestYear} — ${latestYear}`;
@@ -224,45 +214,25 @@ export default function AllWorks() {
       <main>
         <div className="archive-hero" style={{ padding: '80px 40px 40px', maxWidth: 1100 }}>
         <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.24em', color: 'var(--muted)', marginBottom: 24 }}>
-          {isLoading
-            ? '/ SELECTED WORK — LOADING'
-            : hasProjects
-              ? `/ SELECTED WORK — ${selectedProjects.length} PROJECTS · ${yearLabel}`
-              : '/ SELECTED WORK — DATA UNAVAILABLE'}
+          / SELECTED WORK — {selectedProjects.length} PROJECTS · {yearLabel}
         </div>
         <h1 style={{
           margin: 0, fontFamily: 'var(--sans)', fontWeight: 400,
           fontSize: 'clamp(40px, 4.5vw, 64px)', lineHeight: 1.05,
           letterSpacing: 'var(--letter)', color: 'var(--fg)',
         }}>
-          {isLoading ? (
-            <>Loading selected work…<br /><span style={{ color: 'var(--muted)' }}>Preparing the project archive.</span></>
-          ) : hasProjects ? (
-            // Was hardcoded to "Five" while the curated set size is dynamic.
-            <>{countWord(selectedProjects.length)} projects worth opening.<br /><span style={{ color: 'var(--muted)' }}>The rest stays available as build history.</span></>
-          ) : (
-            <>Project archive unavailable.<br /><span style={{ color: 'var(--muted)' }}>The project data could not be loaded.</span></>
-          )}
+          {/* Was hardcoded to "Five" while the curated set size is dynamic. */}
+          {countWord(selectedProjects.length)} projects worth opening.<br /><span style={{ color: 'var(--muted)' }}>The rest stays available as build history.</span>
         </h1>
         </div>
 
         <div className="archive-list" style={{ padding: '40px 40px 80px' }}>
-        {isLoading ? (
-          <div role="status" style={{ padding: '36px 0', fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.18em', color: 'var(--muted)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
-            LOADING PROJECT DATA…
-          </div>
-        ) : hasProjects ? (
-          visibleProjects.map((p, i) => (
-            <Reveal key={p.name} delay={Math.min(i * 40, 240)}>
-              <WorkCard project={p} index={i} />
-            </Reveal>
-          ))
-        ) : (
-          <div role="status" style={{ padding: '36px 0', fontFamily: 'var(--mono)', fontSize: 10, lineHeight: 1.6, letterSpacing: '0.18em', color: 'var(--muted)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
-            PROJECT DATA IS TEMPORARILY UNAVAILABLE.
-          </div>
-        )}
-        {hasProjects && <div style={{ borderTop: '1px solid var(--border)' }} />}
+        {visibleProjects.map((p, i) => (
+          <Reveal key={p.name} delay={Math.min(i * 40, 240)}>
+            <WorkCard project={p} index={i} />
+          </Reveal>
+        ))}
+        <div style={{ borderTop: '1px solid var(--border)' }} />
 
         {archivedProjects.length > 0 && (
           <div className="archive-toggle-wrap" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, marginTop: 48 }}>
@@ -281,7 +251,7 @@ export default function AllWorks() {
                 fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.18em',
               }}
             >
-              {showArchive ? 'SHOW SELECTED WORK ONLY' : `EXPLORE FULL ARCHIVE (${projectsList.length})`}
+              {showArchive ? 'SHOW SELECTED WORK ONLY' : `EXPLORE FULL ARCHIVE (${projects.length})`}
             </button>
           </div>
         )}

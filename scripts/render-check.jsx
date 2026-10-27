@@ -4,18 +4,15 @@
 
 import React from 'react';
 import { renderToString } from 'react-dom/server';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import fs from 'node:fs';
 import path from 'node:path';
 import Project from '../src/pages/Project.jsx';
 import { CaseSection, BuildNotes } from '../src/components/CaseSections.jsx';
 
 const DATA = JSON.parse(
-  fs.readFileSync(path.resolve('public/data/projects.json'), 'utf8'),
+  fs.readFileSync(path.resolve('src/data/projects.json'), 'utf8'),
 );
-
-// The pages fetch their data; feed them the real file synchronously.
-globalThis.fetch = async () => ({ ok: true, json: async () => DATA });
 
 // Minimal browser shims for a Node render pass.
 globalThis.IntersectionObserver = class {
@@ -74,17 +71,25 @@ for (const p of DATA.projects) {
 }
 
 // Full-page render of one project, to catch anything the section-level pass misses.
+// Project data is bundled, so this reaches the real case study, not a loading state.
+const renderProjectPage = (slug) => renderToString(
+  <MemoryRouter initialEntries={[`/project/${slug}`]}>
+    <Routes>
+      <Route path="/project/:slug" element={<Project />} />
+    </Routes>
+  </MemoryRouter>,
+);
+
 console.log('\nFull page render (reliableflow):\n');
+let pageHtml = '';
 try {
-  const html = renderToString(
-    <MemoryRouter initialEntries={['/project/reliableflow']}>
-      <Project />
-    </MemoryRouter>,
-  );
-  check('renders without throwing', html.length > 0);
+  pageHtml = renderProjectPage('reliableflow');
+  check('renders without throwing', pageHtml.length > 0);
 } catch (e) {
   check('renders without throwing', false, e.message);
 }
+check('renders the case study, not a loading state',
+  pageHtml.includes('class="project-title"') && pageHtml.includes('Inside the build'));
 
 // Guard: nothing should link to a repo we know is private.
 console.log('\nLink safety:\n');
@@ -100,10 +105,6 @@ check('no empty hrefs left in data',
 
 // Heading outline: the page used to expose only an h1 and a single h2 to
 // assistive tech — every section label was a plain <div>.
-//
-// Project fetches its data in useEffect, which never runs under renderToString,
-// so a full-page SSR pass only reaches the loading state. The body is rendered
-// directly here instead, and the page-level h1/h2 are asserted from source.
 console.log('\nHeading outline:\n');
 {
   const p = DATA.projects.find((x) => x.slug === 'reliableflow');
@@ -123,13 +124,13 @@ console.log('\nHeading outline:\n');
   check('tradeoff decisions are h4', (counts[4] || 0) >= 3);
   check('body introduces no stray h1/h2', !counts[1] && !counts[2]);
 
-  // Two <h1> literals exist in the source — the project title and the 404
-  // title — but they sit in mutually exclusive early-return branches, so only
-  // one can ever render. Assert the title itself rather than counting literals.
-  const src = fs.readFileSync(path.resolve('src/pages/Project.jsx'), 'utf8');
-  check('project title is an h1', src.includes('<h1 className="project-title"'));
-  check('404 state also has an h1', /<h1[^>]*>Project not found\./.test(src));
-  check('next-project title is a heading', src.includes('<h2 className="next-project-title"'));
+  const h1Count = (html) => (html.match(/<h1[ >]/g) || []).length;
+  check('project page has exactly one h1', h1Count(pageHtml) === 1);
+  check('project title is an h1', pageHtml.includes('<h1 class="project-title"'));
+  check('next-project title is a heading', pageHtml.includes('<h2 class="next-project-title"'));
+  const missingHtml = renderProjectPage('no-such-project');
+  check('404 state also has an h1',
+    h1Count(missingHtml) === 1 && /<h1[^>]*>Project not found\./.test(missingHtml));
 }
 
 console.log(failures === 0 ? '\nAll checks passed.\n' : `\n${failures} check(s) failed.\n`);

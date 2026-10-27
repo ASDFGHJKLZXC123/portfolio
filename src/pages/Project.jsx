@@ -5,6 +5,7 @@ import { Link, useParams } from 'react-router-dom';
 import { projectImageBackground, projectImageSource } from '../lib/project-image';
 import { externalLinkProps, isUsableHref, projectLinkHref } from '../lib/project-links';
 import { curatedProjects } from '../lib/portfolio-curation';
+import { findProject, projects } from '../lib/projects';
 import { useTheme } from '../lib/use-theme';
 import Reveal from '../components/Reveal';
 import { BuildNotes, CaseSection } from '../components/CaseSections';
@@ -297,56 +298,25 @@ function NextProject({ current, projects }) {
 
 export default function Project() {
   const [dark, setDark] = useTheme();
-  const [PROJECTS, setProjects] = React.useState(null);
   const { slug } = useParams();
-
-  React.useEffect(() => {
-    fetch(`${import.meta.env.BASE_URL}data/projects.json`)
-      .then((r) => r.ok ? r.json() : null)
-      .then((data) => {
-        if (data && data.projects) {
-          const map = {};
-          for (const p of data.projects) map[p.slug] = p;
-          setProjects(map);
-        } else {
-          setProjects({});
-        }
-      })
-      .catch(() => setProjects({}));
-  }, []);
 
   React.useEffect(() => { window.scrollTo(0, 0); }, [slug]);
 
-  const p = PROJECTS?.[slug];
-  const allProjects = PROJECTS
-    ? Object.entries(PROJECTS).map(([projectSlug, project]) => ({ slug: project.slug || projectSlug, ...project }))
-    : [];
-  const publicProjects = curatedProjects(allProjects);
-  const nextProjectsList = publicProjects.some((project) => project.slug === slug) ? publicProjects : allProjects;
+  const p = findProject(slug);
+  const publicProjects = curatedProjects(projects);
+  const nextProjectsList = publicProjects.some((project) => project.slug === slug) ? publicProjects : projects;
   const nextProjects = Object.fromEntries(nextProjectsList.map((project) => [project.slug, project]));
 
   React.useEffect(() => {
-    if (PROJECTS === null) return;
     document.title = p ? `${p.name} — Richard Zhang` : 'Project Not Found — Richard Zhang';
     document.querySelector('meta[name="description"]')?.setAttribute(
       'content',
       p?.summary || 'The requested project case study could not be found.',
     );
-  }, [p, PROJECTS]);
+  }, [p]);
 
   // Tokens live in index.css under :root[data-theme]; useTheme sets the attribute.
   const shell = { background: 'var(--bg)', color: 'var(--fg)', minHeight: '100vh', fontFamily: 'var(--sans)' };
-
-  if (PROJECTS === null) {
-    return (
-      <div className="project-page" style={shell}>
-        <TopBar dark={dark} setDark={setDark} projectName="LOADING" />
-        <main className="project-loading" style={{ padding: '120px 40px', fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.18em', color: 'var(--muted)' }}>
-          LOADING CASE STUDY…
-        </main>
-      </div>
-    );
-  }
 
   if (!p) {
     return (

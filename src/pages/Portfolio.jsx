@@ -11,6 +11,7 @@ import {
 import { projectImageBackground } from '../lib/project-image';
 import { externalLinkProps, isUsableHref, projectSlug, projectSourceHref, projectDemoHref } from '../lib/project-links';
 import { curatedProjects } from '../lib/portfolio-curation';
+import { projects } from '../lib/projects';
 import { applyTheme, initialThemeIsDark } from '../lib/use-theme';
 import TechnicalCover from '../components/TechnicalCover';
 
@@ -530,7 +531,6 @@ const TWEAK_INITIAL = { ...TWEAK_DEFAULTS, dark: initialThemeIsDark() };
 export default function Portfolio() {
   const [t, setTweak] = useTweaks(TWEAK_INITIAL);
   const [active, setActive] = React.useState('work');
-  const [PROJECTS, setProjects] = React.useState(null);
   const fonts = FONTS[t.font] || FONTS.neue;
   const dark = t.dark;
 
@@ -542,17 +542,9 @@ export default function Portfolio() {
     );
   }, []);
 
-  React.useEffect(() => {
-    fetch(`${import.meta.env.BASE_URL}data/projects.json`)
-      .then((r) => r.ok ? r.json() : null)
-      .then((data) => setProjects(Array.isArray(data?.projects) ? data.projects : []))
-      .catch(() => setProjects([]));
-  }, []);
-
-  const projectsList = PROJECTS || [];
-  const featured = curatedProjects(projectsList).slice(0, t.projectCount);
+  const featured = curatedProjects(projects).slice(0, t.projectCount);
   const shownSlugs = new Set(featured.map((p) => projectSlug(p)));
-  const extra = projectsList.filter((p) => !shownSlugs.has(projectSlug(p)));
+  const extra = projects.filter((p) => !shownSlugs.has(projectSlug(p)));
 
   const sections = [
     { id: 'work',      label: 'WORK',      show: true },
@@ -602,21 +594,11 @@ export default function Portfolio() {
           gap: 32,
           transition: 'grid-template-columns .3s',
         }}>
-          {PROJECTS === null ? (
-            <div role="status" style={{ gridColumn: '1 / -1', padding: '28px 0', fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.18em', color: 'var(--muted)' }}>
-              LOADING SELECTED WORK…
-            </div>
-          ) : featured.length > 0 ? (
-            featured.map((p, i) => (
-              <Reveal key={p.name} delay={i * 60}>
-                <ProjectTile project={p} />
-              </Reveal>
-            ))
-          ) : (
-            <div role="status" style={{ gridColumn: '1 / -1', padding: '28px 0', fontFamily: 'var(--mono)', fontSize: 10, lineHeight: 1.6, letterSpacing: '0.18em', color: 'var(--muted)' }}>
-              SELECTED PROJECTS ARE TEMPORARILY UNAVAILABLE.
-            </div>
-          )}
+          {featured.map((p, i) => (
+            <Reveal key={p.name} delay={i * 60}>
+              <ProjectTile project={p} />
+            </Reveal>
+          ))}
         </div>
         {extra.length > 0 && (
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: 56 }}>

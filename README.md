@@ -34,7 +34,7 @@ npm run preview    # serve the production build
 
 ## Files
 
-- `public/data/projects.json` — project data and case-study content
+- `src/data/projects.json` — project data and case-study content (bundled at build time)
 - `public/data/writing.json` — draft writing content; not publicly routed until its claims are verified
 - `public/data/now.json` — draft activity content; not publicly routed until its claims are verified
 - `src/pages/Portfolio.jsx` — homepage layout and selected-project count

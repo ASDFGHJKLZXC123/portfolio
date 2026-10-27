@@ -2,13 +2,13 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { projectImageBackground } from '../lib/project-image';
 import { externalLinkProps, isUsableHref, projectSlug, projectSourceHref } from '../lib/project-links';
 import { curatedProjects } from '../lib/portfolio-curation';
 import { projects } from '../lib/projects';
 import { allWorksMeta } from '../lib/page-meta';
 import { usePageMeta } from '../lib/use-page-meta';
 import { useTheme } from '../lib/use-theme';
+import CardImage from '../components/CardImage';
 import Reveal from '../components/Reveal';
 import StatusPill from '../components/StatusPill';
 import ThemeSwitch from '../components/ThemeSwitch';
@@ -62,8 +62,7 @@ function WorkCard({ project, index }) {
           {project.technicalCover ? (
             <TechnicalCover cover={project.technicalCover} projectName={project.name} compact />
           ) : (
-            <div data-img style={{
-              position: 'absolute', inset: 0, background: projectImageBackground(project.img),
+            <CardImage project={project} style={{
               transition: 'transform .6s cubic-bezier(.2,.7,.3,1), filter .4s',
             }} />
           )}

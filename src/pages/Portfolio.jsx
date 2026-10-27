@@ -8,13 +8,13 @@ import {
   useTweaks, TweaksPanel, TweakSection, TweakSlider, TweakToggle,
   TweakRadio, TweakColor,
 } from '../components/tweaks-panel';
-import { projectImageBackground } from '../lib/project-image';
 import { externalLinkProps, isUsableHref, projectSlug, projectSourceHref, projectDemoHref } from '../lib/project-links';
 import { curatedProjects } from '../lib/portfolio-curation';
 import { projects } from '../lib/projects';
 import { homeMeta } from '../lib/page-meta';
 import { usePageMeta } from '../lib/use-page-meta';
 import { applyTheme, initialThemeIsDark } from '../lib/use-theme';
+import CardImage from '../components/CardImage';
 import Reveal from '../components/Reveal';
 import StatusPill from '../components/StatusPill';
 import ThemeSwitch from '../components/ThemeSwitch';
@@ -234,9 +234,7 @@ function ProjectTile({ project }) {
           {project.technicalCover ? (
             <TechnicalCover cover={project.technicalCover} projectName={project.name} compact />
           ) : (
-            <div data-img style={{
-              position: 'absolute', inset: 0,
-              background: projectImageBackground(project.img),
+            <CardImage project={project} alt={project.media?.alt || `${project.name} interface`} style={{
               transform: hover ? 'scale(1.06)' : 'scale(1)',
               filter: hover ? 'brightness(1.12) saturate(1.1)' : 'brightness(1) saturate(1)',
               transition: 'transform .8s cubic-bezier(.2,.7,.3,1), filter .5s',

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node scripts/prerender-routes.mjs",
     "preview": "vite preview",
     "check:render": "vite build --config vite.ssr.config.mjs && node node_modules/.ssr-check/render-check.js"
   },

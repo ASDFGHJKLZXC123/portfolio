@@ -12,6 +12,8 @@ import { projectImageBackground } from '../lib/project-image';
 import { externalLinkProps, isUsableHref, projectSlug, projectSourceHref, projectDemoHref } from '../lib/project-links';
 import { curatedProjects } from '../lib/portfolio-curation';
 import { projects } from '../lib/projects';
+import { homeMeta } from '../lib/page-meta';
+import { usePageMeta } from '../lib/use-page-meta';
 import { applyTheme, initialThemeIsDark } from '../lib/use-theme';
 import Reveal from '../components/Reveal';
 import StatusPill from '../components/StatusPill';
@@ -473,13 +475,7 @@ export default function Portfolio() {
   const fonts = FONTS[t.font] || FONTS.neue;
   const dark = t.dark;
 
-  React.useEffect(() => {
-    document.title = 'Richard Zhang — Full-Stack Software Engineer';
-    document.querySelector('meta[name="description"]')?.setAttribute(
-      'content',
-      'Richard Zhang is a UC Irvine Informatics graduate building reliable backend and full-stack systems.',
-    );
-  }, []);
+  usePageMeta(homeMeta);
 
   const featured = curatedProjects(projects).slice(0, t.projectCount);
   const shownSlugs = new Set(featured.map((p) => projectSlug(p)));

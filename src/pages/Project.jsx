@@ -6,6 +6,8 @@ import { projectImageBackground, projectImageSource } from '../lib/project-image
 import { externalLinkProps, isUsableHref, projectLinkHref } from '../lib/project-links';
 import { curatedProjects } from '../lib/portfolio-curation';
 import { findProject, projects } from '../lib/projects';
+import { notFoundMeta, projectMeta } from '../lib/page-meta';
+import { usePageMeta } from '../lib/use-page-meta';
 import { useTheme } from '../lib/use-theme';
 import Reveal from '../components/Reveal';
 import { BuildNotes, CaseSection } from '../components/CaseSections';
@@ -273,13 +275,7 @@ export default function Project() {
   const nextProjectsList = publicProjects.some((project) => project.slug === slug) ? publicProjects : projects;
   const nextProjects = Object.fromEntries(nextProjectsList.map((project) => [project.slug, project]));
 
-  React.useEffect(() => {
-    document.title = p ? `${p.name} — Richard Zhang` : 'Project Not Found — Richard Zhang';
-    document.querySelector('meta[name="description"]')?.setAttribute(
-      'content',
-      p?.summary || 'The requested project case study could not be found.',
-    );
-  }, [p]);
+  usePageMeta(p ? projectMeta(p) : notFoundMeta);
 
   // Tokens live in index.css under :root[data-theme]; useTheme sets the attribute.
   const shell = { background: 'var(--bg)', color: 'var(--fg)', minHeight: '100vh', fontFamily: 'var(--sans)' };

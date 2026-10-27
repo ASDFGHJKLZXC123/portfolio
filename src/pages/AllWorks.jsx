@@ -6,6 +6,8 @@ import { projectImageBackground } from '../lib/project-image';
 import { externalLinkProps, isUsableHref, projectSlug, projectSourceHref } from '../lib/project-links';
 import { curatedProjects } from '../lib/portfolio-curation';
 import { projects } from '../lib/projects';
+import { allWorksMeta } from '../lib/page-meta';
+import { usePageMeta } from '../lib/use-page-meta';
 import { useTheme } from '../lib/use-theme';
 import Reveal from '../components/Reveal';
 import StatusPill from '../components/StatusPill';
@@ -131,13 +133,7 @@ export default function AllWorks() {
   const [dark, setDark] = useTheme();
   const [showArchive, setShowArchive] = React.useState(false);
 
-  React.useEffect(() => {
-    document.title = 'Selected Engineering Work — Richard Zhang';
-    document.querySelector('meta[name="description"]')?.setAttribute(
-      'content',
-      'Five selected backend and full-stack engineering projects, with an optional archive of additional builds.',
-    );
-  }, []);
+  usePageMeta(allWorksMeta);
 
   const curated = curatedProjects(projects);
   const selectedProjects = curated.length ? curated : projects.slice(0, 5);

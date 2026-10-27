@@ -1,6 +1,6 @@
-// portfolio.jsx — Richard's portfolio, editorial dark style
+// portfolio.jsx — Richard's portfolio, terminal / hacker style
 // Sections: hero · selected engineering work · about · skills · education · contact
-// Sticky top nav w/ section anchors, scroll-reveal on sections, hover-reveal on tiles.
+// Sticky shell-prompt nav, typed hero, window-chrome panels, scroll-reveal on sections.
 
 import React from 'react';
 import { Link } from 'react-router-dom';
@@ -13,8 +13,8 @@ import { externalLinkProps, isUsableHref, projectSlug, projectSourceHref } from 
 
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "dark": true,
-  "accent": "#d9d9d4",
-  "font": "neue",
+  "accent": "#39ff88",
+  "font": "mono",
   "showAbout": true,
   "showSkills": true,
   "showEducation": true,
@@ -122,21 +122,14 @@ const EDUCATION = {
 
 const slugify = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const isInProgress = (project) => project.status === 'in-progress';
+const pad2 = (n) => String(n).padStart(2, '0');
+const hex = (n) => `0x${pad2(n)}`;
 
 function StatusPill({ project, onImage = false }) {
   if (!isInProgress(project)) return null;
   return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap',
-      padding: onImage ? '4px 8px' : '5px 9px',
-      borderRadius: 999,
-      border: onImage ? '1px solid rgba(255,255,255,0.32)' : '1px solid var(--border)',
-      background: onImage ? 'rgba(255,255,255,0.14)' : 'var(--hover)',
-      color: onImage ? 'rgba(255,255,255,0.9)' : 'var(--fg)',
-      fontFamily: 'var(--mono)', fontSize: onImage ? 8 : 9,
-      lineHeight: 1, letterSpacing: '0.16em',
-    }}>
-      IN PROGRESS
+    <span className={`geek-pill${onImage ? ' geek-pill--img' : ''}`}>
+      <span className="geek-pill-dot" />IN PROGRESS
     </span>
   );
 }
@@ -144,8 +137,11 @@ function StatusPill({ project, onImage = false }) {
 const FONTS = {
   neue:  { sans: '"Inter Tight", Helvetica, Arial, sans-serif', mono: '"JetBrains Mono", ui-monospace, monospace', letter: '-0.02em' },
   serif: { sans: '"Fraunces", "Times New Roman", serif',         mono: '"JetBrains Mono", ui-monospace, monospace', letter: '-0.015em' },
-  mono:  { sans: '"JetBrains Mono", ui-monospace, monospace',    mono: '"JetBrains Mono", ui-monospace, monospace', letter: '-0.01em' },
+  mono:  { sans: '"JetBrains Mono", ui-monospace, monospace',    mono: '"JetBrains Mono", ui-monospace, monospace', letter: '-0.03em' },
 };
+
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 function useReveal() {
   const ref = React.useRef(null);
@@ -167,216 +163,225 @@ function Reveal({ children, delay = 0, style }) {
     <div ref={ref} style={{
       transform: shown ? 'translateY(0)' : 'translateY(16px)',
       opacity: shown ? 1 : 0,
-      transition: `transform .8s cubic-bezier(.2,.7,.3,1) ${delay}ms, opacity .8s ease ${delay}ms`,
+      filter: shown ? 'none' : 'blur(2px)',
+      transition: `transform .7s cubic-bezier(.2,.7,.3,1) ${delay}ms, opacity .7s steps(6) ${delay}ms, filter .7s ${delay}ms`,
       ...style,
     }}>{children}</div>
   );
 }
 
-function TopBar({ dark, setDark, active, sections }) {
-  return (
-    <div style={{
-      position: 'sticky', top: 0, zIndex: 40,
-      backdropFilter: 'blur(14px) saturate(140%)',
-      WebkitBackdropFilter: 'blur(14px) saturate(140%)',
-      background: 'var(--bg-blur)',
-      borderBottom: '1px solid var(--border)',
-    }}>
-      <div style={{
-        display: 'grid', gridTemplateColumns: '1fr auto 1fr',
-        alignItems: 'center', padding: '16px 40px', fontSize: 11,
-        letterSpacing: '0.12em', fontFamily: 'var(--mono)',
-      }}>
-        <div style={{ justifySelf: 'start' }} />
+// Types `text` out one character at a time; renders instantly under reduced motion.
+function useTyped(text, speed = 32, startDelay = 300) {
+  const [n, setN] = React.useState(() => (prefersReducedMotion() ? text.length : 0));
+  React.useEffect(() => {
+    if (prefersReducedMotion()) { setN(text.length); return; }
+    setN(0);
+    let i = 0;
+    let id;
+    const start = setTimeout(() => {
+      id = setInterval(() => {
+        i += 1;
+        setN(i);
+        if (i >= text.length) clearInterval(id);
+      }, speed);
+    }, startDelay);
+    return () => { clearTimeout(start); clearInterval(id); };
+  }, [text, speed, startDelay]);
+  return n;
+}
 
-        <nav style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          {sections.map((s) => (
-            <a key={s.id} href={`#${s.id}`} style={{
-              padding: '6px 10px', borderRadius: 999, textDecoration: 'none',
-              fontSize: 10, letterSpacing: '0.15em',
-              color: active === s.id ? 'var(--fg)' : 'var(--muted)',
-              background: active === s.id ? 'var(--hover)' : 'transparent',
-              transition: 'color .2s, background .2s',
-            }}>{s.label}</a>
+function useClock() {
+  const [now, setNow] = React.useState(() => new Date());
+  React.useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  return now.toLocaleTimeString('en-US', { hour12: false });
+}
+
+function Caret({ small = false }) {
+  return <span aria-hidden="true" className={`geek-caret${small ? ' geek-caret--sm' : ''}`} />;
+}
+
+function WindowBar({ title, right }) {
+  return (
+    <div className="geek-winbar">
+      <span className="geek-dots" aria-hidden="true"><i /><i /><i /></span>
+      <span className="geek-winbar-title">{title}</span>
+      <span className="geek-winbar-right">{right}</span>
+    </div>
+  );
+}
+
+function TopBar({ dark, setDark, active, sections }) {
+  const time = useClock();
+  return (
+    <header className="geek-topbar">
+      <div className="geek-topbar-inner">
+        <a href="#top" className="geek-prompt geek-hide-md" aria-label="Back to top">
+          <span style={{ color: 'var(--accent)' }}>richard@uci</span>
+          <span style={{ color: 'var(--dim)' }}>:</span>
+          <span style={{ color: 'var(--cyan)' }}>~/portfolio</span>
+          <span style={{ color: 'var(--dim)' }}>$</span>
+          <Caret small />
+        </a>
+
+        <nav className="geek-nav" aria-label="Sections">
+          {sections.map((s, i) => (
+            <a key={s.id} href={`#${s.id}`} className={active === s.id ? 'is-active' : undefined}>
+              <span className="geek-nav-idx">{pad2(i + 1)}</span>{s.label}
+            </a>
           ))}
-          <span style={{ width: 1, height: 14, background: 'var(--border)', margin: '0 6px' }} />
-          <div style={{
-            display: 'inline-flex', border: '1px solid var(--border)', borderRadius: 999, padding: 2,
-          }}>
-            <button onClick={() => setDark(true)} style={themeBtn(dark)}>DARK</button>
-            <button onClick={() => setDark(false)} style={themeBtn(!dark)}>LIGHT</button>
+          <span className="geek-nav-sep" aria-hidden="true" />
+          <div className="geek-theme" role="group" aria-label="Theme">
+            <span aria-hidden="true">[</span>
+            <button type="button" onClick={() => setDark(true)} aria-pressed={dark} className={dark ? 'is-on' : undefined}>DARK</button>
+            <span aria-hidden="true">|</span>
+            <button type="button" onClick={() => setDark(false)} aria-pressed={!dark} className={!dark ? 'is-on' : undefined}>LIGHT</button>
+            <span aria-hidden="true">]</span>
           </div>
         </nav>
 
-        <div style={{ justifySelf: 'end' }} />
-      </div>
-    </div>
-  );
-}
-
-const themeBtn = (on) => ({
-  border: 'none', padding: '5px 12px', borderRadius: 999, cursor: 'pointer',
-  background: on ? 'var(--fg)' : 'transparent',
-  color: on ? 'var(--bg)' : 'var(--muted)',
-  fontSize: 9, letterSpacing: '0.18em', fontFamily: 'inherit', fontWeight: 600,
-  transition: 'background .2s, color .2s',
-});
-
-function SectionHead({ index, title, subtitle }) {
-  return (
-    <div style={{
-      display: 'grid', gridTemplateColumns: '80px 1fr', gap: 24, alignItems: 'baseline',
-      paddingBottom: 32, borderBottom: '1px solid var(--border)', marginBottom: 40,
-    }}>
-      <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.2em', color: 'var(--muted)' }}>
-        / {String(index).padStart(2, '0')}
-      </div>
-      <div>
-        <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.2em', color: 'var(--muted)', marginBottom: 8 }}>
-          {subtitle}
+        <div className="geek-clock geek-hide-md" aria-hidden="true">
+          <span className="geek-led" />SYS.ONLINE<span style={{ color: 'var(--dim)' }}>·</span>{time}
         </div>
-        <h2 style={{
-          margin: 0, fontFamily: 'var(--sans)', fontWeight: 400,
-          fontSize: 'clamp(28px, 3vw, 40px)', letterSpacing: 'var(--letter)',
-          lineHeight: 1.1, color: 'var(--fg)',
-        }}>{title}</h2>
       </div>
+    </header>
+  );
+}
+
+function SectionHead({ index, path, title, subtitle }) {
+  return (
+    <div className="geek-sechead">
+      <div className="geek-sechead-meta">
+        <span style={{ color: 'var(--accent)' }}>[{hex(index)}]</span>
+        <span style={{ color: 'var(--dim)' }}>$ cd</span>
+        <span style={{ color: 'var(--cyan)' }}>~/{path}</span>
+        <span className="geek-sechead-rule" aria-hidden="true" />
+        <span className="geek-sechead-sub"># {subtitle}</span>
+      </div>
+      <h2 className="geek-h2">
+        <span aria-hidden="true" className="geek-h2-prompt">&gt;</span>{title}
+      </h2>
     </div>
   );
 }
+
+const HERO_TITLE = 'Full-Stack Engineer Building Reliable Web Systems';
 
 function Hero() {
+  const typed = useTyped(HERO_TITLE);
+  const done = typed >= HERO_TITLE.length;
+  const sysinfo = [
+    ['USER', 'Richard Zhang'],
+    ['ROLE', 'Software Engineer (Full-Stack)'],
+    ['EDU', 'B.S. Informatics · UC Irvine'],
+    ['BASED', 'Irvine, CA'],
+    ['STACK', 'TypeScript · Python · Go · SQL'],
+    ['STATUS', 'Available Summer 2026'],
+  ];
   return (
-    <div style={{ padding: '80px 40px 60px', maxWidth: 1000 }}>
-      <div style={{
-        fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.24em',
-        color: 'var(--muted)', marginBottom: 24,
-        display: 'flex', alignItems: 'center', gap: 10,
-      }}>
-        <span style={{ width: 6, height: 6, borderRadius: 3, background: '#4ade80', boxShadow: '0 0 8px #4ade80' }} />
-        Software Engineer (Full-Stack) · Available Summer 2026
+    <div id="top" className="geek-hero">
+      <div className="geek-window">
+        <WindowBar title="richard@uci: ~/portfolio — zsh" right="80×24" />
+        <div className="geek-window-body geek-hero-body">
+          <div className="geek-cmd"><span className="geek-ps1">$</span> whoami</div>
+          <div className="geek-eyebrow">
+            <span className="geek-led" />
+            Software Engineer (Full-Stack) · Available Summer 2026
+          </div>
+          <h1 className="geek-h1" aria-label={HERO_TITLE}>
+            <span aria-hidden="true">{HERO_TITLE.slice(0, typed)}</span>
+            {!done && <Caret />}
+            <span aria-hidden="true" style={{ color: 'transparent' }}>{HERO_TITLE.slice(typed)}</span>
+            {done && <Caret />}
+          </h1>
+          <div className="geek-cmd" style={{ marginTop: 32 }}><span className="geek-ps1">$</span> cat ./intro.txt</div>
+          <p className="geek-lead">
+            Recent Informatics graduate from UC Irvine. I design and ship
+            end-to-end web systems, from APIs and data models to interfaces
+            that make complex workflows clear and usable.
+          </p>
+          <div className="geek-cta-row">
+            <a href="#work" className="geek-btn geek-btn--primary">[ SEE THE WORK ]</a>
+            <a href="#" className="geek-btn">[ VIEW RESUME ]</a>
+          </div>
+        </div>
       </div>
-      <h1 style={{
-        margin: 0, fontFamily: 'var(--sans)', fontWeight: 400,
-        fontSize: 'clamp(40px, 4.5vw, 64px)', lineHeight: 1.05,
-        letterSpacing: 'var(--letter)', color: 'var(--fg)',
-      }}>
-        Full-Stack Engineer Building Reliable Web Systems
-      </h1>
-      <p style={{
-        margin: '28px 0 0', fontFamily: 'var(--sans)', fontWeight: 300,
-        fontSize: 'clamp(16px, 1.4vw, 19px)', lineHeight: 1.5,
-        color: 'var(--muted)', maxWidth: 620, letterSpacing: 'var(--letter)',
-      }}>
-        Recent Informatics graduate from UC Irvine. I design and ship
-        end-to-end web systems, from APIs and data models to interfaces
-        that make complex workflows clear and usable.
-      </p>
-      <div style={{ display: 'flex', gap: 16, marginTop: 40, fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.14em' }}>
-        <a href="#work" style={ctaPrimary()}>SEE THE WORK</a>
-        <a href="#" style={ctaGhost()}>VIEW RESUME</a>
-      </div>
+
+      <aside className="geek-window geek-sysinfo" aria-label="Summary">
+        <WindowBar title="sysinfo" right="pid 2026" />
+        <div className="geek-window-body">
+          <div className="geek-cmd"><span className="geek-ps1">$</span> neofetch --short</div>
+          <div className="geek-sysinfo-head">
+            <span style={{ color: 'var(--accent)' }}>richard</span><span style={{ color: 'var(--dim)' }}>@</span><span style={{ color: 'var(--cyan)' }}>uci</span>
+            <div className="geek-sysinfo-rule" aria-hidden="true">────────────────────</div>
+          </div>
+          <dl className="geek-kv">
+            {sysinfo.map(([k, v]) => (
+              <React.Fragment key={k}>
+                <dt>{k}</dt>
+                <dd>{v}</dd>
+              </React.Fragment>
+            ))}
+          </dl>
+          <div className="geek-swatches" aria-hidden="true">
+            {['var(--accent)', 'var(--cyan)', 'var(--amber)', 'var(--magenta)', 'var(--fg)', 'var(--dim)'].map((c) => (
+              <i key={c} style={{ background: c }} />
+            ))}
+          </div>
+        </div>
+      </aside>
     </div>
   );
 }
 
-const ctaPrimary = () => ({
-  padding: '12px 20px', background: 'var(--fg)', color: 'var(--bg)',
-  textDecoration: 'none', borderRadius: 999, fontWeight: 600,
-});
-const ctaGhost = () => ({
-  padding: '12px 20px', border: '1px solid var(--border)', color: 'var(--fg)',
-  textDecoration: 'none', borderRadius: 999, fontWeight: 500,
-});
+const splitStack = (stack) => (
+  Array.isArray(stack) ? stack : String(stack || '').split('/').map((s) => s.trim()).filter(Boolean)
+);
 
-function ProjectTile({ project }) {
-  const [hover, setHover] = React.useState(false);
-  const stack = Array.isArray(project.stack) ? project.stack.slice(0, 3).join(' · ') : project.stack;
+function ProjectTile({ project, index }) {
+  const stack = splitStack(project.stack).slice(0, 3);
   const sourceHref = projectSourceHref(project);
   const hasSource = isUsableHref(sourceHref);
   const detailSlug = projectSlug(project);
   return (
-    <article>
-      <div style={{
-          display: 'flex', flexDirection: 'column', gap: 18,
-          position: 'relative',
-          transform: hover ? 'translateY(-4px)' : 'translateY(0)',
-          transition: 'transform .5s cubic-bezier(.2,.7,.3,1)',
-        }}
-        onMouseEnter={() => setHover(true)}
-        onMouseLeave={() => setHover(false)}
-      >
-        <div style={{
-          position: 'absolute', left: -14, top: 28, bottom: 14, width: 2,
-          background: 'var(--fg)',
-          transform: hover ? 'scaleY(1)' : 'scaleY(0)',
-          transformOrigin: 'top',
-          transition: 'transform .45s cubic-bezier(.2,.7,.3,1)',
-          pointerEvents: 'none',
-        }} />
-        <div style={{
-          height: 240, position: 'relative', overflow: 'hidden',
-          background: 'var(--tile-bg)',
-          border: '1px solid var(--border)',
-          borderColor: hover ? 'var(--fg)' : 'var(--border)',
-          boxShadow: hover ? '0 22px 52px -28px rgba(0,0,0,0.65)' : '0 0 0 rgba(0,0,0,0)',
-          transition: 'height .35s cubic-bezier(.2,.7,.3,1), border-color .3s, box-shadow .4s',
-        }}>
-          <div data-img style={{
-            position: 'absolute', inset: 0,
-            background: projectImageBackground(project.img),
-            transform: hover ? 'scale(1.06)' : 'scale(1)',
-            filter: hover ? 'brightness(1.12) saturate(1.1)' : 'brightness(1) saturate(1)',
-            transition: 'transform .8s cubic-bezier(.2,.7,.3,1), filter .5s',
-          }} />
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: 'radial-gradient(circle at 50% 100%, rgba(255,255,255,0.18), transparent 60%)',
-            opacity: hover ? 1 : 0,
-            transition: 'opacity .5s',
-            pointerEvents: 'none',
-          }} />
-          {project.accent && (
-            <div style={{ position: 'absolute', inset: 0, background: project.accent, mixBlendMode: 'screen', pointerEvents: 'none' }} />
-          )}
-          <div style={{ position: 'absolute', top: 10, left: 12, zIndex: 2 }}>
-            <StatusPill project={project} onImage />
-          </div>
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: 'repeating-linear-gradient(0deg, transparent 0 2px, rgba(255,255,255,0.012) 2px 3px)', pointerEvents: 'none',
-          }} />
+    <article className="geek-card">
+      <WindowBar title={`${detailSlug}.png`} right={`#${pad2(index + 1)}`} />
+      <div className="geek-card-media">
+        <div className="geek-card-img" style={{ background: projectImageBackground(project.img) }} />
+        {project.accent && (
+          <div style={{ position: 'absolute', inset: 0, background: project.accent, mixBlendMode: 'screen', pointerEvents: 'none' }} />
+        )}
+        <div className="geek-card-scan" aria-hidden="true" />
+        <div style={{ position: 'absolute', top: 10, left: 12, zIndex: 2 }}>
+          <StatusPill project={project} onImage />
         </div>
+      </div>
 
-        <div style={{ display: 'grid', gap: 14 }}>
-          <div>
-            <h3 style={{ margin: 0, fontFamily: 'var(--sans)', fontSize: 22, lineHeight: 1.15, fontWeight: 400, letterSpacing: 'var(--letter)', color: 'var(--fg)' }}>
-              {project.name}
-            </h3>
-            <div style={{ marginTop: 10, fontFamily: 'var(--mono)', fontSize: 11, lineHeight: 1.5, letterSpacing: '0.08em', color: 'var(--fg)' }}>
-              <span style={{ color: 'var(--muted)' }}>Stack: </span>{stack}
-            </div>
-          </div>
-          <p style={{
-            margin: 0, fontFamily: 'var(--sans)', fontSize: 15, lineHeight: 1.55,
-            color: 'var(--muted)', letterSpacing: 'var(--letter)',
-            display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden',
-          }}>
-            <span style={{ color: 'var(--fg)' }}>Summary: </span>{project.summary}
-          </p>
-          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.16em' }}>
-            <Link to={`/project/${detailSlug}`} style={{ color: 'var(--fg)', textDecoration: 'underline', textUnderlineOffset: 4 }}>
-              VIEW CASE STUDY →
-            </Link>
-            <a
-              href={hasSource ? sourceHref : '#'}
-              {...externalLinkProps(sourceHref)}
-              onClick={(e) => { if (!hasSource) e.preventDefault(); }}
-              style={{ color: 'var(--muted)', textDecoration: 'underline', textUnderlineOffset: 4 }}
-            >
-              SOURCE →
-            </a>
-          </div>
+      <div className="geek-card-body">
+        <h3 className="geek-card-title">
+          <span aria-hidden="true" style={{ color: 'var(--accent)' }}>./</span>{project.name}
+        </h3>
+        <div className="geek-chips">
+          <span className="geek-chips-label">Stack:</span>
+          {stack.map((s) => <span key={s} className="geek-chip">{s}</span>)}
+        </div>
+        <p className="geek-card-summary">
+          <span style={{ color: 'var(--fg)' }}>Summary: </span>{project.summary}
+        </p>
+        <div className="geek-card-links">
+          <Link to={`/project/${detailSlug}`} className="geek-link geek-link--accent">
+            VIEW CASE STUDY →
+          </Link>
+          <a
+            href={hasSource ? sourceHref : '#'}
+            {...externalLinkProps(sourceHref)}
+            onClick={(e) => { if (!hasSource) e.preventDefault(); }}
+            className="geek-link"
+          >
+            SOURCE →
+          </a>
         </div>
       </div>
     </article>
@@ -385,42 +390,38 @@ function ProjectTile({ project }) {
 
 function About() {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 40, alignItems: 'start' }}>
-      <div style={{ position: 'sticky', top: 100 }}>
-        <div style={{
-          width: '100%', aspectRatio: '1 / 1.2', maxWidth: 260,
-          background: 'linear-gradient(165deg, #1a1a1a 0%, #0a0a0a 100%)',
-          border: '1px solid var(--border)', position: 'relative', overflow: 'hidden',
-        }}>
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: 'radial-gradient(circle at 50% 40%, rgba(242,241,236,0.08), transparent 60%)',
-          }} />
-          <div style={{
-            position: 'absolute', bottom: 10, left: 12,
-            fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.45)',
-          }}>Richard Zhang · 2026</div>
+    <div className="geek-about">
+      <div className="geek-about-side">
+        <div className="geek-portrait">
+          <div className="geek-portrait-grid" aria-hidden="true" />
+          <div className="geek-portrait-cross" aria-hidden="true" />
+          <span className="geek-corner tl" aria-hidden="true" />
+          <span className="geek-corner tr" aria-hidden="true" />
+          <span className="geek-corner bl" aria-hidden="true" />
+          <span className="geek-corner br" aria-hidden="true" />
+          <div className="geek-portrait-tag" aria-hidden="true">IMG_0001.RAW</div>
+          <div className="geek-portrait-caption">Richard Zhang · 2026</div>
         </div>
       </div>
-      <div style={{ fontFamily: 'var(--sans)', fontSize: 'clamp(16px, 1.4vw, 19px)', lineHeight: 1.55, letterSpacing: 'var(--letter)', color: 'var(--fg)', fontWeight: 300, maxWidth: 640 }}>
-        <p style={{ marginTop: 0 }}>
-          I’m a recent Informatics graduate from UC Irvine with a Computer
-          Science and systems foundation. My work sits between backend
-          engineering and product-facing software: APIs, data models, and
-          interfaces that make complex workflows usable. I’m looking for
-          entry-level roles where I can build reliable web systems and grow
-          across backend, full-stack, and infrastructure work.
-        </p>
-        <div style={{
-          marginTop: 32, padding: '22px 24px',
-          border: '1px solid var(--border)',
-          display: 'grid', gridTemplateColumns: '112px 1fr', gap: '14px 18px',
-          alignItems: 'baseline',
-        }}>
-          <span style={{ color: 'var(--muted)', fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.16em' }}>BASED</span>
-          <span style={{ color: 'var(--fg)', fontFamily: 'var(--sans)', fontSize: 15, lineHeight: 1.45, letterSpacing: 'var(--letter)' }}>Irvine, CA · Open to relocation and remote work</span>
-          <span style={{ color: 'var(--muted)', fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.16em' }}>SEEKING</span>
-          <span style={{ color: 'var(--fg)', fontFamily: 'var(--sans)', fontSize: 15, lineHeight: 1.45, letterSpacing: 'var(--letter)' }}>Entry-level backend, full-stack, or infrastructure software roles</span>
+      <div>
+        <div className="geek-window">
+          <WindowBar title="about.md" right="utf-8" />
+          <div className="geek-window-body">
+            <p className="geek-body-text" style={{ margin: 0 }}>
+              I’m a recent Informatics graduate from UC Irvine with a Computer
+              Science and systems foundation. My work sits between backend
+              engineering and product-facing software: APIs, data models, and
+              interfaces that make complex workflows usable. I’m looking for
+              entry-level roles where I can build reliable web systems and grow
+              across backend, full-stack, and infrastructure work.
+            </p>
+            <dl className="geek-kv geek-kv--boxed">
+              <dt>BASED</dt>
+              <dd>Irvine, CA · Open to relocation and remote work</dd>
+              <dt>SEEKING</dt>
+              <dd>Entry-level backend, full-stack, or infrastructure software roles</dd>
+            </dl>
+          </div>
         </div>
       </div>
     </div>
@@ -428,27 +429,39 @@ function About() {
 }
 
 function Skills() {
+  // Rendered as a source file: one logical line per row with a line-number gutter.
+  const lines = [
+    { code: <><span className="tok-kw">export const</span> <span className="tok-var">stack</span> = {'{'}</> },
+    ...SKILLS.map((group, gi) => ({
+      code: (
+        <span className="geek-code-indent">
+          <span className="tok-key">"{group.group}"</span>: [
+          {group.items.map((item, i) => (
+            <React.Fragment key={item}>
+              <span className="tok-str">'{item}'</span>{i < group.items.length - 1 ? ', ' : ''}
+            </React.Fragment>
+          ))}
+          ]{gi < SKILLS.length - 1 ? ',' : ''}
+        </span>
+      ),
+    })),
+    { code: <>{'}'};</> },
+  ];
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 32 }}>
-      {SKILLS.map((group) => (
-        <div key={group.group}>
-          <div style={{
-            fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.2em',
-            color: 'var(--muted)', paddingBottom: 12, marginBottom: 16,
-            borderBottom: '1px solid var(--border)',
-          }}>
-            / {group.group.toUpperCase()}
+    <div className="geek-window">
+      <WindowBar title="stack.ts" right="TypeScript · LF" />
+      <div className="geek-code" role="list" aria-label="Technical stack">
+        {lines.map((l, i) => (
+          <div key={i} className="geek-code-line" role="listitem">
+            <span className="geek-code-ln" aria-hidden="true">{i + 1}</span>
+            <span className="geek-code-src">{l.code}</span>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {group.items.map((item) => (
-              <div key={item} style={{
-                fontFamily: 'var(--sans)', fontSize: 18, lineHeight: 1.35, letterSpacing: 'var(--letter)',
-                color: 'var(--fg)', fontWeight: 400,
-              }}>{item}</div>
-            ))}
-          </div>
+        ))}
+        <div className="geek-code-line">
+          <span className="geek-code-ln" aria-hidden="true">{lines.length + 1}</span>
+          <span className="geek-code-src"><Caret small /></span>
         </div>
-      ))}
+      </div>
     </div>
   );
 }
@@ -456,26 +469,28 @@ function Skills() {
 function Education() {
   return (
     <div className="education-layout">
-      <div>
-        <h3 id="education-degree" style={{ margin: 0, fontFamily: 'var(--sans)', fontSize: 'clamp(22px, 2.2vw, 30px)', letterSpacing: 'var(--letter)', color: 'var(--fg)', fontWeight: 400, lineHeight: 1.15 }}>
-          {EDUCATION.school} <span aria-hidden="true">·</span> {EDUCATION.degree}
-        </h3>
-        <p aria-label={`${EDUCATION.dept}, ${EDUCATION.dates}`} style={{ fontFamily: 'var(--mono)', fontSize: 12, letterSpacing: '0.1em', color: 'var(--muted)', margin: '14px 0 0', lineHeight: 1.7 }}>
-          <span>{EDUCATION.dept}</span>
-          <span aria-hidden="true"> · </span>
-          <span>{EDUCATION.dates}</span>
-        </p>
-        <p style={{ fontFamily: 'var(--sans)', fontSize: 16, color: 'var(--fg)', margin: '28px 0 0', lineHeight: 1.6, letterSpacing: 'var(--letter)', fontWeight: 400, maxWidth: 620 }}>
-          {EDUCATION.note}
-        </p>
+      <div className="geek-window">
+        <WindowBar title="education.yml" right="yaml" />
+        <div className="geek-window-body">
+          <h3 id="education-degree" className="geek-h3">
+            {EDUCATION.school} <span aria-hidden="true" style={{ color: 'var(--accent)' }}>·</span> {EDUCATION.degree}
+          </h3>
+          <p aria-label={`${EDUCATION.dept}, ${EDUCATION.dates}`} className="geek-yaml">
+            <span><span className="tok-key">dept</span>: {EDUCATION.dept}</span>
+            <span><span className="tok-key">dates</span>: <span className="tok-str">{EDUCATION.dates}</span></span>
+          </p>
+          <p className="geek-body-text geek-note">
+            <span aria-hidden="true" className="geek-note-mark"># </span>{EDUCATION.note}
+          </p>
+        </div>
       </div>
       <div>
-        <h4 id="education-coursework" style={{ margin: '0 0 14px', fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.18em', color: 'var(--muted)', fontWeight: 500, textTransform: 'uppercase' }}>
-          <span aria-hidden="true">/ </span>Coursework
+        <h4 id="education-coursework" className="geek-h4">
+          <span aria-hidden="true" style={{ color: 'var(--accent)' }}>$ ls ./</span>Coursework
         </h4>
         <ul className="education-course-list" aria-labelledby="education-coursework">
           {EDUCATION.coursework.map((course) => (
-            <li key={course}>{course}</li>
+            <li key={course}><span aria-hidden="true" className="geek-check">[✓]</span>{course}</li>
           ))}
         </ul>
       </div>
@@ -484,49 +499,38 @@ function Education() {
 }
 
 function Contact() {
+  const links = [
+    { k: 'EMAIL',    cmd: 'mail',  v: 'yonghuz1@uci.edu', href: 'mailto:yonghuz1@uci.edu' },
+    { k: 'GITHUB',   cmd: 'open',  v: 'github.com/ASDFGHJKLZXC123', href: 'https://github.com/ASDFGHJKLZXC123' },
+    { k: 'LINKEDIN', cmd: 'open',  v: 'linkedin.com/in/richard-zhang-7ba1802b3', href: 'https://linkedin.com/in/richard-zhang-7ba1802b3' },
+  ];
   return (
     <div style={{ padding: '20px 0 0' }}>
-      <div style={{
-        fontFamily: 'var(--sans)', fontSize: 'clamp(40px, 4.5vw, 64px)',
-        letterSpacing: 'var(--letter)', color: 'var(--fg)', fontWeight: 400, lineHeight: 1.05,
-      }}>
-        Let’s connect about software engineering roles
+      <div className="geek-h1 geek-contact-title">
+        Let’s connect about software engineering roles<Caret />
       </div>
-      <div style={{
-        fontFamily: 'var(--sans)', fontSize: 'clamp(16px, 1.4vw, 19px)',
-        color: 'var(--muted)', fontWeight: 300, marginTop: 24, maxWidth: 560, lineHeight: 1.5, letterSpacing: 'var(--letter)',
-      }}>
+      <div className="geek-lead" style={{ marginTop: 24, maxWidth: 560 }}>
         Email is the best way to reach me. I’m open to entry-level backend,
         full-stack, and infrastructure-oriented software engineering roles.
       </div>
 
-      <div style={{
-        marginTop: 40, display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-        border: '1px solid var(--border)',
-      }}>
-        {[
-          { k: 'EMAIL',    v: 'yonghuz1@uci.edu', href: 'mailto:yonghuz1@uci.edu' },
-          { k: 'GITHUB',   v: 'github.com/ASDFGHJKLZXC123', href: 'https://github.com/ASDFGHJKLZXC123' },
-          { k: 'LINKEDIN', v: 'linkedin.com/in/richard-zhang-7ba1802b3', href: 'https://linkedin.com/in/richard-zhang-7ba1802b3' },
-        ].map((c, i) => (
+      <div className="geek-contact-grid">
+        {links.map((c) => (
           <a
             key={c.k}
             href={c.href}
             target={c.href.startsWith('https://') ? '_blank' : undefined}
             rel={c.href.startsWith('https://') ? 'noreferrer' : undefined}
             onClick={(e) => { if (c.href === '#') e.preventDefault(); }}
-            style={{
-            padding: '32px 28px', textDecoration: 'none',
-            borderRight: i < 2 ? '1px solid var(--border)' : 'none',
-            display: 'flex', flexDirection: 'column', gap: 10,
-            transition: 'background .2s',
-          }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--hover)')}
-            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+            className="geek-contact-cell"
           >
-            <span style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.2em', color: 'var(--muted)' }}>{c.k}</span>
-            <span style={{ fontFamily: 'var(--sans)', fontSize: 18, color: 'var(--fg)', letterSpacing: 'var(--letter)' }}>{c.v}</span>
+            <span className="geek-contact-k">
+              <span>[{c.k}]</span>
+              <span aria-hidden="true" className="geek-contact-arrow">↗</span>
+            </span>
+            <span className="geek-contact-v">
+              <span aria-hidden="true" className="geek-contact-cmd">$ {c.cmd} </span>{c.v}
+            </span>
           </a>
         ))}
       </div>
@@ -536,15 +540,14 @@ function Contact() {
 
 function Footer() {
   return (
-    <div style={{
-      marginTop: 80, padding: '32px 40px 40px', display: 'flex',
-      justifyContent: 'space-between', alignItems: 'center',
-      borderTop: '1px solid var(--border)',
-      fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.14em', color: 'var(--muted)',
-    }}>
-      <span>© 2026 / Richard · BUILT IN REACT + TOO MUCH COFFEE</span>
-      <span>LAST SYNC · 04.26</span>
-    </div>
+    <footer className="geek-statusline">
+      <span className="geek-statusline-mode">-- NORMAL --</span>
+      <span className="geek-statusline-main">© 2026 / Richard · BUILT IN REACT + TOO MUCH COFFEE</span>
+      <span className="geek-statusline-right">
+        <span className="geek-hide-sm">utf-8 · jsx</span>
+        <span>LAST SYNC · 04.26</span>
+      </span>
+    </footer>
   );
 }
 
@@ -552,7 +555,7 @@ export default function Portfolio() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
   const [active, setActive] = React.useState('work');
   const [PROJECTS, setProjects] = React.useState(PROJECTS_FALLBACK);
-  const fonts = FONTS[t.font] || FONTS.neue;
+  const fonts = FONTS[t.font] || FONTS.mono;
   const dark = t.dark;
 
   React.useEffect(() => {
@@ -589,14 +592,23 @@ export default function Portfolio() {
   }, [sections.map((s) => s.id).join(',')]);
 
   const vars = {
-    '--bg': dark ? '#0a0a0a' : '#f5f4ef',
-    '--bg-blur': dark ? 'rgba(10,10,10,0.72)' : 'rgba(245,244,239,0.72)',
-    '--fg': dark ? '#f2f1ec' : '#131312',
-    '--muted': dark ? 'rgba(242,241,236,0.5)' : 'rgba(19,19,18,0.55)',
-    '--border': dark ? 'rgba(242,241,236,0.12)' : 'rgba(19,19,18,0.12)',
-    '--tile-bg': dark ? '#0e0e0e' : '#e9e8e3',
-    '--hover': dark ? 'rgba(242,241,236,0.06)' : 'rgba(19,19,18,0.04)',
-    '--accent': t.accent,
+    '--bg': dark ? '#050807' : '#eef1ea',
+    '--bg-blur': dark ? 'rgba(5,8,7,0.8)' : 'rgba(238,241,234,0.82)',
+    '--panel': dark ? 'rgba(10,17,13,0.82)' : 'rgba(250,252,248,0.88)',
+    '--panel-bar': dark ? 'rgba(18,28,22,0.9)' : 'rgba(226,232,222,0.95)',
+    '--fg': dark ? '#e4efe7' : '#0d1a12',
+    '--muted': dark ? 'rgba(196,224,206,0.6)' : 'rgba(13,26,18,0.64)',
+    '--dim': dark ? 'rgba(196,224,206,0.34)' : 'rgba(13,26,18,0.4)',
+    '--border': dark ? 'rgba(120,255,170,0.13)' : 'rgba(13,26,18,0.14)',
+    '--tile-bg': dark ? '#070c09' : '#e2e8de',
+    '--accent': dark ? t.accent : `color-mix(in srgb, ${t.accent} 45%, #00361b)`,
+    '--accent-ink': dark ? '#03110a' : '#f2fff6',
+    '--cyan': dark ? '#67e8f9' : '#0e7490',
+    '--amber': dark ? '#fbbf24' : '#a16207',
+    '--magenta': dark ? '#f472b6' : '#be185d',
+    '--grid': dark ? 'rgba(120,255,170,0.05)' : 'rgba(13,26,18,0.055)',
+    '--scan': dark ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.018)',
+    '--glow': dark ? '0 0 18px color-mix(in srgb, var(--accent) 45%, transparent)' : 'none',
     '--sans': fonts.sans, '--mono': fonts.mono, '--letter': fonts.letter,
   };
 
@@ -604,68 +616,60 @@ export default function Portfolio() {
   const nextIdx = () => ++sectionIdx;
 
   return (
-    <div style={{ ...vars, background: 'var(--bg)', color: 'var(--fg)', minHeight: '100vh', fontFamily: 'var(--sans)' }}>
+    <div className="geek-root" style={{ ...vars, background: 'var(--bg)', color: 'var(--fg)', minHeight: '100vh', fontFamily: 'var(--sans)' }}>
+      <div className="geek-bg" aria-hidden="true" />
+      <div className="geek-scanlines" aria-hidden="true" />
+
       <TopBar dark={dark} setDark={(v) => setTweak('dark', v)} active={active} sections={sections} />
 
-      <Hero />
+      <main className="geek-main">
+        <Hero />
 
-      <section id="work" style={{ padding: '40px 40px 0', scrollMarginTop: 80 }}>
-        <Reveal><SectionHead index={nextIdx()} title="Selected Engineering Work" subtitle="Systems-focused projects with emphasis on reliability, data, and APIs" /></Reveal>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: 32,
-          transition: 'grid-template-columns .3s',
-        }}>
-          {featured.map((p, i) => (
-            <Reveal key={p.name} delay={i * 60}>
-              <ProjectTile project={p} />
-            </Reveal>
-          ))}
-        </div>
-        {extra.length > 0 && (
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 56 }}>
-              <Link to="/all-works" style={{
-                display: 'inline-flex', alignItems: 'center', gap: 12,
-                padding: '16px 28px', textDecoration: 'none',
-                border: '1px solid var(--border)', borderRadius: 999,
-                fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.18em',
-                color: 'var(--fg)', transition: 'background .2s, padding .2s',
-              }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--hover)'; e.currentTarget.style.paddingLeft = '32px'; e.currentTarget.style.paddingRight = '32px'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.paddingLeft = '28px'; e.currentTarget.style.paddingRight = '28px'; }}
-              >
+        <section id="work" className="geek-section" style={{ paddingTop: 40 }}>
+          <Reveal><SectionHead index={nextIdx()} path="work" title="Selected Engineering Work" subtitle="Systems-focused projects with emphasis on reliability, data, and APIs" /></Reveal>
+          <div className="geek-work-grid">
+            {featured.map((p, i) => (
+              <Reveal key={p.name} delay={i * 80}>
+                <ProjectTile project={p} index={i} />
+              </Reveal>
+            ))}
+          </div>
+          {extra.length > 0 && (
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 56 }}>
+              <Link to="/all-works" className="geek-btn geek-btn--wide">
+                <span aria-hidden="true" className="geek-hide-sm" style={{ color: 'var(--accent)' }}>$ ls -a ./projects</span>
                 <span>VIEW ALL PROJECTS →</span>
               </Link>
-          </div>
+            </div>
+          )}
+        </section>
+
+        {t.showAbout && (
+          <section id="about" className="geek-section">
+            <Reveal><SectionHead index={nextIdx()} path="about" title="About" subtitle="Background and focus" /></Reveal>
+            <Reveal delay={100}><About /></Reveal>
+          </section>
         )}
-      </section>
 
-      {t.showAbout && (
-        <section id="about" style={{ padding: '120px 40px 0', scrollMarginTop: 80 }}>
-          <Reveal><SectionHead index={nextIdx()} title="About" subtitle="Background and focus" /></Reveal>
-          <Reveal delay={100}><About /></Reveal>
+        {t.showSkills && (
+          <section id="skills" className="geek-section">
+            <Reveal><SectionHead index={nextIdx()} path="stack" title="Technical Stack" subtitle="Tools and practices behind my selected work" /></Reveal>
+            <Reveal delay={100}><Skills /></Reveal>
+          </section>
+        )}
+
+        {t.showEducation && (
+          <section id="education" className="geek-section">
+            <Reveal><SectionHead index={nextIdx()} path="education" title="Education" subtitle="Academic background" /></Reveal>
+            <Reveal delay={100}><Education /></Reveal>
+          </section>
+        )}
+
+        <section id="contact" className="geek-section" style={{ paddingTop: 140 }}>
+          <Reveal><SectionHead index={nextIdx()} path="contact" title="Contact" subtitle="Hiring contact" /></Reveal>
+          <Reveal delay={100}><Contact /></Reveal>
         </section>
-      )}
-
-      {t.showSkills && (
-        <section id="skills" style={{ padding: '120px 40px 0', scrollMarginTop: 80 }}>
-          <Reveal><SectionHead index={nextIdx()} title="Technical Stack" subtitle="Tools and practices behind my selected work" /></Reveal>
-          <Reveal delay={100}><Skills /></Reveal>
-        </section>
-      )}
-
-      {t.showEducation && (
-        <section id="education" style={{ padding: '120px 40px 0', scrollMarginTop: 80 }}>
-          <Reveal><SectionHead index={nextIdx()} title="Education" subtitle="Academic background" /></Reveal>
-          <Reveal delay={100}><Education /></Reveal>
-        </section>
-      )}
-
-      <section id="contact" style={{ padding: '140px 40px 0', scrollMarginTop: 80 }}>
-        <Reveal><SectionHead index={nextIdx()} title="Contact" subtitle="Hiring contact" /></Reveal>
-        <Reveal delay={100}><Contact /></Reveal>
-      </section>
+      </main>
 
       <Footer />
 
@@ -676,7 +680,7 @@ export default function Portfolio() {
 
         <TweakSection label="Typography" />
         <TweakRadio label="Typeface" value={t.font}
-          options={[{ value: 'neue', label: 'neue' }, { value: 'serif', label: 'serif' }, { value: 'mono', label: 'mono' }]}
+          options={[{ value: 'mono', label: 'mono' }, { value: 'neue', label: 'neue' }, { value: 'serif', label: 'serif' }]}
           onChange={(v) => setTweak('font', v)} />
 
         <TweakSection label="Sections" />

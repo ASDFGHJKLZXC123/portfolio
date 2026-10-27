@@ -7,70 +7,15 @@ import { externalLinkProps, isUsableHref, projectSlug, projectSourceHref } from 
 import { curatedProjects } from '../lib/portfolio-curation';
 import { projects } from '../lib/projects';
 import { useTheme } from '../lib/use-theme';
+import Reveal from '../components/Reveal';
+import StatusPill from '../components/StatusPill';
+import ThemeSwitch from '../components/ThemeSwitch';
 import TechnicalCover from '../components/TechnicalCover';
 
 const NUMBER_WORDS = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'];
 const countWord = (n) => NUMBER_WORDS[n] || String(n);
 
-const pendingStatusLabel = (project) => project.status === 'in-progress'
-  ? 'IN PROGRESS'
-  : project.status === 'verification-pending'
-    ? 'VERIFICATION PENDING'
-    : '';
-
-function StatusPill({ project, onImage = false }) {
-  const label = pendingStatusLabel(project);
-  if (!label) return null;
-  return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap',
-      padding: onImage ? '4px 8px' : '5px 9px',
-      borderRadius: 999,
-      border: onImage ? '1px solid rgba(255,255,255,0.32)' : '1px solid var(--border)',
-      background: onImage ? 'rgba(255,255,255,0.14)' : 'var(--hover)',
-      color: onImage ? 'rgba(255,255,255,0.9)' : 'var(--fg)',
-      fontFamily: 'var(--mono)', fontSize: onImage ? 8 : 9,
-      lineHeight: 1, letterSpacing: '0.16em',
-    }}>
-      {label}
-    </span>
-  );
-}
-
-function useReveal() {
-  const ref = React.useRef(null);
-  const [shown, setShown] = React.useState(false);
-  React.useEffect(() => {
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-      setShown(true);
-      return undefined;
-    }
-    if (!ref.current) return;
-    const io = new IntersectionObserver((entries) => {
-      for (const e of entries) if (e.isIntersecting) { setShown(true); io.disconnect(); return; }
-    }, { threshold: 0.1 });
-    io.observe(ref.current);
-    return () => io.disconnect();
-  }, []);
-  return [ref, shown];
-}
-function Reveal({ children, delay = 0 }) {
-  const [ref, shown] = useReveal();
-  return <div ref={ref} className="reveal" style={{
-    transform: shown ? 'translateY(0)' : 'translateY(16px)',
-    opacity: shown ? 1 : 0,
-    transition: `transform .8s cubic-bezier(.2,.7,.3,1) ${delay}ms, opacity .8s ease ${delay}ms`,
-  }}>{children}</div>;
-}
-
 function TopBar({ dark, setDark }) {
-  const themeBtn = (on) => ({
-    border: 'none', padding: '5px 12px', borderRadius: 999, cursor: 'pointer',
-    background: on ? 'var(--fg)' : 'transparent',
-    color: on ? 'var(--bg)' : 'var(--muted)',
-    fontSize: 9, letterSpacing: '0.18em', fontFamily: 'inherit', fontWeight: 600,
-    transition: 'background .2s, color .2s',
-  });
   return (
     <div className="topbar archive-topbar" style={{
       position: 'sticky', top: 0, zIndex: 40,
@@ -86,10 +31,7 @@ function TopBar({ dark, setDark }) {
           <span style={{ color: 'var(--muted)' }}>←</span>
           <span>PORTFOLIO</span>
         </Link>
-        <div className="theme-switch" role="group" aria-label="Color theme" style={{ display: 'inline-flex', border: '1px solid var(--border)', borderRadius: 999, padding: 2 }}>
-          <button aria-pressed={dark} onClick={() => setDark(true)} style={themeBtn(dark)}>DARK</button>
-          <button aria-pressed={!dark} onClick={() => setDark(false)} style={themeBtn(!dark)}>LIGHT</button>
-        </div>
+        <ThemeSwitch dark={dark} setDark={setDark} />
         <div />
       </div>
     </div>

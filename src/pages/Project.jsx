@@ -9,42 +9,13 @@ import { findProject, projects } from '../lib/projects';
 import { useTheme } from '../lib/use-theme';
 import Reveal from '../components/Reveal';
 import { BuildNotes, CaseSection } from '../components/CaseSections';
+import StatusPill, { pendingStatusLabel } from '../components/StatusPill';
+import ThemeSwitch from '../components/ThemeSwitch';
 import TechnicalCover from '../components/TechnicalCover';
 
-const pendingStatusLabel = (project) => project.status === 'in-progress'
-  ? 'IN PROGRESS'
-  : project.status === 'verification-pending'
-    ? 'VERIFICATION PENDING'
-    : '';
 const projectStatusLabel = (project) => pendingStatusLabel(project) || 'COMPLETE';
 
-function StatusPill({ project, onImage = false }) {
-  const label = pendingStatusLabel(project);
-  if (!label) return null;
-  return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap',
-      padding: onImage ? '4px 8px' : '5px 9px',
-      borderRadius: 999,
-      border: onImage ? '1px solid rgba(255,255,255,0.32)' : '1px solid var(--border)',
-      background: onImage ? 'rgba(255,255,255,0.14)' : 'var(--hover)',
-      color: onImage ? 'rgba(255,255,255,0.9)' : 'var(--fg)',
-      fontFamily: 'var(--mono)', fontSize: onImage ? 8 : 9,
-      lineHeight: 1, letterSpacing: '0.16em',
-    }}>
-      {label}
-    </span>
-  );
-}
-
 function TopBar({ dark, setDark, projectName }) {
-  const themeBtn = (on) => ({
-    border: 'none', padding: '5px 12px', borderRadius: 999, cursor: 'pointer',
-    background: on ? 'var(--fg)' : 'transparent',
-    color: on ? 'var(--bg)' : 'var(--muted)',
-    fontSize: 9, letterSpacing: '0.18em', fontFamily: 'inherit', fontWeight: 600,
-    transition: 'background .2s, color .2s',
-  });
   return (
     <div className="topbar project-topbar" style={{
       position: 'sticky', top: 0, zIndex: 40,
@@ -64,10 +35,7 @@ function TopBar({ dark, setDark, projectName }) {
           <span style={{ color: 'var(--muted)' }}>/</span>
           <span className="project-breadcrumb-name" style={{ color: 'var(--muted)' }}>{projectName || '—'}</span>
         </div>
-        <div className="theme-switch" role="group" aria-label="Color theme" style={{ display: 'inline-flex', border: '1px solid var(--border)', borderRadius: 999, padding: 2 }}>
-          <button aria-pressed={dark} onClick={() => setDark(true)} style={themeBtn(dark)}>DARK</button>
-          <button aria-pressed={!dark} onClick={() => setDark(false)} style={themeBtn(!dark)}>LIGHT</button>
-        </div>
+        <ThemeSwitch dark={dark} setDark={setDark} />
         <Link className="project-contact-cta" to="/#contact" style={{ justifySelf: 'end', display: 'flex', alignItems: 'center', gap: 8, color: 'var(--fg)', textDecoration: 'none' }}>
           <span style={{ width: 6, height: 6, borderRadius: 3, background: 'var(--fg)', boxShadow: '0 0 8px var(--fg)' }} />
           <span>INITIATE DIALOGUE</span>

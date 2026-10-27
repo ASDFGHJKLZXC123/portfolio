@@ -52,7 +52,7 @@ const FONTS = {
 
 function TopBar({ dark, setDark, active, sections }) {
   return (
-    <div className="topbar portfolio-topbar" style={{
+    <header className="topbar portfolio-topbar" style={{
       position: 'sticky', top: 0, zIndex: 40,
       backdropFilter: 'blur(14px) saturate(140%)',
       WebkitBackdropFilter: 'blur(14px) saturate(140%)',
@@ -64,7 +64,11 @@ function TopBar({ dark, setDark, active, sections }) {
         alignItems: 'center', padding: '16px 40px', fontSize: 11,
         letterSpacing: '0.12em', fontFamily: 'var(--mono)',
       }}>
-        <div style={{ justifySelf: 'start' }} />
+        {/* The name used to appear nowhere above the fold — only in the tab title. */}
+        <a className="topbar-name" href="#top" style={{
+          justifySelf: 'start', color: 'var(--fg)', textDecoration: 'none',
+          letterSpacing: '0.16em', whiteSpace: 'nowrap',
+        }}>RICHARD ZHANG</a>
 
         <nav className="portfolio-nav" aria-label="Portfolio sections" style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
           {sections.map((s) => (
@@ -87,7 +91,7 @@ function TopBar({ dark, setDark, active, sections }) {
 
         <div style={{ justifySelf: 'end' }} />
       </div>
-    </div>
+    </header>
   );
 }
 
@@ -447,7 +451,7 @@ function Contact() {
 
 function Footer() {
   return (
-    <div className="portfolio-footer" style={{
+    <footer className="portfolio-footer" style={{
       marginTop: 80, padding: '32px 40px 40px', display: 'flex',
       justifyContent: 'space-between', alignItems: 'center',
       borderTop: '1px solid var(--border)',
@@ -455,7 +459,7 @@ function Footer() {
     }}>
       <span>© 2026 / Richard · BUILT IN REACT + TOO MUCH COFFEE</span>
       <span>OPEN TO SOFTWARE ENGINEERING OPPORTUNITIES</span>
-    </div>
+    </footer>
   );
 }
 
@@ -515,7 +519,7 @@ export default function Portfolio() {
   const nextIdx = () => ++sectionIdx;
 
   return (
-    <div className="portfolio-page" style={{ ...vars, background: 'var(--bg)', color: 'var(--fg)', minHeight: '100vh', fontFamily: 'var(--sans)' }}>
+    <div id="top" className="portfolio-page" style={{ ...vars, background: 'var(--bg)', color: 'var(--fg)', minHeight: '100vh', fontFamily: 'var(--sans)' }}>
       <TopBar dark={dark} setDark={(v) => setTweak('dark', v)} active={active} sections={sections} />
 
       <main>

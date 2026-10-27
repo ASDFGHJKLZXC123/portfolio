@@ -13,9 +13,21 @@
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="Richard Zhang — Full-Stack Software Engineer" />
     <meta name="twitter:description" content="Selected backend and full-stack engineering work focused on reliability, data workflows, and usable operational software." />
-    <!-- Relative, not "/favicon.svg": vite.config.js sets base "/portfolio/",
-         so an absolute path 404s on the GitHub Pages subpath deploy. -->
-    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <!-- Root-absolute on purpose: Vite rewrites it to "/portfolio/favicon.svg"
+         at build time. A relative "./favicon.svg" resolved against deep links
+         such as /portfolio/project/<slug> and 404'd there. -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script>
+      // Apply a stored light/dark choice before first paint, so a returning
+      // visitor whose choice differs from the OS setting doesn't see a flash.
+      // Same key as src/lib/use-theme.js.
+      try {
+        var storedTheme = localStorage.getItem('portfolio-theme');
+        if (storedTheme === 'dark' || storedTheme === 'light') {
+          document.documentElement.setAttribute('data-theme', storedTheme);
+        }
+      } catch (e) {}
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

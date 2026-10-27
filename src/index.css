@@ -1266,7 +1266,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
     padding: 12px 20px !important;
   }
 
-  .portfolio-topbar-inner > div:first-child,
+  .topbar-name,
   .portfolio-topbar-inner > div:last-child {
     display: none !important;
   }

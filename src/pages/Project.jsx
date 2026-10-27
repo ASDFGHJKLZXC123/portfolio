@@ -17,7 +17,7 @@ const projectStatusLabel = (project) => pendingStatusLabel(project) || 'COMPLETE
 
 function TopBar({ dark, setDark, projectName }) {
   return (
-    <div className="topbar project-topbar" style={{
+    <header className="topbar project-topbar" style={{
       position: 'sticky', top: 0, zIndex: 40,
       backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)',
       background: 'var(--bg-blur)', borderBottom: '1px solid var(--border)',
@@ -41,7 +41,7 @@ function TopBar({ dark, setDark, projectName }) {
           <span>INITIATE DIALOGUE</span>
         </Link>
       </div>
-    </div>
+    </header>
   );
 }
 
@@ -355,14 +355,14 @@ export default function Project() {
         </Reveal>
       </main>
 
-      <div className="project-footer" style={{
+      <footer className="project-footer" style={{
         padding: '32px 40px 40px', display: 'flex',
         justifyContent: 'space-between', alignItems: 'center',
         fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.14em', color: 'var(--muted)',
       }}>
         <span>© 2026 / Richard</span>
         <span>{p.name} · {p.year}</span>
-      </div>
+      </footer>
     </div>
   );
 }

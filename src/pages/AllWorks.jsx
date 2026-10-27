@@ -17,7 +17,7 @@ const countWord = (n) => NUMBER_WORDS[n] || String(n);
 
 function TopBar({ dark, setDark }) {
   return (
-    <div className="topbar archive-topbar" style={{
+    <header className="topbar archive-topbar" style={{
       position: 'sticky', top: 0, zIndex: 40,
       backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)',
       background: 'var(--bg-blur)', borderBottom: '1px solid var(--border)',
@@ -34,7 +34,7 @@ function TopBar({ dark, setDark }) {
         <ThemeSwitch dark={dark} setDark={setDark} />
         <div />
       </div>
-    </div>
+    </header>
   );
 }
 
@@ -217,7 +217,7 @@ export default function AllWorks() {
         </div>
       </main>
 
-      <div className="archive-footer" style={{
+      <footer className="archive-footer" style={{
         padding: '32px 40px 40px', display: 'flex',
         justifyContent: 'space-between', alignItems: 'center',
         borderTop: '1px solid var(--border)',
@@ -225,7 +225,7 @@ export default function AllWorks() {
       }}>
         <span>© 2026 / Richard</span>
         <span>CURATED PROJECT ARCHIVE</span>
-      </div>
+      </footer>
     </div>
   );
 }
